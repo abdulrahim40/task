@@ -230,7 +230,7 @@
             margin-bottom: 18px;
             font-size: 1.5rem;
         }
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 12px 14px;
             border-radius: 20px;
@@ -238,6 +238,7 @@
             margin-bottom: 16px;
             font-family: inherit;
             font-size: 0.9rem;
+            background: white;
         }
         .range-group {
             display: flex;
@@ -247,7 +248,7 @@
         }
         .range-group input {
             flex: 1;
-            accent-color: #3b82f6; /* warna slider */
+            accent-color: #3b82f6;
         }
         .subtask-item {
             background: #f1f5f9;
@@ -275,7 +276,6 @@
             flex: 1;
             margin: 0;
             padding: 0;
-            accent-color: #f59e0b;
         }
         .subtask-range span {
             font-size: 0.7rem;
@@ -347,6 +347,13 @@
             font-size: 1.8rem;
             cursor: pointer;
         }
+        label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 4px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -369,6 +376,13 @@
         <input type="text" id="taskTitle" placeholder="Judul tugas">
         <textarea id="taskNotes" rows="2" placeholder="Catatan..."></textarea>
         <input type="datetime-local" id="taskDueDate">
+        
+        <!-- Dropdown pindah tab -->
+        <div style="margin-bottom: 16px;">
+            <label><i class="fas fa-exchange-alt"></i> Pindah ke tab</label>
+            <select id="moveTabSelect"></select>
+        </div>
+
         <div id="progressGroup">
             <label>Progres tugas:</label>
             <div class="range-group">
@@ -424,6 +438,7 @@
     let tabsUnsub = null;
     let tasksUnsub = null;
     let allTasks = [];
+    let allTabs = []; // untuk dropdown
     
     // DOM
     const tabsContainer = document.getElementById("tabsContainer");
@@ -451,9 +466,11 @@
     const saveTabBtn = document.getElementById("saveTabBtn");
     const deleteTabBtn = document.getElementById("deleteTabBtn");
     const modalButtonsContainer = document.getElementById("modalButtonsContainer");
+    const moveTabSelect = document.getElementById("moveTabSelect");
     
     let activeTaskId = null;
     let currentSubtasks = [];
+    let originalTabId = null; // untuk menyimpan tabId asli saat modal dibuka
     
     function escapeHtml(str) {
         if (!str) return '';
@@ -506,7 +523,6 @@
         }
     }
     
-    // Tab functions
     async function addNewTab(name) {
         await addDoc(tabsCol, { name, createdAt: Timestamp.now() });
     }
@@ -522,12 +538,33 @@
         await batch.commit();
     }
     
+    // Memuat daftar tab untuk dropdown pindah tab
+    async function loadTabsForDropdown(selectedTabId) {
+        const snapshot = await getDocs(tabsCol);
+        allTabs = [];
+        snapshot.forEach(docSnap => allTabs.push({ id: docSnap.id, name: docSnap.data().name }));
+        // Urutkan berdasarkan nama
+        allTabs.sort((a, b) => a.name.localeCompare(b.name));
+        moveTabSelect.innerHTML = '';
+        allTabs.forEach(tab => {
+            const option = document.createElement('option');
+            option.value = tab.id;
+            option.textContent = escapeHtml(tab.name);
+            if (tab.id === selectedTabId) option.selected = true;
+            moveTabSelect.appendChild(option);
+        });
+        if (allTabs.length === 0) {
+            moveTabSelect.innerHTML = '<option disabled>Tidak ada tab</option>';
+        }
+    }
+    
     function loadTabs() {
         if (tabsUnsub) tabsUnsub();
         tabsUnsub = onSnapshot(tabsCol, (snapshot) => {
             let tabs = [];
             snapshot.forEach(docSnap => tabs.push({ id: docSnap.id, ...docSnap.data() }));
             tabs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+            allTabs = tabs;
             renderTabs(tabs);
             if (tabs.length > 0 && !currentTabId) {
                 currentTabId = tabs[0].id;
@@ -654,7 +691,7 @@
         });
     }
     
-    function renderTaskCard(task, isCancelled = false) {
+    function renderTaskCard(task) {
         const progressVal = task.progress || 0;
         const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleString('id-ID') : 'Tidak ada deadline';
         let bullet, titleClass, cardClass = '';
@@ -702,12 +739,17 @@
         }
     }
     
-    function openTaskModal(task) {
+    async function openTaskModal(task) {
         activeTaskId = task.id;
+        originalTabId = task.tabId;
         currentSubtasks = task.subtasks ? [...task.subtasks] : [];
         taskTitleInput.value = task.title || '';
         taskNotesInput.value = task.notes || '';
         taskDueDate.value = task.dueDate ? task.dueDate.slice(0, 16) : '';
+        
+        // Muat dropdown pindah tab dengan tab yang sedang dipilih
+        await loadTabsForDropdown(task.tabId);
+        
         const hasSubtasks = currentSubtasks.length > 0;
         if (hasSubtasks) {
             progressGroup.style.display = 'none';
@@ -788,11 +830,18 @@
                 finalProgress = parseInt(progressSlider.value);
                 finalCompleted = (finalProgress === 100);
             }
-            await updateDoc(doc(db, "tasks", activeTaskId), {
+            
+            const newTabId = moveTabSelect.value;
+            const updateData = {
                 title, notes: taskNotesInput.value, dueDate: taskDueDate.value || null,
                 progress: finalProgress, completed: finalCompleted, subtasks: currentSubtasks,
                 cancelled: false
-            });
+            };
+            // Jika pindah tab
+            if (newTabId && newTabId !== originalTabId) {
+                updateData.tabId = newTabId;
+            }
+            await updateDoc(doc(db, "tasks", activeTaskId), updateData);
             taskModal.style.display = "none";
         };
         modalButtonsContainer.appendChild(saveBtn);
