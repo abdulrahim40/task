@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <title>Task Manager | Simple & Clean</title>
+    <title>Task Manager | Clean & Colorful</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -106,6 +106,7 @@
             margin-bottom: 10px;
             border: 1px solid #f0f2f5;
             cursor: pointer;
+            transition: 0.1s;
         }
         .task-card.cancelled {
             background: #fef2f2;
@@ -125,7 +126,9 @@
         .task-bullet-unchecked { color: #94a3b8; }
         .task-bullet-checked { color: #22c55e; }
         .task-bullet-cancelled { color: #dc2626; }
-        .task-info { flex: 1; }
+        .task-info {
+            flex: 1;
+        }
         .task-title {
             font-weight: 500;
             margin-bottom: 6px;
@@ -141,9 +144,26 @@
         }
         .task-meta {
             display: flex;
-            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
             font-size: 0.7rem;
             color: #5b6e8c;
+            margin-bottom: 6px;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 6px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.2s;
         }
         .task-progress-badge {
             background: #e2e8f0;
@@ -151,6 +171,7 @@
             border-radius: 30px;
             font-size: 0.7rem;
             font-weight: 600;
+            margin-left: auto;
         }
         .task-actions {
             display: flex;
@@ -224,7 +245,10 @@
             gap: 12px;
             margin: 12px 0;
         }
-        .range-group input { flex: 1; }
+        .range-group input {
+            flex: 1;
+            accent-color: #3b82f6; /* warna slider */
+        }
         .subtask-item {
             background: #f1f5f9;
             border-radius: 60px;
@@ -251,6 +275,7 @@
             flex: 1;
             margin: 0;
             padding: 0;
+            accent-color: #f59e0b;
         }
         .subtask-range span {
             font-size: 0.7rem;
@@ -429,7 +454,6 @@
     
     let activeTaskId = null;
     let currentSubtasks = [];
-    let currentCancelled = false;
     
     function escapeHtml(str) {
         if (!str) return '';
@@ -474,15 +498,15 @@
                 cancelled: false
             });
         } else {
-            const newProgress = 100;
             await updateDoc(doc(db, "tasks", task.id), {
-                progress: newProgress,
+                progress: 100,
                 completed: true,
                 cancelled: false
             });
         }
     }
     
+    // Tab functions
     async function addNewTab(name) {
         await addDoc(tabsCol, { name, createdAt: Timestamp.now() });
     }
@@ -573,6 +597,13 @@
         });
     }
     
+    function getProgressColor(percent) {
+        if (percent >= 80) return '#22c55e';
+        if (percent >= 50) return '#f59e0b';
+        if (percent >= 20) return '#f97316';
+        return '#ef4444';
+    }
+    
     function renderTasks() {
         if (!allTasks.length) {
             tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-smile-wink"></i><p>Belum ada tugas. Tekan tombol +</p></div>';
@@ -638,6 +669,7 @@
             bullet = '<i class="far fa-circle task-bullet-unchecked"></i>';
             titleClass = '';
         }
+        const color = getProgressColor(progressVal);
         return `
             <div class="task-card ${cardClass}" data-id="${task.id}">
                 <div class="task-left">
@@ -646,7 +678,10 @@
                         <div class="task-title ${titleClass}">${escapeHtml(task.title)}</div>
                         <div class="task-meta">
                             <span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span>
-                            <span class="task-progress-badge">${progressVal}%</span>
+                            <span class="task-progress-badge" style="background: ${color}20; color: ${color}; font-weight: bold;">${progressVal}%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: ${progressVal}%; background: ${color};"></div>
                         </div>
                     </div>
                 </div>
@@ -669,7 +704,6 @@
     
     function openTaskModal(task) {
         activeTaskId = task.id;
-        currentCancelled = task.cancelled || false;
         currentSubtasks = task.subtasks ? [...task.subtasks] : [];
         taskTitleInput.value = task.title || '';
         taskNotesInput.value = task.notes || '';
@@ -708,7 +742,7 @@
     
     function renderModalButtons(task) {
         modalButtonsContainer.innerHTML = '';
-        // Tombol Hapus (dengan konfirmasi)
+        // Hapus
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn-danger';
         deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
@@ -721,7 +755,6 @@
         modalButtonsContainer.appendChild(deleteBtn);
         
         if (task.cancelled) {
-            // Tombol Kembalikan (tanpa konfirmasi)
             const reactivateBtn = document.createElement('button');
             reactivateBtn.className = 'btn-success';
             reactivateBtn.innerHTML = '<i class="fas fa-undo-alt"></i> Kembalikan';
@@ -731,7 +764,6 @@
             };
             modalButtonsContainer.appendChild(reactivateBtn);
         } else {
-            // Tombol Batal (tanpa konfirmasi)
             const cancelBtn = document.createElement('button');
             cancelBtn.className = 'btn-warning';
             cancelBtn.innerHTML = '<i class="fas fa-ban"></i> Batal';
@@ -742,7 +774,6 @@
             modalButtonsContainer.appendChild(cancelBtn);
         }
         
-        // Tombol Simpan
         const saveBtn = document.createElement('button');
         saveBtn.className = 'btn-primary';
         saveBtn.innerHTML = '<i class="fas fa-save"></i>';
@@ -775,14 +806,15 @@
             currentSubtasks.forEach((sub, idx) => {
                 const div = document.createElement('div');
                 div.className = 'subtask-item';
+                const subColor = getProgressColor(sub.progress || 0);
                 div.innerHTML = `
                     <div class="subtask-header">
                         <span class="subtask-name">${escapeHtml(sub.text)}</span>
                         <i class="fas fa-trash-alt delete-subtask" data-idx="${idx}"></i>
                     </div>
                     <div class="subtask-range">
-                        <input type="range" class="subtask-progress" data-idx="${idx}" min="0" max="100" step="1" value="${sub.progress || 0}">
-                        <span class="subtask-percent">${sub.progress || 0}%</span>
+                        <input type="range" class="subtask-progress" data-idx="${idx}" min="0" max="100" step="1" value="${sub.progress || 0}" style="accent-color: ${subColor};">
+                        <span class="subtask-percent" style="color: ${subColor};">${sub.progress || 0}%</span>
                     </div>
                 `;
                 subtasksContainer.appendChild(div);
@@ -796,7 +828,11 @@
                     e.target.value = closest;
                     currentSubtasks[idx].progress = closest;
                     const percentSpan = e.target.parentElement.querySelector('.subtask-percent');
-                    if (percentSpan) percentSpan.innerText = `${closest}%`;
+                    if (percentSpan) {
+                        percentSpan.innerText = `${closest}%`;
+                        percentSpan.style.color = getProgressColor(closest);
+                    }
+                    e.target.style.accentColor = getProgressColor(closest);
                     updateMainProgressFromSubtasks();
                 });
             });
