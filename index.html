@@ -176,7 +176,6 @@
             justify-content: center;
             z-index: 10;
         }
-        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -218,21 +217,40 @@
         }
         .range-group input { flex: 1; }
         .subtask-item {
+            background: #f1f5f9;
+            border-radius: 60px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+        }
+        .subtask-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-            background: #f1f5f9;
-            padding: 8px 12px;
-            border-radius: 60px;
+            gap: 8px;
+            margin-bottom: 6px;
         }
-        .subtask-text {
+        .subtask-name {
             flex: 1;
             font-size: 0.85rem;
+            font-weight: 500;
         }
-        .sub-completed {
-            text-decoration: line-through;
-            opacity: 0.6;
+        .subtask-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .subtask-range input {
+            flex: 1;
+            margin: 0;
+            padding: 0;
+        }
+        .subtask-range span {
+            font-size: 0.7rem;
+            min-width: 35px;
+        }
+        .delete-subtask {
+            color: #dc2626;
+            cursor: pointer;
+            margin-left: 8px;
         }
         .modal-buttons {
             display: flex;
@@ -270,12 +288,6 @@
             font-size: 1.8rem;
             cursor: pointer;
         }
-        .btn-icon {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -307,14 +319,15 @@
         </div>
         <div id="progressInfo" style="display:none; background:#eef2ff; border-radius:20px; padding:10px; margin:10px 0;"></div>
         <h4><i class="fas fa-tasks"></i> Sub Tugas</h4>
-        <div id="subtasksContainer" class="empty-sub" style="margin-bottom:12px;"></div>
+        <div id="subtasksContainer" style="margin-bottom:12px;"></div>
         <div style="display:flex; gap:8px;">
             <input type="text" id="newSubtaskInput" placeholder="Nama sub tugas">
             <button id="addSubtaskBtn" class="btn-primary" style="padding:0 16px; flex:0;">+</button>
         </div>
         <div class="modal-buttons">
-            <button id="saveTaskBtn" class="btn-primary"><i class="fas fa-save"></i></button>
+            <!-- Hapus di kiri, Simpan di kanan -->
             <button id="deleteTaskBtn" class="btn-danger"><i class="fas fa-trash-alt"></i></button>
+            <button id="saveTaskBtn" class="btn-primary"><i class="fas fa-save"></i></button>
         </div>
     </div>
 </div>
@@ -386,7 +399,7 @@
     const deleteTabBtn = document.getElementById("deleteTabBtn");
     
     let activeTaskId = null;
-    let currentSubtasks = [];
+    let currentSubtasks = []; // array { id, text, progress }
     
     function escapeHtml(str) {
         if (!str) return '';
@@ -398,22 +411,32 @@
         });
     }
     
-    function computeProgressFromSubtasks(subtasks) {
+    // Hitung rata-rata progres sub tugas
+    function computeAvgProgressFromSubtasks(subtasks) {
         if (!subtasks || subtasks.length === 0) return null;
-        const completedCount = subtasks.filter(st => st.completed).length;
-        return Math.floor((completedCount / subtasks.length) * 100);
+        const total = subtasks.reduce((sum, sub) => sum + (sub.progress || 0), 0);
+        return Math.floor(total / subtasks.length);
+    }
+    
+    // Tentukan apakah tugas selesai (progress 100%)
+    function isTaskCompleted(progress, subtasks) {
+        if (subtasks && subtasks.length > 0) {
+            return subtasks.every(sub => sub.progress === 100);
+        }
+        return progress === 100;
     }
     
     async function toggleTaskCompletion(task) {
         const subtasks = task.subtasks || [];
         if (subtasks.length > 0) {
-            const allCompleted = subtasks.every(st => st.completed);
-            const newSubtasks = subtasks.map(st => ({ ...st, completed: !allCompleted }));
-            const newProgress = computeProgressFromSubtasks(newSubtasks);
-            const newCompleted = newSubtasks.every(st => st.completed);
+            const allCompleted = subtasks.every(st => st.progress === 100);
+            const newProgressValue = allCompleted ? 0 : 100;
+            const newSubtasks = subtasks.map(st => ({ ...st, progress: newProgressValue }));
+            const newAvgProgress = computeAvgProgressFromSubtasks(newSubtasks);
+            const newCompleted = isTaskCompleted(newAvgProgress, newSubtasks);
             await updateDoc(doc(db, "tasks", task.id), {
                 subtasks: newSubtasks,
-                progress: newProgress,
+                progress: newAvgProgress,
                 completed: newCompleted
             });
         } else {
@@ -512,7 +535,8 @@
         tasksUnsub = onSnapshot(q, (snapshot) => {
             allTasks = [];
             snapshot.forEach(docSnap => allTasks.push({ id: docSnap.id, ...docSnap.data() }));
-            allTasks.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+            // Urutkan descending: tugas terbaru di atas
+            allTasks.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
             renderTasks();
         });
     }
@@ -586,6 +610,15 @@
         `;
     }
     
+    function updateMainProgressFromSubtasks() {
+        if (currentSubtasks.length > 0) {
+            const avg = computeAvgProgressFromSubtasks(currentSubtasks);
+            progressSlider.value = avg;
+            progressPercent.innerText = `${avg}%`;
+            progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${avg}%`;
+        }
+    }
+    
     function openTaskModal(task) {
         activeTaskId = task.id;
         currentSubtasks = task.subtasks ? [...task.subtasks] : [];
@@ -596,11 +629,11 @@
         if (hasSubtasks) {
             progressGroup.style.display = 'none';
             progressInfo.style.display = 'block';
-            const autoProgress = computeProgressFromSubtasks(currentSubtasks);
-            progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${autoProgress}%`;
-            progressSlider.value = autoProgress;
-            progressPercent.innerText = `${autoProgress}%`;
+            const avgProgress = computeAvgProgressFromSubtasks(currentSubtasks);
+            progressSlider.value = avgProgress;
+            progressPercent.innerText = `${avgProgress}%`;
             progressSlider.disabled = true;
+            progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${avgProgress}%`;
         } else {
             progressGroup.style.display = 'block';
             progressInfo.style.display = 'none';
@@ -632,28 +665,33 @@
                 const div = document.createElement('div');
                 div.className = 'subtask-item';
                 div.innerHTML = `
-                    <input type="checkbox" class="subtask-check" data-idx="${idx}" ${sub.completed ? 'checked' : ''}>
-                    <span class="subtask-text ${sub.completed ? 'sub-completed' : ''}">${escapeHtml(sub.text)}</span>
-                    <i class="fas fa-times-circle subtask-del" data-idx="${idx}" style="cursor:pointer;"></i>
+                    <div class="subtask-header">
+                        <span class="subtask-name">${escapeHtml(sub.text)}</span>
+                        <i class="fas fa-trash-alt delete-subtask" data-idx="${idx}"></i>
+                    </div>
+                    <div class="subtask-range">
+                        <input type="range" class="subtask-progress" data-idx="${idx}" min="0" max="100" step="1" value="${sub.progress || 0}">
+                        <span class="subtask-percent">${sub.progress || 0}%</span>
+                    </div>
                 `;
                 subtasksContainer.appendChild(div);
             });
-            document.querySelectorAll('.subtask-check').forEach(ch => {
-                ch.addEventListener('change', (e) => {
+            document.querySelectorAll('.subtask-progress').forEach(slider => {
+                slider.addEventListener('input', (e) => {
                     const idx = parseInt(e.target.dataset.idx);
-                    if (currentSubtasks[idx]) {
-                        currentSubtasks[idx].completed = e.target.checked;
-                        renderSubtasksModal();
-                        const newProgress = computeProgressFromSubtasks(currentSubtasks);
-                        progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${newProgress}%`;
-                        progressSlider.value = newProgress;
-                        progressPercent.innerText = `${newProgress}%`;
-                    }
+                    const val = parseInt(e.target.value);
+                    const steps = [0,25,50,75,100];
+                    const closest = steps.reduce((a,b) => Math.abs(b-val) < Math.abs(a-val) ? b : a);
+                    e.target.value = closest;
+                    currentSubtasks[idx].progress = closest;
+                    const percentSpan = e.target.parentElement.querySelector('.subtask-percent');
+                    if (percentSpan) percentSpan.innerText = `${closest}%`;
+                    updateMainProgressFromSubtasks();
                 });
             });
-            document.querySelectorAll('.subtask-del').forEach(del => {
-                del.addEventListener('click', () => {
-                    const idx = parseInt(del.dataset.idx);
+            document.querySelectorAll('.delete-subtask').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.idx);
                     currentSubtasks.splice(idx, 1);
                     renderSubtasksModal();
                     if (currentSubtasks.length === 0) {
@@ -664,10 +702,7 @@
                         progressSlider.value = originalProgress;
                         progressPercent.innerText = `${originalProgress}%`;
                     } else {
-                        const newProgress = computeProgressFromSubtasks(currentSubtasks);
-                        progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${newProgress}%`;
-                        progressSlider.value = newProgress;
-                        progressPercent.innerText = `${newProgress}%`;
+                        updateMainProgressFromSubtasks();
                     }
                 });
             });
@@ -675,14 +710,13 @@
         addSubtaskBtn.onclick = () => {
             const text = newSubtaskInput.value.trim();
             if (!text) return alert("Isi nama sub-tugas");
-            currentSubtasks.push({ id: Date.now().toString(), text, completed: false });
+            currentSubtasks.push({ id: Date.now().toString(), text, progress: 0 });
             newSubtaskInput.value = '';
             renderSubtasksModal();
             progressGroup.style.display = 'none';
             progressInfo.style.display = 'block';
-            const autoProgress = computeProgressFromSubtasks(currentSubtasks);
-            progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${autoProgress}%`;
             progressSlider.disabled = true;
+            updateMainProgressFromSubtasks();
         };
     }
     
@@ -691,8 +725,8 @@
         if (!title) return alert("Judul tugas wajib diisi!");
         let finalProgress, finalCompleted;
         if (currentSubtasks.length > 0) {
-            finalProgress = computeProgressFromSubtasks(currentSubtasks);
-            finalCompleted = currentSubtasks.every(st => st.completed);
+            finalProgress = computeAvgProgressFromSubtasks(currentSubtasks);
+            finalCompleted = currentSubtasks.every(st => st.progress === 100);
         } else {
             finalProgress = parseInt(progressSlider.value);
             finalCompleted = (finalProgress === 100);
@@ -712,7 +746,7 @@
     
     async function createNewTask(tabId) {
         const newTask = {
-            tabId, title: "Tugas baru", notes: "", dueDate: null,
+            tabId, title: "", notes: "", dueDate: null,
             progress: 0, completed: false, subtasks: [], createdAt: Timestamp.now()
         };
         const docRef = await addDoc(tasksCol, newTask);
@@ -723,7 +757,7 @@
         tabIdField.value = id || '';
         tabNameInput.value = name || '';
         deleteTabBtn.style.display = id ? 'flex' : 'none';
-        saveTabBtn.innerHTML = id ? '<i class="fas fa-save"></i>' : '<i class="fas fa-save"></i>';
+        saveTabBtn.innerHTML = '<i class="fas fa-save"></i>';
         tabModal.style.display = "flex";
     }
     function closeAllModals() {
