@@ -453,16 +453,13 @@
     
     async function toggleTaskCompletion(task) {
         if (task.cancelled) {
-            // Tugas batal -> aktifkan kembali
             await updateTaskStatus(task.id, { cancelled: false, completed: false });
             return;
         }
         if (task.completed) {
-            // Tugas selesai -> jadi aktif
             await updateTaskStatus(task.id, { completed: false, progress: 0 });
             return;
         }
-        // Tugas aktif -> selesai atau batal? Bullet untuk selesai
         const subtasks = task.subtasks || [];
         if (subtasks.length > 0) {
             const allCompleted = subtasks.every(st => st.progress === 100);
@@ -486,7 +483,6 @@
         }
     }
     
-    // Tab functions
     async function addNewTab(name) {
         await addDoc(tabsCol, { name, createdAt: Timestamp.now() });
     }
@@ -695,7 +691,6 @@
             progressPercent.innerText = `${task.progress || 0}%`;
         }
         renderSubtasksModal();
-        // Render tombol dinamis
         renderModalButtons(task);
         taskModal.style.display = 'flex';
         
@@ -713,7 +708,7 @@
     
     function renderModalButtons(task) {
         modalButtonsContainer.innerHTML = '';
-        // Tombol Hapus (selalu ada)
+        // Tombol Hapus (dengan konfirmasi)
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn-danger';
         deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
@@ -726,7 +721,7 @@
         modalButtonsContainer.appendChild(deleteBtn);
         
         if (task.cancelled) {
-            // Tombol Kembalikan (aktifkan)
+            // Tombol Kembalikan (tanpa konfirmasi)
             const reactivateBtn = document.createElement('button');
             reactivateBtn.className = 'btn-success';
             reactivateBtn.innerHTML = '<i class="fas fa-undo-alt"></i> Kembalikan';
@@ -736,15 +731,13 @@
             };
             modalButtonsContainer.appendChild(reactivateBtn);
         } else {
-            // Tombol Batal
+            // Tombol Batal (tanpa konfirmasi)
             const cancelBtn = document.createElement('button');
             cancelBtn.className = 'btn-warning';
             cancelBtn.innerHTML = '<i class="fas fa-ban"></i> Batal';
             cancelBtn.onclick = async () => {
-                if (confirm("Batalkan tugas ini? Tugas akan masuk ke daftar Batal dan bisa dikembalikan nanti.")) {
-                    await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: true, completed: false });
-                    taskModal.style.display = "none";
-                }
+                await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: true, completed: false });
+                taskModal.style.display = "none";
             };
             modalButtonsContainer.appendChild(cancelBtn);
         }
@@ -767,7 +760,7 @@
             await updateDoc(doc(db, "tasks", activeTaskId), {
                 title, notes: taskNotesInput.value, dueDate: taskDueDate.value || null,
                 progress: finalProgress, completed: finalCompleted, subtasks: currentSubtasks,
-                cancelled: false // jika disimpan, hapus status batal
+                cancelled: false
             });
             taskModal.style.display = "none";
         };
