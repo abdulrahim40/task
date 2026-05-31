@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <title>Task Manager | Clean & Colorful</title>
+    <title>TaskFlow | Task Manager PWA</title>
+    <!-- PWA Meta -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TaskFlow">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -359,7 +366,7 @@
 <body>
 <div class="app-container">
     <div class="header">
-        <h1>📋 TaskAbr</h1>
+        <h1>📋 TaskFlow</h1>
         <button class="add-tab-btn" id="addTabBtn"><i class="fas fa-plus"></i></button>
     </div>
     <div class="tabs-scroll" id="tabsContainer"></div>
@@ -438,7 +445,7 @@
     let tabsUnsub = null;
     let tasksUnsub = null;
     let allTasks = [];
-    let allTabs = []; // untuk dropdown
+    let allTabs = [];
     
     // DOM
     const tabsContainer = document.getElementById("tabsContainer");
@@ -470,7 +477,7 @@
     
     let activeTaskId = null;
     let currentSubtasks = [];
-    let originalTabId = null; // untuk menyimpan tabId asli saat modal dibuka
+    let originalTabId = null;
     
     function escapeHtml(str) {
         if (!str) return '';
@@ -538,12 +545,10 @@
         await batch.commit();
     }
     
-    // Memuat daftar tab untuk dropdown pindah tab
     async function loadTabsForDropdown(selectedTabId) {
         const snapshot = await getDocs(tabsCol);
         allTabs = [];
         snapshot.forEach(docSnap => allTabs.push({ id: docSnap.id, name: docSnap.data().name }));
-        // Urutkan berdasarkan nama
         allTabs.sort((a, b) => a.name.localeCompare(b.name));
         moveTabSelect.innerHTML = '';
         allTabs.forEach(tab => {
@@ -747,7 +752,6 @@
         taskNotesInput.value = task.notes || '';
         taskDueDate.value = task.dueDate ? task.dueDate.slice(0, 16) : '';
         
-        // Muat dropdown pindah tab dengan tab yang sedang dipilih
         await loadTabsForDropdown(task.tabId);
         
         const hasSubtasks = currentSubtasks.length > 0;
@@ -784,7 +788,6 @@
     
     function renderModalButtons(task) {
         modalButtonsContainer.innerHTML = '';
-        // Hapus
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn-danger';
         deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
@@ -837,7 +840,6 @@
                 progress: finalProgress, completed: finalCompleted, subtasks: currentSubtasks,
                 cancelled: false
             };
-            // Jika pindah tab
             if (newTabId && newTabId !== originalTabId) {
                 updateData.tabId = newTabId;
             }
@@ -964,6 +966,17 @@
     window.onclick = (e) => { if (e.target === taskModal || e.target === tabModal) closeAllModals(); };
     
     loadTabs();
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                console.log('Service Worker registered', reg);
+            }).catch(err => {
+                console.log('Service Worker registration failed', err);
+            });
+        });
+    }
 </script>
 </body>
 </html>
