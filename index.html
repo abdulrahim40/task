@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>Task Manager | Simple & Clean</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fb;
+            padding: 20px 16px 32px;
+            color: #1e293b;
+        }
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .add-tab-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 8px 14px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #3b82f6;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tabs-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            scrollbar-width: thin;
+        }
+        .tab-item {
+            background: white;
+            padding: 8px 18px;
+            border-radius: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            cursor: pointer;
+            border: 1px solid #eef2ff;
+            flex-shrink: 0;
+        }
+        .tab-item.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .tab-actions i {
+            font-size: 0.7rem;
+            margin-left: 6px;
+            opacity: 0.7;
+            cursor: pointer;
+        }
+        .task-section {
+            background: white;
+            border-radius: 28px;
+            padding: 20px 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #334155;
+        }
+        .task-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 14px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            border: 1px solid #f0f2f5;
+            cursor: pointer;
+        }
+        .task-left {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex: 1;
+        }
+        .task-bullet {
+            cursor: pointer;
+            font-size: 1.4rem;
+            width: 28px;
+        }
+        .task-bullet-unchecked { color: #94a3b8; }
+        .task-bullet-checked { color: #22c55e; }
+        .task-info { flex: 1; }
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+        .completed-text {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+        .task-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.7rem;
+            color: #5b6e8c;
+        }
+        .task-progress-badge {
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .task-actions {
+            display: flex;
+            gap: 12px;
+            color: #94a3b8;
+        }
+        .task-actions i {
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .empty-placeholder {
+            text-align: center;
+            padding: 24px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+        .add-task-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            font-size: 1.6rem;
+            box-shadow: 0 6px 14px rgba(59,130,246,0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 24px 20px;
+        }
+        .modal-content h2 {
+            margin-bottom: 18px;
+            font-size: 1.5rem;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 16px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .range-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .range-group input { flex: 1; }
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            background: #f1f5f9;
+            padding: 8px 12px;
+            border-radius: 60px;
+        }
+        .subtask-text {
+            flex: 1;
+            font-size: 0.85rem;
+        }
+        .sub-completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 0;
+            border-radius: 40px;
+            flex: 1;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-danger {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 40px;
+            flex: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .close-modal, .close-tab-modal {
+            float: right;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+        .btn-icon {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <h1>📋 TaskFlow</h1>
+        <button class="add-tab-btn" id="addTabBtn"><i class="fas fa-plus"></i></button>
+    </div>
+    <div class="tabs-scroll" id="tabsContainer"></div>
+    <div id="tasksContainer"></div>
+    <button class="add-task-btn" id="addTaskBtn" style="display: none;"><i class="fas fa-plus"></i></button>
+</div>
+
+<!-- Modal Task -->
+<div id="taskModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 id="modalTitle">Detail Tugas</h2>
+        <input type="hidden" id="taskIdField">
+        <input type="text" id="taskTitle" placeholder="Judul tugas">
+        <textarea id="taskNotes" rows="2" placeholder="Catatan..."></textarea>
+        <input type="datetime-local" id="taskDueDate">
+        <div id="progressGroup">
+            <label>Progres tugas:</label>
+            <div class="range-group">
+                <input type="range" id="progressSlider" min="0" max="100" step="1">
+                <span id="progressPercent">0%</span>
+            </div>
+        </div>
+        <div id="progressInfo" style="display:none; background:#eef2ff; border-radius:20px; padding:10px; margin:10px 0;"></div>
+        <h4><i class="fas fa-tasks"></i> Sub Tugas</h4>
+        <div id="subtasksContainer" class="empty-sub" style="margin-bottom:12px;"></div>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="newSubtaskInput" placeholder="Nama sub tugas">
+            <button id="addSubtaskBtn" class="btn-primary" style="padding:0 16px; flex:0;">+</button>
+        </div>
+        <div class="modal-buttons">
+            <button id="saveTaskBtn" class="btn-primary"><i class="fas fa-save"></i></button>
+            <button id="deleteTaskBtn" class="btn-danger"><i class="fas fa-trash-alt"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tab -->
+<div id="tabModal" class="modal">
+    <div class="modal-content">
+        <span class="close-tab-modal">&times;</span>
+        <h2>Atur Tab</h2>
+        <input type="hidden" id="tabIdField">
+        <input type="text" id="tabName" placeholder="Nama tab">
+        <div class="modal-buttons">
+            <button id="saveTabBtn" class="btn-primary"><i class="fas fa-save"></i></button>
+            <button id="deleteTabBtn" class="btn-danger"><i class="fas fa-trash-alt"></i></button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, query, where, onSnapshot, Timestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyDtryifWRdYyU8oMbB-l5bMhgnms0Y4K2w",
+        authDomain: "task-bb3db.firebaseapp.com",
+        projectId: "task-bb3db",
+        storageBucket: "task-bb3db.firebasestorage.app",
+        messagingSenderId: "227588110683",
+        appId: "1:227588110683:web:be696631b12d00ab56027e"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    const tabsCol = collection(db, "tabs");
+    const tasksCol = collection(db, "tasks");
+    
+    let currentTabId = null;
+    let tabsUnsub = null;
+    let tasksUnsub = null;
+    let allTasks = [];
+    
+    // DOM
+    const tabsContainer = document.getElementById("tabsContainer");
+    const addTabBtn = document.getElementById("addTabBtn");
+    const tasksContainer = document.getElementById("tasksContainer");
+    const addTaskBtn = document.getElementById("addTaskBtn");
+    const taskModal = document.getElementById("taskModal");
+    const tabModal = document.getElementById("tabModal");
+    const closeModal = document.querySelector(".close-modal");
+    const closeTabModal = document.querySelector(".close-tab-modal");
+    const taskTitleInput = document.getElementById("taskTitle");
+    const taskNotesInput = document.getElementById("taskNotes");
+    const taskDueDate = document.getElementById("taskDueDate");
+    const progressSlider = document.getElementById("progressSlider");
+    const progressPercent = document.getElementById("progressPercent");
+    const subtasksContainer = document.getElementById("subtasksContainer");
+    const newSubtaskInput = document.getElementById("newSubtaskInput");
+    const addSubtaskBtn = document.getElementById("addSubtaskBtn");
+    const saveTaskBtn = document.getElementById("saveTaskBtn");
+    const deleteTaskBtn = document.getElementById("deleteTaskBtn");
+    const taskIdField = document.getElementById("taskIdField");
+    const progressGroup = document.getElementById("progressGroup");
+    const progressInfo = document.getElementById("progressInfo");
+    const modalTitle = document.getElementById("modalTitle");
+    const tabNameInput = document.getElementById("tabName");
+    const tabIdField = document.getElementById("tabIdField");
+    const saveTabBtn = document.getElementById("saveTabBtn");
+    const deleteTabBtn = document.getElementById("deleteTabBtn");
+    
+    let activeTaskId = null;
+    let currentSubtasks = [];
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function computeProgressFromSubtasks(subtasks) {
+        if (!subtasks || subtasks.length === 0) return null;
+        const completedCount = subtasks.filter(st => st.completed).length;
+        return Math.floor((completedCount / subtasks.length) * 100);
+    }
+    
+    async function toggleTaskCompletion(task) {
+        const subtasks = task.subtasks || [];
+        if (subtasks.length > 0) {
+            const allCompleted = subtasks.every(st => st.completed);
+            const newSubtasks = subtasks.map(st => ({ ...st, completed: !allCompleted }));
+            const newProgress = computeProgressFromSubtasks(newSubtasks);
+            const newCompleted = newSubtasks.every(st => st.completed);
+            await updateDoc(doc(db, "tasks", task.id), {
+                subtasks: newSubtasks,
+                progress: newProgress,
+                completed: newCompleted
+            });
+        } else {
+            const isCompleted = task.completed;
+            const newProgress = isCompleted ? 0 : 100;
+            await updateDoc(doc(db, "tasks", task.id), {
+                progress: newProgress,
+                completed: !isCompleted
+            });
+        }
+    }
+    
+    // Tab functions
+    async function addNewTab(name) {
+        await addDoc(tabsCol, { name, createdAt: Timestamp.now() });
+    }
+    async function updateTab(tabId, newName) {
+        await updateDoc(doc(db, "tabs", tabId), { name: newName });
+    }
+    async function deleteTabById(tabId) {
+        const batch = writeBatch(db);
+        const q = query(tasksCol, where("tabId", "==", tabId));
+        const snap = await getDocs(q);
+        snap.forEach(taskDoc => batch.delete(doc(db, "tasks", taskDoc.id)));
+        batch.delete(doc(db, "tabs", tabId));
+        await batch.commit();
+    }
+    
+    function loadTabs() {
+        if (tabsUnsub) tabsUnsub();
+        tabsUnsub = onSnapshot(tabsCol, (snapshot) => {
+            let tabs = [];
+            snapshot.forEach(docSnap => tabs.push({ id: docSnap.id, ...docSnap.data() }));
+            tabs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+            renderTabs(tabs);
+            if (tabs.length > 0 && !currentTabId) {
+                currentTabId = tabs[0].id;
+                loadTasksForTab(currentTabId);
+            } else if (tabs.length === 0) {
+                currentTabId = null;
+                if (tasksUnsub) tasksUnsub();
+                tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-folder-open"></i><p>Buat tab terlebih dahulu</p></div>';
+                addTaskBtn.style.display = 'none';
+            } else if (currentTabId && !tabs.find(t => t.id === currentTabId)) {
+                currentTabId = tabs[0]?.id || null;
+                if (currentTabId) loadTasksForTab(currentTabId);
+            }
+        });
+    }
+    
+    function renderTabs(tabs) {
+        tabsContainer.innerHTML = '';
+        tabs.forEach(tab => {
+            const tabDiv = document.createElement('div');
+            tabDiv.className = `tab-item ${currentTabId === tab.id ? 'active' : ''}`;
+            tabDiv.innerHTML = `
+                <span class="tab-name">${escapeHtml(tab.name)}</span>
+                <div class="tab-actions">
+                    <i class="fas fa-edit edit-tab" data-id="${tab.id}" data-name="${escapeHtml(tab.name)}"></i>
+                    <i class="fas fa-trash-alt delete-tab" data-id="${tab.id}"></i>
+                </div>
+            `;
+            tabDiv.addEventListener('click', (e) => {
+                if (e.target.classList.contains('edit-tab') || e.target.classList.contains('delete-tab')) return;
+                currentTabId = tab.id;
+                loadTasksForTab(currentTabId);
+                renderTabs(tabs);
+            });
+            tabsContainer.appendChild(tabDiv);
+        });
+        document.querySelectorAll('.edit-tab').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openTabModal(btn.dataset.id, btn.dataset.name);
+            });
+        });
+        document.querySelectorAll('.delete-tab').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (confirm("Hapus tab beserta semua tugas?")) {
+                    await deleteTabById(btn.dataset.id);
+                    if (currentTabId === btn.dataset.id) {
+                        currentTabId = null;
+                        tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-folder-open"></i><p>Buat tab terlebih dahulu</p></div>';
+                        addTaskBtn.style.display = 'none';
+                    }
+                }
+            });
+        });
+    }
+    
+    function loadTasksForTab(tabId) {
+        if (tasksUnsub) tasksUnsub();
+        addTaskBtn.style.display = 'flex';
+        const q = query(tasksCol, where("tabId", "==", tabId));
+        tasksUnsub = onSnapshot(q, (snapshot) => {
+            allTasks = [];
+            snapshot.forEach(docSnap => allTasks.push({ id: docSnap.id, ...docSnap.data() }));
+            allTasks.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+            renderTasks();
+        });
+    }
+    
+    function renderTasks() {
+        if (!allTasks.length) {
+            tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-smile-wink"></i><p>Belum ada tugas. Tekan tombol +</p></div>';
+            return;
+        }
+        const incomplete = allTasks.filter(t => !t.completed);
+        const completed = allTasks.filter(t => t.completed);
+        let html = `<div class="task-section"><div class="section-title"><i class="far fa-circle"></i> Aktif</div>`;
+        if (incomplete.length === 0) html += `<div class="empty-placeholder">✨ Tidak ada tugas aktif</div>`;
+        incomplete.forEach(t => { html += renderTaskCard(t); });
+        html += `</div><div class="task-section"><div class="section-title"><i class="fas fa-check-circle"></i> Selesai</div>`;
+        if (completed.length === 0) html += `<div class="empty-placeholder">✅ Tugas selesai</div>`;
+        completed.forEach(t => { html += renderTaskCard(t); });
+        html += `</div>`;
+        tasksContainer.innerHTML = html;
+        
+        document.querySelectorAll('.task-bullet').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const task = allTasks.find(t => t.id === el.dataset.id);
+                if (task) toggleTaskCompletion(task);
+            });
+        });
+        document.querySelectorAll('.task-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.task-bullet') || e.target.closest('.task-edit-btn') || e.target.closest('.task-delete-btn')) return;
+                const task = allTasks.find(t => t.id === card.dataset.id);
+                if (task) openTaskModal(task);
+            });
+        });
+        document.querySelectorAll('.task-edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const task = allTasks.find(t => t.id === btn.dataset.id);
+                if (task) openTaskModal(task);
+            });
+        });
+        document.querySelectorAll('.task-delete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (confirm("Hapus tugas?")) await deleteDoc(doc(db, "tasks", btn.dataset.id));
+            });
+        });
+    }
+    
+    function renderTaskCard(task) {
+        const progressVal = task.progress || 0;
+        const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleString('id-ID') : 'Tidak ada deadline';
+        const bullet = task.completed ? '<i class="fas fa-check-circle task-bullet-checked"></i>' : '<i class="far fa-circle task-bullet-unchecked"></i>';
+        return `
+            <div class="task-card" data-id="${task.id}">
+                <div class="task-left">
+                    <div class="task-bullet" data-id="${task.id}">${bullet}</div>
+                    <div class="task-info">
+                        <div class="task-title ${task.completed ? 'completed-text' : ''}">${escapeHtml(task.title)}</div>
+                        <div class="task-meta">
+                            <span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span>
+                            <span class="task-progress-badge">${progressVal}%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <i class="fas fa-edit task-edit-btn" data-id="${task.id}"></i>
+                    <i class="fas fa-trash-alt task-delete-btn" data-id="${task.id}"></i>
+                </div>
+            </div>
+        `;
+    }
+    
+    function openTaskModal(task) {
+        activeTaskId = task.id;
+        currentSubtasks = task.subtasks ? [...task.subtasks] : [];
+        taskTitleInput.value = task.title || '';
+        taskNotesInput.value = task.notes || '';
+        taskDueDate.value = task.dueDate ? task.dueDate.slice(0, 16) : '';
+        const hasSubtasks = currentSubtasks.length > 0;
+        if (hasSubtasks) {
+            progressGroup.style.display = 'none';
+            progressInfo.style.display = 'block';
+            const autoProgress = computeProgressFromSubtasks(currentSubtasks);
+            progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${autoProgress}%`;
+            progressSlider.value = autoProgress;
+            progressPercent.innerText = `${autoProgress}%`;
+            progressSlider.disabled = true;
+        } else {
+            progressGroup.style.display = 'block';
+            progressInfo.style.display = 'none';
+            progressSlider.disabled = false;
+            progressSlider.value = task.progress || 0;
+            progressPercent.innerText = `${task.progress || 0}%`;
+        }
+        renderSubtasksModal();
+        taskModal.style.display = 'flex';
+        
+        const sliderHandler = () => {
+            if (currentSubtasks.length > 0) return;
+            let val = parseInt(progressSlider.value);
+            const steps = [0,25,50,75,100];
+            const closest = steps.reduce((a,b) => Math.abs(b-val) < Math.abs(a-val) ? b : a);
+            progressSlider.value = closest;
+            progressPercent.innerText = `${closest}%`;
+        };
+        progressSlider.oninput = sliderHandler;
+        sliderHandler();
+    }
+    
+    function renderSubtasksModal() {
+        subtasksContainer.innerHTML = '';
+        if (!currentSubtasks.length) {
+            subtasksContainer.innerHTML = '<div class="empty-placeholder">Belum ada sub-tugas. Tambahkan di bawah.</div>';
+        } else {
+            currentSubtasks.forEach((sub, idx) => {
+                const div = document.createElement('div');
+                div.className = 'subtask-item';
+                div.innerHTML = `
+                    <input type="checkbox" class="subtask-check" data-idx="${idx}" ${sub.completed ? 'checked' : ''}>
+                    <span class="subtask-text ${sub.completed ? 'sub-completed' : ''}">${escapeHtml(sub.text)}</span>
+                    <i class="fas fa-times-circle subtask-del" data-idx="${idx}" style="cursor:pointer;"></i>
+                `;
+                subtasksContainer.appendChild(div);
+            });
+            document.querySelectorAll('.subtask-check').forEach(ch => {
+                ch.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.idx);
+                    if (currentSubtasks[idx]) {
+                        currentSubtasks[idx].completed = e.target.checked;
+                        renderSubtasksModal();
+                        const newProgress = computeProgressFromSubtasks(currentSubtasks);
+                        progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${newProgress}%`;
+                        progressSlider.value = newProgress;
+                        progressPercent.innerText = `${newProgress}%`;
+                    }
+                });
+            });
+            document.querySelectorAll('.subtask-del').forEach(del => {
+                del.addEventListener('click', () => {
+                    const idx = parseInt(del.dataset.idx);
+                    currentSubtasks.splice(idx, 1);
+                    renderSubtasksModal();
+                    if (currentSubtasks.length === 0) {
+                        progressGroup.style.display = 'block';
+                        progressInfo.style.display = 'none';
+                        progressSlider.disabled = false;
+                        const originalProgress = allTasks.find(t => t.id === activeTaskId)?.progress || 0;
+                        progressSlider.value = originalProgress;
+                        progressPercent.innerText = `${originalProgress}%`;
+                    } else {
+                        const newProgress = computeProgressFromSubtasks(currentSubtasks);
+                        progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${newProgress}%`;
+                        progressSlider.value = newProgress;
+                        progressPercent.innerText = `${newProgress}%`;
+                    }
+                });
+            });
+        }
+        addSubtaskBtn.onclick = () => {
+            const text = newSubtaskInput.value.trim();
+            if (!text) return alert("Isi nama sub-tugas");
+            currentSubtasks.push({ id: Date.now().toString(), text, completed: false });
+            newSubtaskInput.value = '';
+            renderSubtasksModal();
+            progressGroup.style.display = 'none';
+            progressInfo.style.display = 'block';
+            const autoProgress = computeProgressFromSubtasks(currentSubtasks);
+            progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${autoProgress}%`;
+            progressSlider.disabled = true;
+        };
+    }
+    
+    saveTaskBtn.onclick = async () => {
+        const title = taskTitleInput.value.trim();
+        if (!title) return alert("Judul tugas wajib diisi!");
+        let finalProgress, finalCompleted;
+        if (currentSubtasks.length > 0) {
+            finalProgress = computeProgressFromSubtasks(currentSubtasks);
+            finalCompleted = currentSubtasks.every(st => st.completed);
+        } else {
+            finalProgress = parseInt(progressSlider.value);
+            finalCompleted = (finalProgress === 100);
+        }
+        await updateDoc(doc(db, "tasks", activeTaskId), {
+            title, notes: taskNotesInput.value, dueDate: taskDueDate.value || null,
+            progress: finalProgress, completed: finalCompleted, subtasks: currentSubtasks
+        });
+        taskModal.style.display = "none";
+    };
+    deleteTaskBtn.onclick = async () => {
+        if (confirm("Hapus tugas permanen?")) {
+            await deleteDoc(doc(db, "tasks", activeTaskId));
+            taskModal.style.display = "none";
+        }
+    };
+    
+    async function createNewTask(tabId) {
+        const newTask = {
+            tabId, title: "Tugas baru", notes: "", dueDate: null,
+            progress: 0, completed: false, subtasks: [], createdAt: Timestamp.now()
+        };
+        const docRef = await addDoc(tasksCol, newTask);
+        openTaskModal({ id: docRef.id, ...newTask });
+    }
+    
+    function openTabModal(id = null, name = '') {
+        tabIdField.value = id || '';
+        tabNameInput.value = name || '';
+        deleteTabBtn.style.display = id ? 'flex' : 'none';
+        saveTabBtn.innerHTML = id ? '<i class="fas fa-save"></i>' : '<i class="fas fa-save"></i>';
+        tabModal.style.display = "flex";
+    }
+    function closeAllModals() {
+        taskModal.style.display = "none";
+        tabModal.style.display = "none";
+    }
+    
+    addTabBtn.addEventListener('click', () => openTabModal());
+    saveTabBtn.addEventListener('click', async () => {
+        const name = tabNameInput.value.trim();
+        if (!name) return alert("Nama tab tidak boleh kosong");
+        if (tabIdField.value) await updateTab(tabIdField.value, name);
+        else await addNewTab(name);
+        tabModal.style.display = "none";
+    });
+    deleteTabBtn.addEventListener('click', async () => {
+        if (tabIdField.value && confirm("Hapus tab dan semua tugas?")) {
+            await deleteTabById(tabIdField.value);
+            tabModal.style.display = "none";
+            if (currentTabId === tabIdField.value) {
+                currentTabId = null;
+                loadTabs();
+            }
+        }
+    });
+    addTaskBtn.addEventListener('click', () => {
+        if (!currentTabId) alert("Pilih atau buat tab terlebih dahulu");
+        else createNewTask(currentTabId);
+    });
+    closeModal.addEventListener('click', closeAllModals);
+    closeTabModal.addEventListener('click', closeAllModals);
+    window.onclick = (e) => { if (e.target === taskModal || e.target === tabModal) closeAllModals(); };
+    
+    loadTabs();
+</script>
+</body>
+</html>
