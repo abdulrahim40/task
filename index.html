@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* (SALIN semua CSS dari kode sebelumnya di sini - sama persis) */
         * {
             margin: 0;
             padding: 0;
@@ -157,6 +156,16 @@
             font-size: 0.7rem;
             color: #5b6e8c;
             margin-bottom: 6px;
+        }
+        .completed-date {
+            background: #e6f7e6;
+            padding: 2px 8px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            color: #15803d;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         .progress-bar-container {
             width: 100%;
@@ -361,6 +370,14 @@
             margin-bottom: 4px;
             display: block;
         }
+        .info-completed {
+            background: #f0fdf4;
+            border-radius: 20px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.8rem;
+            color: #166534;
+        }
     </style>
 </head>
 <body>
@@ -395,6 +412,7 @@
             </div>
         </div>
         <div id="progressInfo" style="display:none; background:#eef2ff; border-radius:20px; padding:10px; margin:10px 0;"></div>
+        <div id="completedInfo" style="display:none;" class="info-completed"></div>
         <h4><i class="fas fa-tasks"></i> Sub Tugas</h4>
         <div id="subtasksContainer" style="margin-bottom:12px;"></div>
         <div style="display:flex; gap:8px;">
@@ -420,12 +438,6 @@
 </div>
 
 <script type="module">
-    // SCRIPT SAMA PERSIS DENGAN YANG SUDAH BERFUNGSI (pindah tab, progres warna, dll)
-    // Karena panjang, saya sertakan di bawah. Pastikan Anda menyalin script dari versi terakhir yang sudah termasuk fitur pindah tab, warna, batal, dll.
-    // Untuk menghemat space, saya tulis ulang intinya, tetapi Anda bisa gunakan script dari kode sebelumnya yang sudah lengkap.
-    // Di sini saya akan tempelkan script yang sudah valid dari jawaban sebelumnya (tanpa pengurangan).
-    // (Jika perlu, salin script dari kode terakhir yang sudah berfungsi penuh)
-    
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, query, where, onSnapshot, Timestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     
@@ -469,6 +481,7 @@
     const taskIdField = document.getElementById("taskIdField");
     const progressGroup = document.getElementById("progressGroup");
     const progressInfo = document.getElementById("progressInfo");
+    const completedInfo = document.getElementById("completedInfo");
     const modalTitle = document.getElementById("modalTitle");
     const tabNameInput = document.getElementById("tabName");
     const tabIdField = document.getElementById("tabIdField");
@@ -491,6 +504,12 @@
         });
     }
     
+    function formatDate(timestamp) {
+        if (!timestamp) return null;
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return date.toLocaleString('id-ID', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+    
     function computeAvgProgressFromSubtasks(subtasks) {
         if (!subtasks || subtasks.length === 0) return null;
         const total = subtasks.reduce((sum, sub) => sum + (sub.progress || 0), 0);
@@ -503,11 +522,11 @@
     
     async function toggleTaskCompletion(task) {
         if (task.cancelled) {
-            await updateTaskStatus(task.id, { cancelled: false, completed: false });
+            await updateTaskStatus(task.id, { cancelled: false, completed: false, completedAt: null });
             return;
         }
         if (task.completed) {
-            await updateTaskStatus(task.id, { completed: false, progress: 0 });
+            await updateTaskStatus(task.id, { completed: false, progress: 0, completedAt: null });
             return;
         }
         const subtasks = task.subtasks || [];
@@ -517,14 +536,16 @@
             const newSubtasks = subtasks.map(st => ({ ...st, progress: newProgressValue }));
             const newAvgProgress = computeAvgProgressFromSubtasks(newSubtasks);
             const newCompleted = newSubtasks.every(st => st.progress === 100);
+            const completedAtValue = newCompleted ? Timestamp.now() : null;
             await updateDoc(doc(db, "tasks", task.id), {
                 subtasks: newSubtasks,
                 progress: newAvgProgress,
                 completed: newCompleted,
-                cancelled: false
+                cancelled: false,
+                completedAt: completedAtValue
             });
         } else {
-            await updateDoc(doc(db, "tasks", task.id), { progress: 100, completed: true, cancelled: false });
+            await updateDoc(doc(db, "tasks", task.id), { progress: 100, completed: true, cancelled: false, completedAt: Timestamp.now() });
         }
     }
     
@@ -650,7 +671,14 @@
         else if (task.completed) { bullet = '<i class="fas fa-check-circle task-bullet-checked"></i>'; titleClass = 'completed-text'; }
         else { bullet = '<i class="far fa-circle task-bullet-unchecked"></i>'; titleClass = ''; }
         const color = getProgressColor(progressVal);
-        return `<div class="task-card ${cardClass}" data-id="${task.id}"><div class="task-left"><div class="task-bullet" data-id="${task.id}">${bullet}</div><div class="task-info"><div class="task-title ${titleClass}">${escapeHtml(task.title)}</div><div class="task-meta"><span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span><span class="task-progress-badge" style="background: ${color}20; color: ${color}; font-weight: bold;">${progressVal}%</span></div><div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${progressVal}%; background: ${color};"></div></div></div></div><div class="task-actions"><i class="fas fa-edit task-edit-btn" data-id="${task.id}"></i><i class="fas fa-trash-alt task-delete-btn" data-id="${task.id}"></i></div></div>`;
+        
+        let completedHtml = '';
+        if (task.completed && task.completedAt) {
+            const formatted = formatDate(task.completedAt);
+            completedHtml = `<div class="completed-date"><i class="fas fa-calendar-check"></i> Selesai: ${formatted}</div>`;
+        }
+        
+        return `<div class="task-card ${cardClass}" data-id="${task.id}"><div class="task-left"><div class="task-bullet" data-id="${task.id}">${bullet}</div><div class="task-info"><div class="task-title ${titleClass}">${escapeHtml(task.title)}</div><div class="task-meta"><span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span><span class="task-progress-badge" style="background: ${color}20; color: ${color}; font-weight: bold;">${progressVal}%</span></div>${completedHtml}<div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${progressVal}%; background: ${color};"></div></div></div></div><div class="task-actions"><i class="fas fa-edit task-edit-btn" data-id="${task.id}"></i><i class="fas fa-trash-alt task-delete-btn" data-id="${task.id}"></i></div></div>`;
     }
     
     function updateMainProgressFromSubtasks() {
@@ -686,6 +714,15 @@
             progressSlider.value = task.progress || 0;
             progressPercent.innerText = `${task.progress || 0}%`;
         }
+        
+        // Tampilkan info tanggal selesai jika ada
+        if (task.completed && task.completedAt) {
+            completedInfo.style.display = 'block';
+            completedInfo.innerHTML = `<i class="fas fa-check-circle"></i> Tugas ini selesai pada: ${formatDate(task.completedAt)}`;
+        } else {
+            completedInfo.style.display = 'none';
+        }
+        
         renderSubtasksModal();
         renderModalButtons(task);
         taskModal.style.display = 'flex';
@@ -712,13 +749,13 @@
             const reactivateBtn = document.createElement('button');
             reactivateBtn.className = 'btn-success';
             reactivateBtn.innerHTML = '<i class="fas fa-undo-alt"></i> Kembalikan';
-            reactivateBtn.onclick = async () => { await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: false, completed: false }); taskModal.style.display = "none"; };
+            reactivateBtn.onclick = async () => { await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: false, completed: false, completedAt: null }); taskModal.style.display = "none"; };
             modalButtonsContainer.appendChild(reactivateBtn);
         } else {
             const cancelBtn = document.createElement('button');
             cancelBtn.className = 'btn-warning';
             cancelBtn.innerHTML = '<i class="fas fa-ban"></i> Batal';
-            cancelBtn.onclick = async () => { await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: true, completed: false }); taskModal.style.display = "none"; };
+            cancelBtn.onclick = async () => { await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: true, completed: false, completedAt: null }); taskModal.style.display = "none"; };
             modalButtonsContainer.appendChild(cancelBtn);
         }
         const saveBtn = document.createElement('button');
@@ -736,7 +773,17 @@
                 finalCompleted = (finalProgress === 100);
             }
             const newTabId = moveTabSelect.value;
-            const updateData = { title, notes: taskNotesInput.value, dueDate: taskDueDate.value || null, progress: finalProgress, completed: finalCompleted, subtasks: currentSubtasks, cancelled: false };
+            let completedAtValue = null;
+            // Jika status akhir completed dan sebelumnya belum completed, set completedAt
+            if (finalCompleted && !task.completed) {
+                completedAtValue = Timestamp.now();
+            } else if (!finalCompleted) {
+                completedAtValue = null;
+            } else {
+                // tetap gunakan completedAt yang lama jika sudah completed dan masih completed
+                completedAtValue = task.completedAt || null;
+            }
+            const updateData = { title, notes: taskNotesInput.value, dueDate: taskDueDate.value || null, progress: finalProgress, completed: finalCompleted, subtasks: currentSubtasks, cancelled: false, completedAt: completedAtValue };
             if (newTabId && newTabId !== originalTabId) updateData.tabId = newTabId;
             await updateDoc(doc(db, "tasks", activeTaskId), updateData);
             taskModal.style.display = "none";
@@ -784,7 +831,7 @@
     }
     
     async function createNewTask(tabId) {
-        const newTask = { tabId, title: "", notes: "", dueDate: null, progress: 0, completed: false, cancelled: false, subtasks: [], createdAt: Timestamp.now() };
+        const newTask = { tabId, title: "", notes: "", dueDate: null, progress: 0, completed: false, cancelled: false, subtasks: [], createdAt: Timestamp.now(), completedAt: null };
         const docRef = await addDoc(tasksCol, newTask);
         openTaskModal({ id: docRef.id, ...newTask });
     }
