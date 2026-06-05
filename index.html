@@ -87,6 +87,62 @@
             opacity: 0.7;
             cursor: pointer;
         }
+        .filters-panel {
+            background: white;
+            border-radius: 28px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        .search-box {
+            flex: 2;
+            position: relative;
+        }
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 10px 10px 10px 36px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            font-family: inherit;
+            font-size: 0.85rem;
+            background: #f8fafc;
+        }
+        .filter-select {
+            flex: 1;
+            min-width: 110px;
+        }
+        .filter-select select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .reset-filter {
+            background: #f1f5f9;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #475569;
+            transition: 0.2s;
+        }
         .task-section {
             background: white;
             border-radius: 28px;
@@ -378,6 +434,14 @@
             font-size: 0.8rem;
             color: #166534;
         }
+        .tab-badge {
+            font-size: 0.65rem;
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-left: 6px;
+        }
     </style>
 </head>
 <body>
@@ -387,6 +451,27 @@
         <button class="add-tab-btn" id="addTabBtn"><i class="fas fa-plus"></i></button>
     </div>
     <div class="tabs-scroll" id="tabsContainer"></div>
+    
+    <!-- Panel Filter & Pencarian -->
+    <div class="filters-panel">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Cari judul atau catatan...">
+        </div>
+        <div class="filter-select">
+            <select id="filterStatusSelect">
+                <option value="all">📋 Semua status</option>
+                <option value="active">🟢 Aktif</option>
+                <option value="completed">✅ Selesai</option>
+                <option value="cancelled">❌ Batal</option>
+            </select>
+        </div>
+        <div class="filter-select">
+            <select id="filterTabSelect"></select>
+        </div>
+        <button id="resetFilterBtn" class="reset-filter" title="Reset filter"><i class="fas fa-undo-alt"></i></button>
+    </div>
+    
     <div id="tasksContainer"></div>
     <button class="add-task-btn" id="addTaskBtn" style="display: none;"><i class="fas fa-plus"></i></button>
 </div>
@@ -458,10 +543,11 @@
     
     let currentTabId = null;
     let tabsUnsub = null;
-    let tasksUnsub = null;
-    let allTasks = [];
+    let allTasksUnsub = null;
+    let allTasksGlobal = [];
     let allTabs = [];
     
+    // Elemen
     const tabsContainer = document.getElementById("tabsContainer");
     const addTabBtn = document.getElementById("addTabBtn");
     const tasksContainer = document.getElementById("tasksContainer");
@@ -489,6 +575,12 @@
     const deleteTabBtn = document.getElementById("deleteTabBtn");
     const modalButtonsContainer = document.getElementById("modalButtonsContainer");
     const moveTabSelect = document.getElementById("moveTabSelect");
+    
+    // Filter elements
+    const searchInput = document.getElementById("searchInput");
+    const filterStatusSelect = document.getElementById("filterStatusSelect");
+    const filterTabSelect = document.getElementById("filterTabSelect");
+    const resetFilterBtn = document.getElementById("resetFilterBtn");
     
     let activeTaskId = null;
     let currentSubtasks = [];
@@ -580,87 +672,92 @@
         if (allTabs.length === 0) moveTabSelect.innerHTML = '<option disabled>Tidak ada tab</option>';
     }
     
-    function loadTabs() {
-        if (tabsUnsub) tabsUnsub();
-        tabsUnsub = onSnapshot(tabsCol, (snapshot) => {
-            let tabs = [];
-            snapshot.forEach(docSnap => tabs.push({ id: docSnap.id, ...docSnap.data() }));
-            tabs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
-            allTabs = tabs;
-            renderTabs(tabs);
-            if (tabs.length > 0 && !currentTabId) {
-                currentTabId = tabs[0].id;
-                loadTasksForTab(currentTabId);
-            } else if (tabs.length === 0) {
-                currentTabId = null;
-                if (tasksUnsub) tasksUnsub();
-                tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-folder-open"></i><p>Buat tab terlebih dahulu</p></div>';
-                addTaskBtn.style.display = 'none';
-            } else if (currentTabId && !tabs.find(t => t.id === currentTabId)) {
-                currentTabId = tabs[0]?.id || null;
-                if (currentTabId) loadTasksForTab(currentTabId);
-            }
+    function populateFilterTabSelect() {
+        filterTabSelect.innerHTML = '';
+        const allOption = document.createElement('option');
+        allOption.value = 'all';
+        allOption.textContent = '📂 Semua Tab';
+        filterTabSelect.appendChild(allOption);
+        allTabs.forEach(tab => {
+            const option = document.createElement('option');
+            option.value = tab.id;
+            option.textContent = escapeHtml(tab.name);
+            filterTabSelect.appendChild(option);
         });
+        // Set nilai filter tab sesuai currentTabId jika ada
+        if (currentTabId && filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) {
+            filterTabSelect.value = currentTabId;
+        }
     }
     
-    function renderTabs(tabs) {
-        tabsContainer.innerHTML = '';
-        tabs.forEach(tab => {
-            const tabDiv = document.createElement('div');
-            tabDiv.className = `tab-item ${currentTabId === tab.id ? 'active' : ''}`;
-            tabDiv.innerHTML = `<span class="tab-name">${escapeHtml(tab.name)}</span><div class="tab-actions"><i class="fas fa-edit edit-tab" data-id="${tab.id}" data-name="${escapeHtml(tab.name)}"></i><i class="fas fa-trash-alt delete-tab" data-id="${tab.id}"></i></div>`;
-            tabDiv.addEventListener('click', (e) => {
-                if (e.target.classList.contains('edit-tab') || e.target.classList.contains('delete-tab')) return;
-                currentTabId = tab.id;
-                loadTasksForTab(currentTabId);
-                renderTabs(tabs);
-            });
-            tabsContainer.appendChild(tabDiv);
-        });
-        document.querySelectorAll('.edit-tab').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openTabModal(btn.dataset.id, btn.dataset.name); }));
-        document.querySelectorAll('.delete-tab').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); if (confirm("Hapus tab beserta semua tugas?")) { await deleteTabById(btn.dataset.id); if (currentTabId === btn.dataset.id) { currentTabId = null; tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-folder-open"></i><p>Buat tab terlebih dahulu</p></div>'; addTaskBtn.style.display = 'none'; } } }));
-    }
-    
-    function loadTasksForTab(tabId) {
-        if (tasksUnsub) tasksUnsub();
-        addTaskBtn.style.display = 'flex';
-        const q = query(tasksCol, where("tabId", "==", tabId));
-        tasksUnsub = onSnapshot(q, (snapshot) => {
-            allTasks = [];
-            snapshot.forEach(docSnap => allTasks.push({ id: docSnap.id, ...docSnap.data() }));
-            allTasks.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            renderTasks();
-        });
-    }
-    
-    function getProgressColor(percent) {
-        if (percent >= 80) return '#22c55e';
-        if (percent >= 50) return '#f59e0b';
-        if (percent >= 20) return '#f97316';
-        return '#ef4444';
-    }
-    
-    function renderTasks() {
-        if (!allTasks.length) { tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-smile-wink"></i><p>Belum ada tugas. Tekan tombol +</p></div>'; return; }
-        const active = allTasks.filter(t => !t.completed && !t.cancelled);
-        const completed = allTasks.filter(t => t.completed && !t.cancelled);
-        const cancelled = allTasks.filter(t => t.cancelled);
-        let html = `<div class="task-section"><div class="section-title"><i class="far fa-circle"></i> Aktif</div>`;
-        if (active.length === 0) html += `<div class="empty-placeholder">✨ Tidak ada tugas aktif</div>`;
-        active.forEach(t => { html += renderTaskCard(t); });
-        html += `</div><div class="task-section"><div class="section-title"><i class="fas fa-check-circle"></i> Selesai</div>`;
-        if (completed.length === 0) html += `<div class="empty-placeholder">✅ Tugas selesai</div>`;
-        completed.forEach(t => { html += renderTaskCard(t); });
-        html += `</div><div class="task-section"><div class="section-title" style="color:#dc2626;"><i class="fas fa-ban"></i> Batal</div>`;
-        if (cancelled.length === 0) html += `<div class="empty-placeholder">❌ Tidak ada tugas batal</div>`;
-        cancelled.forEach(t => { html += renderTaskCard(t); });
-        html += `</div>`;
-        tasksContainer.innerHTML = html;
+    function applyFiltersAndRender() {
+        const searchText = searchInput.value.trim().toLowerCase();
+        const statusFilter = filterStatusSelect.value;
+        const tabFilter = filterTabSelect.value;
         
-        document.querySelectorAll('.task-bullet').forEach(el => el.addEventListener('click', (e) => { e.stopPropagation(); const task = allTasks.find(t => t.id === el.dataset.id); if (task) toggleTaskCompletion(task); }));
-        document.querySelectorAll('.task-card').forEach(card => card.addEventListener('click', (e) => { if (e.target.closest('.task-bullet') || e.target.closest('.task-edit-btn') || e.target.closest('.task-delete-btn')) return; const task = allTasks.find(t => t.id === card.dataset.id); if (task) openTaskModal(task); }));
-        document.querySelectorAll('.task-edit-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const task = allTasks.find(t => t.id === btn.dataset.id); if (task) openTaskModal(task); }));
-        document.querySelectorAll('.task-delete-btn').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); if (confirm("Hapus tugas permanen?")) await deleteDoc(doc(db, "tasks", btn.dataset.id)); }));
+        let filtered = [...allTasksGlobal];
+        
+        // Filter tab
+        if (tabFilter !== 'all') {
+            filtered = filtered.filter(task => task.tabId === tabFilter);
+        }
+        
+        // Filter teks
+        if (searchText) {
+            filtered = filtered.filter(task => 
+                (task.title && task.title.toLowerCase().includes(searchText)) ||
+                (task.notes && task.notes.toLowerCase().includes(searchText))
+            );
+        }
+        
+        // Kelompokkan berdasarkan status
+        let active = filtered.filter(t => !t.completed && !t.cancelled);
+        let completed = filtered.filter(t => t.completed && !t.cancelled);
+        let cancelled = filtered.filter(t => t.cancelled);
+        
+        // Urutkan: aktif & batal berdasarkan createdAt terbaru, selesai berdasarkan completedAt terbaru
+        const sortByCreated = (a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+        const sortByCompleted = (a,b) => (b.completedAt?.seconds || 0) - (a.completedAt?.seconds || 0);
+        active.sort(sortByCreated);
+        cancelled.sort(sortByCreated);
+        completed.sort(sortByCompleted);
+        
+        // Tentukan bagian mana yang akan ditampilkan berdasarkan statusFilter
+        let html = '';
+        if (statusFilter === 'all') {
+            // Tampilkan semua bagian
+            html += renderSection('Aktif', 'far fa-circle', active);
+            html += renderSection('Selesai', 'fas fa-check-circle', completed);
+            html += renderSection('Batal', 'fas fa-ban', cancelled, '#dc2626');
+        } else if (statusFilter === 'active') {
+            html += renderSection('Aktif', 'far fa-circle', active);
+        } else if (statusFilter === 'completed') {
+            html += renderSection('Selesai', 'fas fa-check-circle', completed);
+        } else if (statusFilter === 'cancelled') {
+            html += renderSection('Batal', 'fas fa-ban', cancelled, '#dc2626');
+        }
+        
+        if (html === '') {
+            tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-frown"></i><p>Tidak ada tugas yang cocok.</p></div>';
+        } else {
+            tasksContainer.innerHTML = html;
+        }
+        
+        // Attach event listeners
+        attachTaskEvents();
+    }
+    
+    function renderSection(title, iconClass, tasks, colorHex = null) {
+        let sectionHtml = `<div class="task-section"><div class="section-title" style="${colorHex ? `color: ${colorHex};` : ''}"><i class="${iconClass}"></i> ${title} (${tasks.length})</div>`;
+        if (tasks.length === 0) {
+            sectionHtml += `<div class="empty-placeholder">✨ Tidak ada tugas</div>`;
+        } else {
+            tasks.forEach(task => {
+                sectionHtml += renderTaskCard(task);
+            });
+        }
+        sectionHtml += `</div>`;
+        return sectionHtml;
     }
     
     function renderTaskCard(task) {
@@ -678,9 +775,135 @@
             completedHtml = `<div class="completed-date"><i class="fas fa-calendar-check"></i> Selesai: ${formatted}</div>`;
         }
         
-        return `<div class="task-card ${cardClass}" data-id="${task.id}"><div class="task-left"><div class="task-bullet" data-id="${task.id}">${bullet}</div><div class="task-info"><div class="task-title ${titleClass}">${escapeHtml(task.title)}</div><div class="task-meta"><span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span><span class="task-progress-badge" style="background: ${color}20; color: ${color}; font-weight: bold;">${progressVal}%</span></div>${completedHtml}<div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${progressVal}%; background: ${color};"></div></div></div></div><div class="task-actions"><i class="fas fa-edit task-edit-btn" data-id="${task.id}"></i><i class="fas fa-trash-alt task-delete-btn" data-id="${task.id}"></i></div></div>`;
+        const tab = allTabs.find(t => t.id === task.tabId);
+        const tabBadge = tab ? `<span class="tab-badge">📁 ${escapeHtml(tab.name)}</span>` : '';
+        
+        return `<div class="task-card ${cardClass}" data-id="${task.id}">
+                    <div class="task-left">
+                        <div class="task-bullet" data-id="${task.id}">${bullet}</div>
+                        <div class="task-info">
+                            <div class="task-title ${titleClass}">${escapeHtml(task.title)} ${tabBadge}</div>
+                            <div class="task-meta">
+                                <span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span>
+                                <span class="task-progress-badge" style="background: ${color}20; color: ${color};">${progressVal}%</span>
+                            </div>
+                            ${completedHtml}
+                            <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${progressVal}%; background: ${color};"></div></div>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <i class="fas fa-edit task-edit-btn" data-id="${task.id}"></i>
+                        <i class="fas fa-trash-alt task-delete-btn" data-id="${task.id}"></i>
+                    </div>
+                </div>`;
     }
     
+    function getProgressColor(percent) {
+        if (percent >= 80) return '#22c55e';
+        if (percent >= 50) return '#f59e0b';
+        if (percent >= 20) return '#f97316';
+        return '#ef4444';
+    }
+    
+    function attachTaskEvents() {
+        document.querySelectorAll('.task-bullet').forEach(el => {
+            el.removeEventListener('click', bulletClickHandler);
+            el.addEventListener('click', bulletClickHandler);
+        });
+        document.querySelectorAll('.task-card').forEach(card => {
+            card.removeEventListener('click', cardClickHandler);
+            card.addEventListener('click', cardClickHandler);
+        });
+        document.querySelectorAll('.task-edit-btn').forEach(btn => {
+            btn.removeEventListener('click', editClickHandler);
+            btn.addEventListener('click', editClickHandler);
+        });
+        document.querySelectorAll('.task-delete-btn').forEach(btn => {
+            btn.removeEventListener('click', deleteClickHandler);
+            btn.addEventListener('click', deleteClickHandler);
+        });
+    }
+    
+    function bulletClickHandler(e) {
+        e.stopPropagation();
+        const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id);
+        if (task) toggleTaskCompletion(task);
+    }
+    function cardClickHandler(e) {
+        if (e.target.closest('.task-bullet') || e.target.closest('.task-edit-btn') || e.target.closest('.task-delete-btn')) return;
+        const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id);
+        if (task) openTaskModal(task);
+    }
+    function editClickHandler(e) {
+        e.stopPropagation();
+        const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id);
+        if (task) openTaskModal(task);
+    }
+    async function deleteClickHandler(e) {
+        e.stopPropagation();
+        if (confirm("Hapus tugas permanen?")) {
+            await deleteDoc(doc(db, "tasks", e.currentTarget.dataset.id));
+        }
+    }
+    
+    function startGlobalTasksListener() {
+        if (allTasksUnsub) allTasksUnsub();
+        allTasksUnsub = onSnapshot(tasksCol, (snapshot) => {
+            allTasksGlobal = [];
+            snapshot.forEach(docSnap => {
+                allTasksGlobal.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            applyFiltersAndRender();
+        });
+    }
+    
+    function renderTabs(tabs) {
+        tabsContainer.innerHTML = '';
+        tabs.forEach(tab => {
+            const tabDiv = document.createElement('div');
+            tabDiv.className = `tab-item ${currentTabId === tab.id ? 'active' : ''}`;
+            tabDiv.innerHTML = `<span class="tab-name">${escapeHtml(tab.name)}</span><div class="tab-actions"><i class="fas fa-edit edit-tab" data-id="${tab.id}" data-name="${escapeHtml(tab.name)}"></i><i class="fas fa-trash-alt delete-tab" data-id="${tab.id}"></i></div>`;
+            tabDiv.addEventListener('click', (e) => {
+                if (e.target.classList.contains('edit-tab') || e.target.classList.contains('delete-tab')) return;
+                currentTabId = tab.id;
+                filterTabSelect.value = currentTabId;
+                applyFiltersAndRender();
+                renderTabs(tabs);
+            });
+            tabsContainer.appendChild(tabDiv);
+        });
+        document.querySelectorAll('.edit-tab').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openTabModal(btn.dataset.id, btn.dataset.name); }));
+        document.querySelectorAll('.delete-tab').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); if (confirm("Hapus tab beserta semua tugas?")) { await deleteTabById(btn.dataset.id); if (currentTabId === btn.dataset.id) { currentTabId = null; } } }));
+    }
+    
+    function loadTabs() {
+        if (tabsUnsub) tabsUnsub();
+        tabsUnsub = onSnapshot(tabsCol, (snapshot) => {
+            let tabs = [];
+            snapshot.forEach(docSnap => tabs.push({ id: docSnap.id, ...docSnap.data() }));
+            tabs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+            allTabs = tabs;
+            renderTabs(tabs);
+            populateFilterTabSelect();
+            
+            if (tabs.length > 0 && !currentTabId) {
+                currentTabId = tabs[0].id;
+                filterTabSelect.value = currentTabId;
+                applyFiltersAndRender();
+            } else if (tabs.length === 0) {
+                currentTabId = null;
+                tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-folder-open"></i><p>Buat tab terlebih dahulu</p></div>';
+                addTaskBtn.style.display = 'none';
+            } else if (currentTabId && !tabs.find(t => t.id === currentTabId)) {
+                currentTabId = tabs[0]?.id || null;
+                if (currentTabId) filterTabSelect.value = currentTabId;
+                applyFiltersAndRender();
+            }
+            addTaskBtn.style.display = tabs.length > 0 ? 'flex' : 'none';
+        });
+    }
+    
+    // Modal handlers (sama seperti sebelumnya - disingkat agar tidak terlalu panjang)
     function updateMainProgressFromSubtasks() {
         if (currentSubtasks.length > 0) {
             const avg = computeAvgProgressFromSubtasks(currentSubtasks);
@@ -715,7 +938,6 @@
             progressPercent.innerText = `${task.progress || 0}%`;
         }
         
-        // Tampilkan info tanggal selesai jika ada
         if (task.completed && task.completedAt) {
             completedInfo.style.display = 'block';
             completedInfo.innerHTML = `<i class="fas fa-check-circle"></i> Tugas ini selesai pada: ${formatDate(task.completedAt)}`;
@@ -774,13 +996,11 @@
             }
             const newTabId = moveTabSelect.value;
             let completedAtValue = null;
-            // Jika status akhir completed dan sebelumnya belum completed, set completedAt
             if (finalCompleted && !task.completed) {
                 completedAtValue = Timestamp.now();
             } else if (!finalCompleted) {
                 completedAtValue = null;
             } else {
-                // tetap gunakan completedAt yang lama jika sudah completed dan masih completed
                 completedAtValue = task.completedAt || null;
             }
             const updateData = { title, notes: taskNotesInput.value, dueDate: taskDueDate.value || null, progress: finalProgress, completed: finalCompleted, subtasks: currentSubtasks, cancelled: false, completedAt: completedAtValue };
@@ -815,7 +1035,7 @@
                     updateMainProgressFromSubtasks();
                 });
             });
-            document.querySelectorAll('.delete-subtask').forEach(btn => btn.addEventListener('click', () => { const idx = parseInt(btn.dataset.idx); currentSubtasks.splice(idx, 1); renderSubtasksModal(); if (currentSubtasks.length === 0) { progressGroup.style.display = 'block'; progressInfo.style.display = 'none'; progressSlider.disabled = false; const originalProgress = allTasks.find(t => t.id === activeTaskId)?.progress || 0; progressSlider.value = originalProgress; progressPercent.innerText = `${originalProgress}%`; } else { updateMainProgressFromSubtasks(); } }));
+            document.querySelectorAll('.delete-subtask').forEach(btn => btn.addEventListener('click', () => { const idx = parseInt(btn.dataset.idx); currentSubtasks.splice(idx, 1); renderSubtasksModal(); if (currentSubtasks.length === 0) { progressGroup.style.display = 'block'; progressInfo.style.display = 'none'; progressSlider.disabled = false; const originalProgress = allTasksGlobal.find(t => t.id === activeTaskId)?.progress || 0; progressSlider.value = originalProgress; progressPercent.innerText = `${originalProgress}%`; } else { updateMainProgressFromSubtasks(); } }));
         }
         addSubtaskBtn.onclick = () => {
             const text = newSubtaskInput.value.trim();
@@ -831,7 +1051,8 @@
     }
     
     async function createNewTask(tabId) {
-        const newTask = { tabId, title: "", notes: "", dueDate: null, progress: 0, completed: false, cancelled: false, subtasks: [], createdAt: Timestamp.now(), completedAt: null };
+        if (!tabId) return alert("Pilih tab terlebih dahulu");
+        const newTask = { tabId, title: "Tugas baru", notes: "", dueDate: null, progress: 0, completed: false, cancelled: false, subtasks: [], createdAt: Timestamp.now(), completedAt: null };
         const docRef = await addDoc(tasksCol, newTask);
         openTaskModal({ id: docRef.id, ...newTask });
     }
@@ -845,15 +1066,30 @@
     }
     function closeAllModals() { taskModal.style.display = "none"; tabModal.style.display = "none"; }
     
+    // Event listeners
     addTabBtn.addEventListener('click', () => openTabModal());
     saveTabBtn.addEventListener('click', async () => { const name = tabNameInput.value.trim(); if (!name) return alert("Nama tab tidak boleh kosong"); if (tabIdField.value) await updateTab(tabIdField.value, name); else await addNewTab(name); tabModal.style.display = "none"; });
-    deleteTabBtn.addEventListener('click', async () => { if (tabIdField.value && confirm("Hapus tab dan semua tugas?")) { await deleteTabById(tabIdField.value); tabModal.style.display = "none"; if (currentTabId === tabIdField.value) { currentTabId = null; loadTabs(); } } });
-    addTaskBtn.addEventListener('click', () => { if (!currentTabId) alert("Pilih atau buat tab terlebih dahulu"); else createNewTask(currentTabId); });
+    deleteTabBtn.addEventListener('click', async () => { if (tabIdField.value && confirm("Hapus tab dan semua tugas?")) { await deleteTabById(tabIdField.value); tabModal.style.display = "none"; } });
+    addTaskBtn.addEventListener('click', () => { if (!currentTabId && allTabs.length > 0) currentTabId = allTabs[0].id; if (!currentTabId) alert("Buat tab terlebih dahulu"); else createNewTask(currentTabId); });
     closeModal.addEventListener('click', closeAllModals);
     closeTabModal.addEventListener('click', closeAllModals);
     window.onclick = (e) => { if (e.target === taskModal || e.target === tabModal) closeAllModals(); };
     
-    // Register service worker for PWA
+    searchInput.addEventListener('input', applyFiltersAndRender);
+    filterStatusSelect.addEventListener('change', applyFiltersAndRender);
+    filterTabSelect.addEventListener('change', () => {
+        // update currentTabId sesuai filter tab agar add task konsisten
+        if (filterTabSelect.value !== 'all') currentTabId = filterTabSelect.value;
+        applyFiltersAndRender();
+    });
+    resetFilterBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        filterStatusSelect.value = 'all';
+        if (currentTabId) filterTabSelect.value = currentTabId;
+        else filterTabSelect.value = 'all';
+        applyFiltersAndRender();
+    });
+    
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW registered:', reg)).catch(err => console.log('SW error:', err));
@@ -861,6 +1097,7 @@
     }
     
     loadTabs();
+    startGlobalTasksListener();
 </script>
 </body>
 </html>
