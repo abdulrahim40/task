@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TaskAbr">
     <link rel="apple-touch-icon" href="https://via.placeholder.com/192?text=TF">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400,500,600,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -195,6 +195,10 @@
             font-weight: 500;
             margin-bottom: 6px;
             font-size: 0.95rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
         }
         .completed-text {
             text-decoration: line-through;
@@ -203,6 +207,27 @@
         .cancelled-text {
             color: #dc2626;
             text-decoration: line-through;
+        }
+        .priority-badge {
+            font-size: 0.65rem;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .priority-high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .priority-low {
+            background: #e0f2fe;
+            color: #0284c7;
         }
         .task-meta {
             display: flex;
@@ -485,6 +510,15 @@
         <input type="text" id="taskTitle" placeholder="Judul tugas">
         <textarea id="taskNotes" rows="2" placeholder="Catatan..."></textarea>
         <input type="datetime-local" id="taskDueDate">
+        
+        <!-- Prioritas -->
+        <label><i class="fas fa-flag"></i> Prioritas</label>
+        <select id="taskPriority">
+            <option value="low">🟢 Rendah</option>
+            <option value="medium" selected>🟡 Sedang</option>
+            <option value="high">🔴 Tinggi</option>
+        </select>
+        
         <div style="margin-bottom: 16px;">
             <label><i class="fas fa-exchange-alt"></i> Pindah ke tab</label>
             <select id="moveTabSelect"></select>
@@ -559,6 +593,7 @@
     const taskTitleInput = document.getElementById("taskTitle");
     const taskNotesInput = document.getElementById("taskNotes");
     const taskDueDate = document.getElementById("taskDueDate");
+    const taskPrioritySelect = document.getElementById("taskPriority");
     const progressSlider = document.getElementById("progressSlider");
     const progressPercent = document.getElementById("progressPercent");
     const subtasksContainer = document.getElementById("subtasksContainer");
@@ -684,10 +719,25 @@
             option.textContent = escapeHtml(tab.name);
             filterTabSelect.appendChild(option);
         });
-        // Set nilai filter tab sesuai currentTabId jika ada
         if (currentTabId && filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) {
             filterTabSelect.value = currentTabId;
         }
+    }
+    
+    // Fungsi sorting berdasarkan prioritas (Tinggi > Sedang > Rendah) dan tanggal terbaru (dueDate desc)
+    function sortTasksByPriorityAndDueDate(tasks) {
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        return [...tasks].sort((a, b) => {
+            // Prioritas
+            const priorityA = priorityOrder[a.priority || 'medium'];
+            const priorityB = priorityOrder[b.priority || 'medium'];
+            if (priorityA !== priorityB) return priorityB - priorityA;
+            
+            // Tanggal terbaru (dueDate descending)
+            const dateA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+            const dateB = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+            return dateB - dateA;
+        });
     }
     
     function applyFiltersAndRender() {
@@ -715,17 +765,14 @@
         let completed = filtered.filter(t => t.completed && !t.cancelled);
         let cancelled = filtered.filter(t => t.cancelled);
         
-        // Urutkan: aktif & batal berdasarkan createdAt terbaru, selesai berdasarkan completedAt terbaru
-        const sortByCreated = (a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
-        const sortByCompleted = (a,b) => (b.completedAt?.seconds || 0) - (a.completedAt?.seconds || 0);
-        active.sort(sortByCreated);
-        cancelled.sort(sortByCreated);
-        completed.sort(sortByCompleted);
+        // Terapkan sorting prioritas + tanggal terbaru
+        active = sortTasksByPriorityAndDueDate(active);
+        completed = sortTasksByPriorityAndDueDate(completed);
+        cancelled = sortTasksByPriorityAndDueDate(cancelled);
         
         // Tentukan bagian mana yang akan ditampilkan berdasarkan statusFilter
         let html = '';
         if (statusFilter === 'all') {
-            // Tampilkan semua bagian
             html += renderSection('Aktif', 'far fa-circle', active);
             html += renderSection('Selesai', 'fas fa-check-circle', completed);
             html += renderSection('Batal', 'fas fa-ban', cancelled, '#dc2626');
@@ -743,7 +790,6 @@
             tasksContainer.innerHTML = html;
         }
         
-        // Attach event listeners
         attachTaskEvents();
     }
     
@@ -758,6 +804,14 @@
         }
         sectionHtml += `</div>`;
         return sectionHtml;
+    }
+    
+    function getPriorityBadge(priority) {
+        const p = priority || 'medium';
+        const labels = { high: 'Tinggi', medium: 'Sedang', low: 'Rendah' };
+        const icons = { high: '🔴', medium: '🟡', low: '🟢' };
+        const classes = { high: 'priority-high', medium: 'priority-medium', low: 'priority-low' };
+        return `<span class="priority-badge ${classes[p]}"><i class="fas fa-flag"></i> ${icons[p]} ${labels[p]}</span>`;
     }
     
     function renderTaskCard(task) {
@@ -777,12 +831,17 @@
         
         const tab = allTabs.find(t => t.id === task.tabId);
         const tabBadge = tab ? `<span class="tab-badge">📁 ${escapeHtml(tab.name)}</span>` : '';
+        const priorityBadge = getPriorityBadge(task.priority);
         
         return `<div class="task-card ${cardClass}" data-id="${task.id}">
                     <div class="task-left">
                         <div class="task-bullet" data-id="${task.id}">${bullet}</div>
                         <div class="task-info">
-                            <div class="task-title ${titleClass}">${escapeHtml(task.title)} ${tabBadge}</div>
+                            <div class="task-title ${titleClass}">
+                                <span>${escapeHtml(task.title)}</span>
+                                ${priorityBadge}
+                                ${tabBadge}
+                            </div>
                             <div class="task-meta">
                                 <span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span>
                                 <span class="task-progress-badge" style="background: ${color}20; color: ${color};">${progressVal}%</span>
@@ -903,7 +962,6 @@
         });
     }
     
-    // Modal handlers (sama seperti sebelumnya - disingkat agar tidak terlalu panjang)
     function updateMainProgressFromSubtasks() {
         if (currentSubtasks.length > 0) {
             const avg = computeAvgProgressFromSubtasks(currentSubtasks);
@@ -920,6 +978,7 @@
         taskTitleInput.value = task.title || '';
         taskNotesInput.value = task.notes || '';
         taskDueDate.value = task.dueDate ? task.dueDate.slice(0, 16) : '';
+        taskPrioritySelect.value = task.priority || 'medium';
         await loadTabsForDropdown(task.tabId);
         const hasSubtasks = currentSubtasks.length > 0;
         if (hasSubtasks) {
@@ -964,7 +1023,7 @@
         modalButtonsContainer.innerHTML = '';
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn-danger';
-        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Hapus';
         deleteBtn.onclick = async () => { if (confirm("Hapus tugas permanen?")) { await deleteDoc(doc(db, "tasks", activeTaskId)); taskModal.style.display = "none"; } };
         modalButtonsContainer.appendChild(deleteBtn);
         if (task.cancelled) {
@@ -982,7 +1041,7 @@
         }
         const saveBtn = document.createElement('button');
         saveBtn.className = 'btn-primary';
-        saveBtn.innerHTML = '<i class="fas fa-save"></i>';
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan';
         saveBtn.onclick = async () => {
             const title = taskTitleInput.value.trim();
             if (!title) return alert("Judul tugas wajib diisi!");
@@ -1003,7 +1062,17 @@
             } else {
                 completedAtValue = task.completedAt || null;
             }
-            const updateData = { title, notes: taskNotesInput.value, dueDate: taskDueDate.value || null, progress: finalProgress, completed: finalCompleted, subtasks: currentSubtasks, cancelled: false, completedAt: completedAtValue };
+            const updateData = { 
+                title, 
+                notes: taskNotesInput.value, 
+                dueDate: taskDueDate.value || null, 
+                progress: finalProgress, 
+                completed: finalCompleted, 
+                subtasks: currentSubtasks, 
+                cancelled: false, 
+                completedAt: completedAtValue,
+                priority: taskPrioritySelect.value
+            };
             if (newTabId && newTabId !== originalTabId) updateData.tabId = newTabId;
             await updateDoc(doc(db, "tasks", activeTaskId), updateData);
             taskModal.style.display = "none";
@@ -1052,7 +1121,19 @@
     
     async function createNewTask(tabId) {
         if (!tabId) return alert("Pilih tab terlebih dahulu");
-        const newTask = { tabId, title: "Tugas baru", notes: "", dueDate: null, progress: 0, completed: false, cancelled: false, subtasks: [], createdAt: Timestamp.now(), completedAt: null };
+        const newTask = { 
+            tabId, 
+            title: "", // Kosong, tidak ada default "Tugas baru"
+            notes: "", 
+            dueDate: null, 
+            progress: 0, 
+            completed: false, 
+            cancelled: false, 
+            subtasks: [], 
+            createdAt: Timestamp.now(), 
+            completedAt: null,
+            priority: "medium" // Default prioritas sedang
+        };
         const docRef = await addDoc(tasksCol, newTask);
         openTaskModal({ id: docRef.id, ...newTask });
     }
@@ -1078,7 +1159,6 @@
     searchInput.addEventListener('input', applyFiltersAndRender);
     filterStatusSelect.addEventListener('change', applyFiltersAndRender);
     filterTabSelect.addEventListener('change', () => {
-        // update currentTabId sesuai filter tab agar add task konsisten
         if (filterTabSelect.value !== 'all') currentTabId = filterTabSelect.value;
         applyFiltersAndRender();
     });
