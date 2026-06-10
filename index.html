@@ -467,13 +467,32 @@
             display: inline-block;
             margin-left: 6px;
         }
+        .created-date-badge {
+            font-size: 0.65rem;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .priority-high-tab {
+            background: linear-gradient(135deg, #fee2e2, #ffc4c4);
+            border-color: #fecaca;
+        }
+        .priority-high-tab.active {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
     </style>
 </head>
 <body>
 <div class="app-container">
     <div class="header">
         <h1>📋 TaskAbr</h1>
-        <button class="add-tab-btn" id="addTabBtn"><i class="fas fa-plus"></i></button>
+        <button class="add-tab-btn" id="addTabBtn"><i class="fas fa-plus"></i> Tab</button>
     </div>
     <div class="tabs-scroll" id="tabsContainer"></div>
     
@@ -510,8 +529,10 @@
         <input type="text" id="taskTitle" placeholder="Judul tugas">
         <textarea id="taskNotes" rows="2" placeholder="Catatan..."></textarea>
         <input type="datetime-local" id="taskDueDate">
-        
-        <!-- Prioritas -->
+        <div style="margin-bottom: 8px;">
+            <label><i class="fas fa-calendar-plus"></i> Tanggal Pembuatan</label>
+            <input type="datetime-local" id="taskCreatedAt" readonly style="background:#f1f5f9; cursor:default;">
+        </div>
         <label><i class="fas fa-flag"></i> Prioritas</label>
         <select id="taskPriority">
             <option value="low">🟢 Rendah</option>
@@ -550,8 +571,8 @@
         <input type="hidden" id="tabIdField">
         <input type="text" id="tabName" placeholder="Nama tab">
         <div class="modal-buttons">
-            <button id="saveTabBtn" class="btn-primary"><i class="fas fa-save"></i></button>
-            <button id="deleteTabBtn" class="btn-danger"><i class="fas fa-trash-alt"></i></button>
+            <button id="saveTabBtn" class="btn-primary"><i class="fas fa-save"></i> Simpan</button>
+            <button id="deleteTabBtn" class="btn-danger"><i class="fas fa-trash-alt"></i> Hapus</button>
         </div>
     </div>
 </div>
@@ -575,7 +596,7 @@
     const tabsCol = collection(db, "tabs");
     const tasksCol = collection(db, "tasks");
     
-    let currentTabId = null;
+    let currentTabId = 'high-priority-special'; // DEFAULT: tab prioritas tinggi
     let tabsUnsub = null;
     let allTasksUnsub = null;
     let allTasksGlobal = [];
@@ -593,6 +614,7 @@
     const taskTitleInput = document.getElementById("taskTitle");
     const taskNotesInput = document.getElementById("taskNotes");
     const taskDueDate = document.getElementById("taskDueDate");
+    const taskCreatedAtInput = document.getElementById("taskCreatedAt");
     const taskPrioritySelect = document.getElementById("taskPriority");
     const progressSlider = document.getElementById("progressSlider");
     const progressPercent = document.getElementById("progressPercent");
@@ -719,23 +741,15 @@
             option.textContent = escapeHtml(tab.name);
             filterTabSelect.appendChild(option);
         });
-        if (currentTabId && filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) {
+        if (currentTabId && currentTabId !== 'high-priority-special' && filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) {
             filterTabSelect.value = currentTabId;
         }
     }
     
-    // Fungsi sorting berdasarkan prioritas (Tinggi > Sedang > Rendah) dan tanggal terbaru (dueDate desc)
-    function sortTasksByPriorityAndDueDate(tasks) {
-        const priorityOrder = { high: 3, medium: 2, low: 1 };
+    function sortTasksByCreatedDate(tasks) {
         return [...tasks].sort((a, b) => {
-            // Prioritas
-            const priorityA = priorityOrder[a.priority || 'medium'];
-            const priorityB = priorityOrder[b.priority || 'medium'];
-            if (priorityA !== priorityB) return priorityB - priorityA;
-            
-            // Tanggal terbaru (dueDate descending)
-            const dateA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
-            const dateB = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+            const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime()) : 0;
+            const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime()) : 0;
             return dateB - dateA;
         });
     }
@@ -743,16 +757,16 @@
     function applyFiltersAndRender() {
         const searchText = searchInput.value.trim().toLowerCase();
         const statusFilter = filterStatusSelect.value;
-        const tabFilter = filterTabSelect.value;
         
         let filtered = [...allTasksGlobal];
         
-        // Filter tab
-        if (tabFilter !== 'all') {
-            filtered = filtered.filter(task => task.tabId === tabFilter);
+        // Filter berdasarkan tab yang dipilih (termasuk tab prioritas tinggi)
+        if (currentTabId === 'high-priority-special') {
+            filtered = filtered.filter(task => task.priority === 'high');
+        } else if (currentTabId && currentTabId !== 'all') {
+            filtered = filtered.filter(task => task.tabId === currentTabId);
         }
         
-        // Filter teks
         if (searchText) {
             filtered = filtered.filter(task => 
                 (task.title && task.title.toLowerCase().includes(searchText)) ||
@@ -760,17 +774,14 @@
             );
         }
         
-        // Kelompokkan berdasarkan status
         let active = filtered.filter(t => !t.completed && !t.cancelled);
         let completed = filtered.filter(t => t.completed && !t.cancelled);
         let cancelled = filtered.filter(t => t.cancelled);
         
-        // Terapkan sorting prioritas + tanggal terbaru
-        active = sortTasksByPriorityAndDueDate(active);
-        completed = sortTasksByPriorityAndDueDate(completed);
-        cancelled = sortTasksByPriorityAndDueDate(cancelled);
+        active = sortTasksByCreatedDate(active);
+        completed = sortTasksByCreatedDate(completed);
+        cancelled = sortTasksByCreatedDate(cancelled);
         
-        // Tentukan bagian mana yang akan ditampilkan berdasarkan statusFilter
         let html = '';
         if (statusFilter === 'all') {
             html += renderSection('Aktif', 'far fa-circle', active);
@@ -789,7 +800,6 @@
         } else {
             tasksContainer.innerHTML = html;
         }
-        
         attachTaskEvents();
     }
     
@@ -817,6 +827,7 @@
     function renderTaskCard(task) {
         const progressVal = task.progress || 0;
         const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleString('id-ID') : 'Tidak ada deadline';
+        const createdDateStr = task.createdAt ? formatDate(task.createdAt) : '-';
         let bullet, titleClass, cardClass = '';
         if (task.cancelled) { bullet = '<i class="fas fa-ban task-bullet-cancelled"></i>'; titleClass = 'cancelled-text'; cardClass = 'cancelled'; }
         else if (task.completed) { bullet = '<i class="fas fa-check-circle task-bullet-checked"></i>'; titleClass = 'completed-text'; }
@@ -841,9 +852,10 @@
                                 <span>${escapeHtml(task.title)}</span>
                                 ${priorityBadge}
                                 ${tabBadge}
+                                <span class="created-date-badge"><i class="fas fa-calendar-alt"></i> dibuat: ${createdDateStr}</span>
                             </div>
                             <div class="task-meta">
-                                <span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span>
+                                <span><i class="fas fa-calendar-alt"></i> deadline: ${escapeHtml(dueDateStr)}</span>
                                 <span class="task-progress-badge" style="background: ${color}20; color: ${color};">${progressVal}%</span>
                             </div>
                             ${completedHtml}
@@ -918,21 +930,40 @@
     
     function renderTabs(tabs) {
         tabsContainer.innerHTML = '';
-        tabs.forEach(tab => {
+        const highPriorityTab = { id: 'high-priority-special', name: '⭐ Prioritas Tinggi', isSpecial: true };
+        const normalTabs = [...tabs];
+        
+        const allTabsForRender = [highPriorityTab, ...normalTabs];
+        
+        allTabsForRender.forEach(tab => {
             const tabDiv = document.createElement('div');
-            tabDiv.className = `tab-item ${currentTabId === tab.id ? 'active' : ''}`;
-            tabDiv.innerHTML = `<span class="tab-name">${escapeHtml(tab.name)}</span><div class="tab-actions"><i class="fas fa-edit edit-tab" data-id="${tab.id}" data-name="${escapeHtml(tab.name)}"></i><i class="fas fa-trash-alt delete-tab" data-id="${tab.id}"></i></div>`;
-            tabDiv.addEventListener('click', (e) => {
-                if (e.target.classList.contains('edit-tab') || e.target.classList.contains('delete-tab')) return;
-                currentTabId = tab.id;
-                filterTabSelect.value = currentTabId;
-                applyFiltersAndRender();
-                renderTabs(tabs);
-            });
+            const isActive = (tab.isSpecial && currentTabId === 'high-priority-special') || (!tab.isSpecial && currentTabId === tab.id);
+            tabDiv.className = `tab-item ${isActive ? 'active' : ''} ${tab.isSpecial ? 'priority-high-tab' : ''}`;
+            if (tab.isSpecial) {
+                tabDiv.innerHTML = `<span class="tab-name">${tab.name}</span>`;
+                tabDiv.addEventListener('click', () => {
+                    currentTabId = 'high-priority-special';
+                    filterTabSelect.value = 'all';
+                    addTaskBtn.style.display = 'none';
+                    applyFiltersAndRender();
+                    renderTabs(allTabs);
+                });
+            } else {
+                tabDiv.innerHTML = `<span class="tab-name">${escapeHtml(tab.name)}</span><div class="tab-actions"><i class="fas fa-edit edit-tab" data-id="${tab.id}" data-name="${escapeHtml(tab.name)}"></i><i class="fas fa-trash-alt delete-tab" data-id="${tab.id}"></i></div>`;
+                tabDiv.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('edit-tab') || e.target.classList.contains('delete-tab')) return;
+                    currentTabId = tab.id;
+                    filterTabSelect.value = currentTabId;
+                    addTaskBtn.style.display = 'flex';
+                    applyFiltersAndRender();
+                    renderTabs(allTabs);
+                });
+            }
             tabsContainer.appendChild(tabDiv);
         });
+        
         document.querySelectorAll('.edit-tab').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openTabModal(btn.dataset.id, btn.dataset.name); }));
-        document.querySelectorAll('.delete-tab').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); if (confirm("Hapus tab beserta semua tugas?")) { await deleteTabById(btn.dataset.id); if (currentTabId === btn.dataset.id) { currentTabId = null; } } }));
+        document.querySelectorAll('.delete-tab').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); if (confirm("Hapus tab beserta semua tugas?")) { await deleteTabById(btn.dataset.id); if (currentTabId === btn.dataset.id) { currentTabId = 'high-priority-special'; } } }));
     }
     
     function loadTabs() {
@@ -945,20 +976,19 @@
             renderTabs(tabs);
             populateFilterTabSelect();
             
-            if (tabs.length > 0 && !currentTabId) {
-                currentTabId = tabs[0].id;
-                filterTabSelect.value = currentTabId;
-                applyFiltersAndRender();
-            } else if (tabs.length === 0) {
-                currentTabId = null;
-                tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-folder-open"></i><p>Buat tab terlebih dahulu</p></div>';
+            // Set default ke tab prioritas tinggi jika belum ada currentTabId
+            if (!currentTabId || currentTabId === 'high-priority-special') {
+                currentTabId = 'high-priority-special';
                 addTaskBtn.style.display = 'none';
-            } else if (currentTabId && !tabs.find(t => t.id === currentTabId)) {
-                currentTabId = tabs[0]?.id || null;
-                if (currentTabId) filterTabSelect.value = currentTabId;
+                filterTabSelect.value = 'all';
+                applyFiltersAndRender();
+            } else if (currentTabId && currentTabId !== 'high-priority-special') {
+                addTaskBtn.style.display = 'flex';
+                if (filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) {
+                    filterTabSelect.value = currentTabId;
+                }
                 applyFiltersAndRender();
             }
-            addTaskBtn.style.display = tabs.length > 0 ? 'flex' : 'none';
         });
     }
     
@@ -978,6 +1008,12 @@
         taskTitleInput.value = task.title || '';
         taskNotesInput.value = task.notes || '';
         taskDueDate.value = task.dueDate ? task.dueDate.slice(0, 16) : '';
+        if (task.createdAt) {
+            const createdDate = task.createdAt.toDate ? task.createdAt.toDate() : new Date(task.createdAt);
+            taskCreatedAtInput.value = createdDate.toISOString().slice(0, 16);
+        } else {
+            taskCreatedAtInput.value = '';
+        }
         taskPrioritySelect.value = task.priority || 'medium';
         await loadTabsForDropdown(task.tabId);
         const hasSubtasks = currentSubtasks.length > 0;
@@ -996,14 +1032,12 @@
             progressSlider.value = task.progress || 0;
             progressPercent.innerText = `${task.progress || 0}%`;
         }
-        
         if (task.completed && task.completedAt) {
             completedInfo.style.display = 'block';
             completedInfo.innerHTML = `<i class="fas fa-check-circle"></i> Tugas ini selesai pada: ${formatDate(task.completedAt)}`;
         } else {
             completedInfo.style.display = 'none';
         }
-        
         renderSubtasksModal();
         renderModalButtons(task);
         taskModal.style.display = 'flex';
@@ -1121,18 +1155,19 @@
     
     async function createNewTask(tabId) {
         if (!tabId) return alert("Pilih tab terlebih dahulu");
+        const now = Timestamp.now();
         const newTask = { 
             tabId, 
-            title: "", // Kosong, tidak ada default "Tugas baru"
+            title: "", 
             notes: "", 
             dueDate: null, 
             progress: 0, 
             completed: false, 
             cancelled: false, 
             subtasks: [], 
-            createdAt: Timestamp.now(), 
+            createdAt: now,
             completedAt: null,
-            priority: "medium" // Default prioritas sedang
+            priority: "medium"
         };
         const docRef = await addDoc(tasksCol, newTask);
         openTaskModal({ id: docRef.id, ...newTask });
@@ -1142,16 +1177,22 @@
         tabIdField.value = id || '';
         tabNameInput.value = name || '';
         deleteTabBtn.style.display = id ? 'flex' : 'none';
-        saveTabBtn.innerHTML = '<i class="fas fa-save"></i>';
         tabModal.style.display = "flex";
     }
     function closeAllModals() { taskModal.style.display = "none"; tabModal.style.display = "none"; }
     
-    // Event listeners
     addTabBtn.addEventListener('click', () => openTabModal());
     saveTabBtn.addEventListener('click', async () => { const name = tabNameInput.value.trim(); if (!name) return alert("Nama tab tidak boleh kosong"); if (tabIdField.value) await updateTab(tabIdField.value, name); else await addNewTab(name); tabModal.style.display = "none"; });
     deleteTabBtn.addEventListener('click', async () => { if (tabIdField.value && confirm("Hapus tab dan semua tugas?")) { await deleteTabById(tabIdField.value); tabModal.style.display = "none"; } });
-    addTaskBtn.addEventListener('click', () => { if (!currentTabId && allTabs.length > 0) currentTabId = allTabs[0].id; if (!currentTabId) alert("Buat tab terlebih dahulu"); else createNewTask(currentTabId); });
+    addTaskBtn.addEventListener('click', () => { 
+        if (currentTabId === 'high-priority-special') { 
+            alert("Tidak bisa menambah tugas di tab Prioritas Tinggi. Pilih tab biasa terlebih dahulu."); 
+            return; 
+        } 
+        if (!currentTabId && allTabs.length > 0) currentTabId = allTabs[0].id; 
+        if (!currentTabId) alert("Buat tab terlebih dahulu"); 
+        else createNewTask(currentTabId); 
+    });
     closeModal.addEventListener('click', closeAllModals);
     closeTabModal.addEventListener('click', closeAllModals);
     window.onclick = (e) => { if (e.target === taskModal || e.target === tabModal) closeAllModals(); };
@@ -1159,13 +1200,20 @@
     searchInput.addEventListener('input', applyFiltersAndRender);
     filterStatusSelect.addEventListener('change', applyFiltersAndRender);
     filterTabSelect.addEventListener('change', () => {
-        if (filterTabSelect.value !== 'all') currentTabId = filterTabSelect.value;
+        if (filterTabSelect.value !== 'all') {
+            currentTabId = filterTabSelect.value;
+            addTaskBtn.style.display = 'flex';
+        } else if (currentTabId !== 'high-priority-special') {
+            currentTabId = 'high-priority-special';
+            addTaskBtn.style.display = 'none';
+        }
         applyFiltersAndRender();
+        renderTabs(allTabs);
     });
     resetFilterBtn.addEventListener('click', () => {
         searchInput.value = '';
         filterStatusSelect.value = 'all';
-        if (currentTabId) filterTabSelect.value = currentTabId;
+        if (currentTabId && currentTabId !== 'high-priority-special') filterTabSelect.value = currentTabId;
         else filterTabSelect.value = 'all';
         applyFiltersAndRender();
     });
