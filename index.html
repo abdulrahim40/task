@@ -22,7 +22,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background: #f5f7fb;
-            padding: 20px 16px 32px;
+            padding: 16px 12px 32px;
             color: #1e293b;
         }
         .app-container {
@@ -33,10 +33,10 @@
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         h1 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 700;
             background: linear-gradient(135deg, #3b82f6, #06b6d4);
             -webkit-background-clip: text;
@@ -46,32 +46,32 @@
         .add-tab-btn {
             background: white;
             border: 1px solid #e2e8f0;
-            padding: 8px 14px;
+            padding: 6px 12px;
             border-radius: 40px;
             font-weight: 500;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #3b82f6;
             cursor: pointer;
             transition: 0.2s;
         }
         .tabs-scroll {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             overflow-x: auto;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
             scrollbar-width: thin;
         }
         .tab-item {
             background: white;
-            padding: 8px 18px;
+            padding: 6px 14px;
             border-radius: 40px;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             font-weight: 500;
-            font-size: 0.9rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            font-size: 0.85rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
             cursor: pointer;
             border: 1px solid #eef2ff;
             flex-shrink: 0;
@@ -83,19 +83,19 @@
         }
         .tab-actions i {
             font-size: 0.7rem;
-            margin-left: 6px;
+            margin-left: 4px;
             opacity: 0.7;
             cursor: pointer;
         }
         .filters-panel {
             background: white;
-            border-radius: 28px;
-            padding: 16px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border-radius: 24px;
+            padding: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 8px;
             align-items: center;
         }
         .search-box {
@@ -104,40 +104,40 @@
         }
         .search-box i {
             position: absolute;
-            left: 14px;
+            left: 12px;
             top: 50%;
             transform: translateY(-50%);
             color: #94a3b8;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         .search-box input {
             width: 100%;
-            padding: 10px 10px 10px 36px;
+            padding: 8px 10px 8px 32px;
             border-radius: 40px;
             border: 1px solid #e2e8f0;
             font-family: inherit;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             background: #f8fafc;
         }
         .filter-select {
             flex: 1;
-            min-width: 110px;
+            min-width: 100px;
         }
         .filter-select select {
             width: 100%;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border-radius: 40px;
             border: 1px solid #e2e8f0;
             background: #f8fafc;
             font-family: inherit;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             cursor: pointer;
         }
         .reset-filter {
             background: #f1f5f9;
             border: none;
-            width: 38px;
-            height: 38px;
+            width: 34px;
+            height: 34px;
             border-radius: 40px;
             cursor: pointer;
             color: #475569;
@@ -145,27 +145,28 @@
         }
         .task-section {
             background: white;
-            border-radius: 28px;
-            padding: 20px 16px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            border-radius: 24px;
+            padding: 12px 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
         .section-title {
             font-weight: 600;
-            margin-bottom: 14px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             color: #334155;
+            font-size: 0.9rem;
         }
         .task-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: #f8fafc;
-            padding: 14px 12px;
-            border-radius: 20px;
-            margin-bottom: 10px;
+            padding: 8px 10px;
+            border-radius: 16px;
+            margin-bottom: 6px;
             border: 1px solid #f0f2f5;
             cursor: pointer;
             transition: 0.1s;
@@ -176,14 +177,15 @@
         }
         .task-left {
             display: flex;
-            gap: 14px;
+            gap: 8px;
             align-items: center;
             flex: 1;
         }
         .task-bullet {
             cursor: pointer;
-            font-size: 1.4rem;
-            width: 28px;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
         }
         .task-bullet-unchecked { color: #94a3b8; }
         .task-bullet-checked { color: #22c55e; }
@@ -193,29 +195,21 @@
         }
         .task-title {
             font-weight: 500;
-            margin-bottom: 6px;
-            font-size: 0.95rem;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 8px;
-        }
-        .completed-text {
-            text-decoration: line-through;
-            color: #94a3b8;
-        }
-        .cancelled-text {
-            color: #dc2626;
-            text-decoration: line-through;
+            gap: 6px;
         }
         .priority-badge {
-            font-size: 0.65rem;
-            padding: 2px 10px;
+            font-size: 0.6rem;
+            padding: 2px 6px;
             border-radius: 20px;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
         .priority-high {
             background: #fee2e2;
@@ -233,80 +227,66 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 8px;
-            font-size: 0.7rem;
+            gap: 6px;
+            font-size: 0.65rem;
             color: #5b6e8c;
-            margin-bottom: 6px;
         }
         .rab-badge {
             background: #e6f0ff;
             color: #1e40af;
             border-radius: 20px;
-            padding: 2px 8px;
+            padding: 2px 6px;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             font-weight: 600;
+            font-size: 0.65rem;
         }
         .completed-date {
             background: #e6f7e6;
-            padding: 2px 8px;
+            padding: 2px 6px;
             border-radius: 30px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #15803d;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-        }
-        .progress-bar-container {
-            width: 100%;
-            background: #e2e8f0;
-            border-radius: 10px;
-            height: 6px;
-            overflow: hidden;
-            margin-top: 4px;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            width: 0%;
-            border-radius: 10px;
-            transition: width 0.2s;
+            gap: 3px;
+            margin-top: 2px;
         }
         .task-progress-badge {
-            background: #e2e8f0;
-            padding: 2px 8px;
+            padding: 2px 6px;
             border-radius: 30px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
-            margin-left: auto;
+            display: inline-block;
         }
         .task-actions {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             color: #94a3b8;
         }
         .task-actions i {
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
         .empty-placeholder {
             text-align: center;
-            padding: 24px;
+            padding: 20px;
             color: #94a3b8;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
         .add-task-btn {
             position: fixed;
-            bottom: 24px;
-            right: 20px;
+            bottom: 20px;
+            right: 16px;
             background: #3b82f6;
             color: white;
             border: none;
-            width: 56px;
-            height: 56px;
-            border-radius: 28px;
-            font-size: 1.6rem;
-            box-shadow: 0 6px 14px rgba(59,130,246,0.4);
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(59,130,246,0.4);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -326,32 +306,32 @@
         }
         .modal-content {
             background: white;
-            border-radius: 32px;
+            border-radius: 28px;
             max-width: 500px;
             width: 100%;
             max-height: 85vh;
             overflow-y: auto;
-            padding: 24px 20px;
+            padding: 20px 16px;
         }
         .modal-content h2 {
-            margin-bottom: 18px;
-            font-size: 1.5rem;
+            margin-bottom: 16px;
+            font-size: 1.3rem;
         }
         input, textarea, select {
             width: 100%;
-            padding: 12px 14px;
+            padding: 10px 12px;
             border-radius: 20px;
             border: 1px solid #e2e8f0;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             font-family: inherit;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             background: white;
         }
         .range-group {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin: 12px 0;
+            gap: 10px;
+            margin: 10px 0;
         }
         .range-group input {
             flex: 1;
@@ -359,29 +339,29 @@
         }
         .subtask-item {
             background: #f1f5f9;
-            border-radius: 60px;
-            padding: 10px 12px;
-            margin-bottom: 12px;
+            border-radius: 40px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
         }
         .rab-section {
-            margin-top: 20px;
+            margin-top: 16px;
             border-top: 1px solid #e2e8f0;
-            padding-top: 16px;
+            padding-top: 12px;
         }
         .rab-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .rab-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
         .rab-table th, .rab-table td {
             border: 1px solid #e2e8f0;
-            padding: 8px 6px;
+            padding: 6px 4px;
             text-align: left;
             vertical-align: middle;
         }
@@ -391,20 +371,20 @@
         .rab-table input {
             width: 100%;
             margin: 0;
-            padding: 6px;
-            font-size: 0.75rem;
+            padding: 4px;
+            font-size: 0.7rem;
         }
         .rab-total {
             text-align: right;
             font-weight: bold;
-            margin-top: 8px;
-            font-size: 0.85rem;
+            margin-top: 6px;
+            font-size: 0.8rem;
         }
         .btn-icon {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #3b82f6;
         }
         .btn-icon-danger {
@@ -414,21 +394,21 @@
             background: #eef2ff;
             border: none;
             border-radius: 30px;
-            padding: 4px 12px;
+            padding: 3px 10px;
             font-size: 0.7rem;
             cursor: pointer;
         }
         .modal-buttons {
             display: flex;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-top: 16px;
             flex-wrap: wrap;
         }
         .btn-primary {
             background: #3b82f6;
             color: white;
             border: none;
-            padding: 10px 0;
+            padding: 8px 0;
             border-radius: 40px;
             flex: 1;
             font-weight: 600;
@@ -436,7 +416,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 0.85rem;
         }
         .btn-danger {
             background: #fee2e2;
@@ -448,7 +429,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 0.85rem;
         }
         .btn-warning {
             background: #ffedd5;
@@ -460,7 +442,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 0.85rem;
         }
         .btn-success {
             background: #dcfce7;
@@ -472,45 +455,45 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 0.85rem;
         }
         .close-modal, .close-tab-modal {
             float: right;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             cursor: pointer;
         }
         label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
             color: #475569;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             display: block;
         }
         .info-completed {
             background: #f0fdf4;
             border-radius: 20px;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 0.8rem;
+            padding: 8px;
+            margin: 8px 0;
+            font-size: 0.75rem;
             color: #166534;
         }
         .tab-badge {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             background: #e2e8f0;
-            padding: 2px 8px;
+            padding: 2px 6px;
             border-radius: 20px;
             display: inline-block;
-            margin-left: 6px;
         }
         .created-date-badge {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             background: #e0e7ff;
             color: #4338ca;
-            padding: 2px 8px;
+            padding: 2px 6px;
             border-radius: 20px;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
     </style>
 </head>
@@ -525,14 +508,14 @@
     <div class="filters-panel">
         <div class="search-box">
             <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Cari judul atau catatan...">
+            <input type="text" id="searchInput" placeholder="Cari...">
         </div>
         <div class="filter-select">
             <select id="filterStatusSelect">
-                <option value="all">📋 Semua status</option>
-                <option value="active">🟢 Aktif</option>
-                <option value="completed">✅ Selesai</option>
-                <option value="cancelled">❌ Batal</option>
+                <option value="all">Semua</option>
+                <option value="active">Aktif</option>
+                <option value="completed">Selesai</option>
+                <option value="cancelled">Batal</option>
             </select>
         </div>
         <div class="filter-select">
@@ -554,18 +537,18 @@
         <input type="text" id="taskTitle" placeholder="Judul tugas">
         <textarea id="taskNotes" rows="2" placeholder="Catatan..."></textarea>
         <input type="datetime-local" id="taskDueDate">
-        <div style="margin-bottom: 8px;">
+        <div style="margin-bottom: 6px;">
             <label><i class="fas fa-calendar-plus"></i> Tanggal Pembuatan</label>
-            <input type="datetime-local" id="taskCreatedAt" readonly style="background:#f1f5f9; cursor:default;">
+            <input type="datetime-local" id="taskCreatedAt" readonly style="background:#f1f5f9;">
         </div>
         <label><i class="fas fa-flag"></i> Prioritas</label>
         <select id="taskPriority">
-            <option value="low">🟢 Rendah</option>
-            <option value="medium" selected>🟡 Sedang</option>
-            <option value="high">🔴 Tinggi</option>
+            <option value="low">Rendah</option>
+            <option value="medium" selected>Sedang</option>
+            <option value="high">Tinggi</option>
         </select>
         
-        <div style="margin-bottom: 16px;">
+        <div style="margin-bottom: 12px;">
             <label><i class="fas fa-exchange-alt"></i> Pindah ke tab</label>
             <select id="moveTabSelect"></select>
         </div>
@@ -576,29 +559,29 @@
                 <span id="progressPercent">0%</span>
             </div>
         </div>
-        <div id="progressInfo" style="display:none; background:#eef2ff; border-radius:20px; padding:10px; margin:10px 0;"></div>
+        <div id="progressInfo" style="display:none; background:#eef2ff; border-radius:20px; padding:8px; margin:8px 0; font-size:0.75rem;"></div>
         <div id="completedInfo" style="display:none;" class="info-completed"></div>
         <h4><i class="fas fa-tasks"></i> Sub Tugas</h4>
-        <div id="subtasksContainer" style="margin-bottom:12px;"></div>
+        <div id="subtasksContainer" style="margin-bottom:10px;"></div>
         <div style="display:flex; gap:8px;">
             <input type="text" id="newSubtaskInput" placeholder="Nama sub tugas">
-            <button id="addSubtaskBtn" class="btn-primary" style="padding:0 16px; flex:0;">+</button>
+            <button id="addSubtaskBtn" class="btn-primary" style="padding:0 12px; flex:0;">+</button>
         </div>
 
         <!-- RENCANA ANGGARAN -->
         <div class="rab-section">
             <div class="rab-header">
                 <h4><i class="fas fa-coins"></i> Rencana Anggaran</h4>
-                <button id="toggleRabBtn" class="small-btn"><i class="fas fa-plus"></i> Tampilkan RAB</button>
+                <button id="toggleRabBtn" class="small-btn"><i class="fas fa-plus"></i> Tampilkan</button>
             </div>
             <div id="rabTableWrapper" style="display: none;">
                 <table class="rab-table" id="rabTable">
                     <thead>
-                        <tr><th>Uraian</th><th>Satuan</th><th>Harga Satuan (Rp)</th><th>Jumlah (Rp)</th><th style="width:30px"></th></tr>
+                        <tr><th>Uraian</th><th>Satuan</th><th>Harga Satuan</th><th>Jumlah</th><th></th></tr>
                     </thead>
                     <tbody id="rabTbody"></tbody>
                 </table>
-                <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
                     <button id="addRabRowBtn" class="small-btn"><i class="fas fa-plus"></i> Baris</button>
                     <div class="rab-total">Total: <span id="rabTotalDisplay">Rp 0</span></div>
                 </div>
@@ -693,7 +676,7 @@
     let activeTaskId = null;
     let currentSubtasks = [];
     let originalTabId = null;
-    let currentRabItems = []; // array { id, uraian, satuan, hargaSatuan, jumlah }
+    let currentRabItems = [];
     
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
     
@@ -730,7 +713,6 @@
         rabTotalDisplay.textContent = formatRupiah(total);
     }
     
-    // Render tabel RAB tanpa kehilangan fokus (menggunakan event terpisah)
     function renderRabTable() {
         rabTbody.innerHTML = '';
         if (!currentRabItems.length) {
@@ -739,40 +721,30 @@
             updateRabTotalDisplay();
             return;
         }
-        
         currentRabItems.forEach((item, idx) => {
             const row = rabTbody.insertRow();
-            
-            // Uraian
             const tdUraian = row.insertCell(0);
             const inputUraian = document.createElement('input');
             inputUraian.type = 'text';
             inputUraian.value = item.uraian || '';
-            inputUraian.placeholder = 'Nama item';
-            inputUraian.addEventListener('change', (e) => { 
-                currentRabItems[idx].uraian = e.target.value;
-                // tidak perlu update jumlah atau total karena hanya teks
-            });
+            inputUraian.placeholder = 'Nama';
+            inputUraian.addEventListener('change', (e) => { currentRabItems[idx].uraian = e.target.value; });
             tdUraian.appendChild(inputUraian);
             
-            // Satuan
             const tdSatuan = row.insertCell(1);
             const inputSatuan = document.createElement('input');
             inputSatuan.type = 'text';
             inputSatuan.value = item.satuan || '';
             inputSatuan.placeholder = 'Satuan';
-            // Event input langsung update jumlah di baris ini
             inputSatuan.addEventListener('input', (e) => {
                 currentRabItems[idx].satuan = e.target.value;
                 const newItem = recalcRabItem(currentRabItems[idx]);
                 currentRabItems[idx] = newItem;
-                // Update kolom jumlah di baris ini
                 tdJumlah.textContent = formatRupiah(newItem.jumlah);
                 updateRabTotalDisplay();
             });
             tdSatuan.appendChild(inputSatuan);
             
-            // Harga Satuan
             const tdHarga = row.insertCell(2);
             const inputHarga = document.createElement('input');
             inputHarga.type = 'number';
@@ -790,18 +762,16 @@
             });
             tdHarga.appendChild(inputHarga);
             
-            // Jumlah
             const tdJumlah = row.insertCell(3);
             tdJumlah.textContent = formatRupiah(item.jumlah || 0);
             
-            // Aksi hapus
             const tdAction = row.insertCell(4);
             const delBtn = document.createElement('button');
             delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
             delBtn.className = 'btn-icon btn-icon-danger';
             delBtn.addEventListener('click', () => {
                 currentRabItems.splice(idx, 1);
-                renderRabTable(); // re-render aman karena ini dari klik tombol, bukan dari input
+                renderRabTable();
             });
             tdAction.appendChild(delBtn);
         });
@@ -809,8 +779,7 @@
     }
     
     function addRabRow() {
-        const newId = Date.now() + Math.random();
-        currentRabItems.push({ id: newId, uraian: '', satuan: '', hargaSatuan: 0, jumlah: 0 });
+        currentRabItems.push({ id: Date.now()+Math.random(), uraian: '', satuan: '', hargaSatuan: 0, jumlah: 0 });
         renderRabTable();
         if (rabTableWrapper.style.display === 'none') rabTableWrapper.style.display = 'block';
     }
@@ -910,7 +879,7 @@
         else if (statusFilter === 'active') html += renderSection('Aktif', 'far fa-circle', active);
         else if (statusFilter === 'completed') html += renderSection('Selesai', 'fas fa-check-circle', completed);
         else if (statusFilter === 'cancelled') html += renderSection('Batal', 'fas fa-ban', cancelled, '#dc2626');
-        if (html === '') tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-frown"></i><p>Tidak ada tugas yang cocok.</p></div>';
+        if (html === '') tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-frown"></i><p>Tidak ada tugas</p></div>';
         else tasksContainer.innerHTML = html;
         attachTaskEvents();
     }
@@ -923,47 +892,81 @@
         return sectionHtml;
     }
     
+    // Fungsi warna progres untuk badge persentase (background solid, teks kontras)
+    function getProgressStyle(percent) {
+        percent = Math.min(100, Math.max(0, percent));
+        let bgColor, textColor;
+        if (percent === 0) {
+            bgColor = '#dc2626'; // merah
+            textColor = '#ffffff';
+        } else if (percent === 100) {
+            bgColor = '#22c55e'; // hijau
+            textColor = '#ffffff';
+        } else if (percent <= 30) {
+            bgColor = '#ef4444'; // merah terang
+            textColor = '#ffffff';
+        } else if (percent <= 60) {
+            bgColor = '#f97316'; // oranye
+            textColor = '#ffffff';
+        } else if (percent <= 80) {
+            bgColor = '#f59e0b'; // kuning tua
+            textColor = '#000000';
+        } else {
+            bgColor = '#84cc16'; // hijau kekuningan
+            textColor = '#000000';
+        }
+        return `background: ${bgColor}; color: ${textColor};`;
+    }
+    
+    // Badge prioritas dengan icon
     function getPriorityBadge(priority) {
         const p = priority || 'medium';
         const labels = { high: 'Tinggi', medium: 'Sedang', low: 'Rendah' };
         const icons = { high: '🔴', medium: '🟡', low: '🟢' };
         const classes = { high: 'priority-high', medium: 'priority-medium', low: 'priority-low' };
-        return `<span class="priority-badge ${classes[p]}"><i class="fas fa-flag"></i> ${icons[p]} ${labels[p]}</span>`;
+        return `<span class="priority-badge ${classes[p]}">${icons[p]} ${labels[p]}</span>`;
     }
     
     function renderTaskCard(task) {
         const progressVal = task.progress || 0;
         const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleString('id-ID') : 'Tidak ada deadline';
         const createdDateStr = task.createdAt ? formatDate(task.createdAt) : '-';
-        let bullet, titleClass, cardClass = '';
-        if (task.cancelled) { bullet = '<i class="fas fa-ban task-bullet-cancelled"></i>'; titleClass = 'cancelled-text'; cardClass = 'cancelled'; }
-        else if (task.completed) { bullet = '<i class="fas fa-check-circle task-bullet-checked"></i>'; titleClass = 'completed-text'; }
-        else { bullet = '<i class="far fa-circle task-bullet-unchecked"></i>'; titleClass = ''; }
-        const color = getProgressColor(progressVal);
+        let bullet, cardClass = '';
+        if (task.cancelled) { 
+            bullet = '<i class="fas fa-ban task-bullet-cancelled"></i>'; 
+            cardClass = 'cancelled';
+        } else if (task.completed) { 
+            bullet = '<i class="fas fa-check-circle task-bullet-checked"></i>'; 
+        } else { 
+            bullet = '<i class="far fa-circle task-bullet-unchecked"></i>'; 
+        }
         let completedHtml = '';
-        if (task.completed && task.completedAt) { completedHtml = `<div class="completed-date"><i class="fas fa-calendar-check"></i> Selesai: ${formatDate(task.completedAt)}</div>`; }
+        if (task.completed && task.completedAt) { 
+            completedHtml = `<div class="completed-date"><i class="fas fa-calendar-check"></i> Selesai: ${formatDate(task.completedAt)}</div>`; 
+        }
         const tab = allTabs.find(t => t.id === task.tabId);
         const tabBadge = tab ? `<span class="tab-badge">📁 ${escapeHtml(tab.name)}</span>` : '';
         const priorityBadge = getPriorityBadge(task.priority);
         const rabTotalVal = (task.rabTotal || 0);
         const rabHtml = rabTotalVal > 0 ? `<span class="rab-badge"><i class="fas fa-coins"></i> ${formatRupiah(rabTotalVal)}</span>` : '';
+        const progressStyle = getProgressStyle(progressVal);
+        
         return `<div class="task-card ${cardClass}" data-id="${task.id}">
                     <div class="task-left">
                         <div class="task-bullet" data-id="${task.id}">${bullet}</div>
                         <div class="task-info">
-                            <div class="task-title ${titleClass}">
+                            <div class="task-title">
                                 <span>${escapeHtml(task.title)}</span>
                                 ${priorityBadge}
                                 ${tabBadge}
+                                <span class="created-date-badge"><i class="fas fa-calendar-alt"></i> ${createdDateStr}</span>
                                 ${rabHtml}
-                                <span class="created-date-badge"><i class="fas fa-calendar-alt"></i> dibuat: ${createdDateStr}</span>
                             </div>
                             <div class="task-meta">
-                                <span><i class="fas fa-calendar-alt"></i> deadline: ${escapeHtml(dueDateStr)}</span>
-                                <span class="task-progress-badge" style="background: ${color}20; color: ${color};">${progressVal}%</span>
+                                <span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span>
+                                <span class="task-progress-badge" style="${progressStyle}">${progressVal}%</span>
                             </div>
                             ${completedHtml}
-                            <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${progressVal}%; background: ${color};"></div></div>
                         </div>
                     </div>
                     <div class="task-actions">
@@ -971,13 +974,6 @@
                         <i class="fas fa-trash-alt task-delete-btn" data-id="${task.id}"></i>
                     </div>
                 </div>`;
-    }
-    
-    function getProgressColor(percent) {
-        if (percent >= 80) return '#22c55e';
-        if (percent >= 50) return '#f59e0b';
-        if (percent >= 20) return '#f97316';
-        return '#ef4444';
     }
     
     function attachTaskEvents() {
@@ -1060,9 +1056,8 @@
         const hasSubtasks = currentSubtasks.length > 0;
         if (hasSubtasks) { progressGroup.style.display = 'none'; progressInfo.style.display = 'block'; const avgProgress = computeAvgProgressFromSubtasks(currentSubtasks); progressSlider.value = avgProgress; progressPercent.innerText = `${avgProgress}%`; progressSlider.disabled = true; progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${avgProgress}%`; }
         else { progressGroup.style.display = 'block'; progressInfo.style.display = 'none'; progressSlider.disabled = false; progressSlider.value = task.progress || 0; progressPercent.innerText = `${task.progress || 0}%`; }
-        if (task.completed && task.completedAt) { completedInfo.style.display = 'block'; completedInfo.innerHTML = `<i class="fas fa-check-circle"></i> Tugas ini selesai pada: ${formatDate(task.completedAt)}`; } else completedInfo.style.display = 'none';
+        if (task.completed && task.completedAt) { completedInfo.style.display = 'block'; completedInfo.innerHTML = `<i class="fas fa-check-circle"></i> Selesai: ${formatDate(task.completedAt)}`; } else completedInfo.style.display = 'none';
         renderSubtasksModal();
-        // RAB: tampilkan tabel jika sudah ada item, sembunyikan jika kosong
         if (currentRabItems.length > 0) { rabTableWrapper.style.display = 'block'; renderRabTable(); } else { rabTableWrapper.style.display = 'none'; }
         renderModalButtons(task);
         taskModal.style.display = 'flex';
@@ -1104,10 +1099,11 @@
     
     function renderSubtasksModal() {
         subtasksContainer.innerHTML = '';
-        if (!currentSubtasks.length) { subtasksContainer.innerHTML = '<div class="empty-placeholder">Belum ada sub-tugas. Tambahkan di bawah.</div>'; }
+        if (!currentSubtasks.length) { subtasksContainer.innerHTML = '<div class="empty-placeholder">Belum ada sub-tugas.</div>'; }
         else {
             currentSubtasks.forEach((sub, idx) => {
-                const div = document.createElement('div'); div.className = 'subtask-item'; const subColor = getProgressColor(sub.progress || 0);
+                const div = document.createElement('div'); div.className = 'subtask-item'; 
+                const subColor = getProgressColor(sub.progress || 0);
                 div.innerHTML = `<div class="subtask-header"><span class="subtask-name">${escapeHtml(sub.text)}</span><i class="fas fa-trash-alt delete-subtask" data-idx="${idx}"></i></div><div class="subtask-range"><input type="range" class="subtask-progress" data-idx="${idx}" min="0" max="100" step="1" value="${sub.progress || 0}" style="accent-color: ${subColor};"><span class="subtask-percent" style="color: ${subColor};">${sub.progress || 0}%</span></div>`;
                 subtasksContainer.appendChild(div);
             });
@@ -1145,7 +1141,6 @@
     filterTabSelect.addEventListener('change', () => { if (filterTabSelect.value !== 'all') { currentTabId = filterTabSelect.value; addTaskBtn.style.display = 'flex'; } else if (currentTabId !== 'high-priority-special') { currentTabId = 'high-priority-special'; addTaskBtn.style.display = 'none'; } applyFiltersAndRender(); renderTabs(allTabs); });
     resetFilterBtn.addEventListener('click', () => { searchInput.value = ''; filterStatusSelect.value = 'all'; if (currentTabId && currentTabId !== 'high-priority-special') filterTabSelect.value = currentTabId; else filterTabSelect.value = 'all'; applyFiltersAndRender(); });
     
-    // RAB toggle & tambah baris
     toggleRabBtn.addEventListener('click', () => {
         if (rabTableWrapper.style.display === 'none') {
             rabTableWrapper.style.display = 'block';
@@ -1156,6 +1151,13 @@
         }
     });
     addRabRowBtn.addEventListener('click', addRabRow);
+    
+    function getProgressColor(percent) {
+        if (percent >= 80) return '#22c55e';
+        if (percent >= 50) return '#f59e0b';
+        if (percent >= 20) return '#f97316';
+        return '#ef4444';
+    }
     
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW registered:', reg)).catch(err => console.log('SW error:', err)); }); }
     
