@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <title>TaskAbr | Task Manager</title>
+    <title>TaskAbr | Task Manager + RAB</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3b82f6">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -238,6 +238,16 @@
             color: #5b6e8c;
             margin-bottom: 6px;
         }
+        .rab-badge {
+            background: #e6f0ff;
+            color: #1e40af;
+            border-radius: 20px;
+            padding: 2px 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+        }
         .completed-date {
             background: #e6f7e6;
             padding: 2px 8px;
@@ -353,35 +363,60 @@
             padding: 10px 12px;
             margin-bottom: 12px;
         }
-        .subtask-header {
+        .rab-section {
+            margin-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 16px;
+        }
+        .rab-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
+            margin-bottom: 12px;
         }
-        .subtask-name {
-            flex: 1;
-            font-size: 0.85rem;
-            font-weight: 500;
+        .rab-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
         }
-        .subtask-range {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .rab-table th, .rab-table td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: middle;
         }
-        .subtask-range input {
-            flex: 1;
+        .rab-table th {
+            background: #f1f5f9;
+        }
+        .rab-table input {
+            width: 100%;
             margin: 0;
-            padding: 0;
+            padding: 6px;
+            font-size: 0.75rem;
         }
-        .subtask-range span {
-            font-size: 0.7rem;
-            min-width: 35px;
+        .rab-total {
+            text-align: right;
+            font-weight: bold;
+            margin-top: 8px;
+            font-size: 0.85rem;
         }
-        .delete-subtask {
-            color: #dc2626;
+        .btn-icon {
+            background: none;
+            border: none;
             cursor: pointer;
-            margin-left: 8px;
+            font-size: 0.9rem;
+            color: #3b82f6;
+        }
+        .btn-icon-danger {
+            color: #dc2626;
+        }
+        .small-btn {
+            background: #eef2ff;
+            border: none;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            cursor: pointer;
         }
         .modal-buttons {
             display: flex;
@@ -477,15 +512,6 @@
             align-items: center;
             gap: 4px;
         }
-        .priority-high-tab {
-            background: linear-gradient(135deg, #fee2e2, #ffc4c4);
-            border-color: #fecaca;
-        }
-        .priority-high-tab.active {
-            background: #dc2626;
-            color: white;
-            border-color: #dc2626;
-        }
     </style>
 </head>
 <body>
@@ -496,7 +522,6 @@
     </div>
     <div class="tabs-scroll" id="tabsContainer"></div>
     
-    <!-- Panel Filter & Pencarian -->
     <div class="filters-panel">
         <div class="search-box">
             <i class="fas fa-search"></i>
@@ -559,6 +584,27 @@
             <input type="text" id="newSubtaskInput" placeholder="Nama sub tugas">
             <button id="addSubtaskBtn" class="btn-primary" style="padding:0 16px; flex:0;">+</button>
         </div>
+
+        <!-- RENCANA ANGGARAN -->
+        <div class="rab-section">
+            <div class="rab-header">
+                <h4><i class="fas fa-coins"></i> Rencana Anggaran</h4>
+                <button id="toggleRabBtn" class="small-btn"><i class="fas fa-plus"></i> Tampilkan RAB</button>
+            </div>
+            <div id="rabTableWrapper" style="display: none;">
+                <table class="rab-table" id="rabTable">
+                    <thead>
+                        <tr><th>Uraian</th><th>Satuan</th><th>Harga Satuan (Rp)</th><th>Jumlah (Rp)</th><th style="width:30px"></th></tr>
+                    </thead>
+                    <tbody id="rabTbody"></tbody>
+                </table>
+                <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <button id="addRabRowBtn" class="small-btn"><i class="fas fa-plus"></i> Baris</button>
+                    <div class="rab-total">Total: <span id="rabTotalDisplay">Rp 0</span></div>
+                </div>
+            </div>
+        </div>
+
         <div class="modal-buttons" id="modalButtonsContainer"></div>
     </div>
 </div>
@@ -596,7 +642,7 @@
     const tabsCol = collection(db, "tabs");
     const tasksCol = collection(db, "tasks");
     
-    let currentTabId = 'high-priority-special'; // DEFAULT: tab prioritas tinggi
+    let currentTabId = 'high-priority-special';
     let tabsUnsub = null;
     let allTasksUnsub = null;
     let allTasksGlobal = [];
@@ -632,31 +678,141 @@
     const deleteTabBtn = document.getElementById("deleteTabBtn");
     const modalButtonsContainer = document.getElementById("modalButtonsContainer");
     const moveTabSelect = document.getElementById("moveTabSelect");
-    
-    // Filter elements
-    const searchInput = document.getElementById("searchInput");
     const filterStatusSelect = document.getElementById("filterStatusSelect");
     const filterTabSelect = document.getElementById("filterTabSelect");
     const resetFilterBtn = document.getElementById("resetFilterBtn");
+    const searchInput = document.getElementById("searchInput");
+    
+    // Elemen RAB
+    const toggleRabBtn = document.getElementById("toggleRabBtn");
+    const rabTableWrapper = document.getElementById("rabTableWrapper");
+    const rabTbody = document.getElementById("rabTbody");
+    const addRabRowBtn = document.getElementById("addRabRowBtn");
+    const rabTotalDisplay = document.getElementById("rabTotalDisplay");
     
     let activeTaskId = null;
     let currentSubtasks = [];
     let originalTabId = null;
+    let currentRabItems = []; // array { id, uraian, satuan, hargaSatuan, jumlah }
     
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
     
     function formatDate(timestamp) {
         if (!timestamp) return null;
         const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
         return date.toLocaleString('id-ID', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+    
+    function parseSatuanNumber(satuanStr) {
+        if (!satuanStr) return 1;
+        const match = satuanStr.match(/\d+(?:\.\d+)?/);
+        if (match) return parseFloat(match[0]);
+        return 1;
+    }
+    
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+    }
+    
+    function computeRabTotal(items) {
+        return items.reduce((sum, item) => sum + (item.jumlah || 0), 0);
+    }
+    
+    function recalcRabItem(item) {
+        const qty = parseSatuanNumber(item.satuan);
+        const harga = item.hargaSatuan || 0;
+        const jumlah = qty * harga;
+        return { ...item, jumlah };
+    }
+    
+    function updateRabTotalDisplay() {
+        const total = computeRabTotal(currentRabItems);
+        rabTotalDisplay.textContent = formatRupiah(total);
+    }
+    
+    // Render tabel RAB tanpa kehilangan fokus (menggunakan event terpisah)
+    function renderRabTable() {
+        rabTbody.innerHTML = '';
+        if (!currentRabItems.length) {
+            const emptyRow = rabTbody.insertRow();
+            emptyRow.innerHTML = '<td colspan="5" style="text-align:center">Belum ada item. Klik "+ Baris"</td>';
+            updateRabTotalDisplay();
+            return;
+        }
+        
+        currentRabItems.forEach((item, idx) => {
+            const row = rabTbody.insertRow();
+            
+            // Uraian
+            const tdUraian = row.insertCell(0);
+            const inputUraian = document.createElement('input');
+            inputUraian.type = 'text';
+            inputUraian.value = item.uraian || '';
+            inputUraian.placeholder = 'Nama item';
+            inputUraian.addEventListener('change', (e) => { 
+                currentRabItems[idx].uraian = e.target.value;
+                // tidak perlu update jumlah atau total karena hanya teks
+            });
+            tdUraian.appendChild(inputUraian);
+            
+            // Satuan
+            const tdSatuan = row.insertCell(1);
+            const inputSatuan = document.createElement('input');
+            inputSatuan.type = 'text';
+            inputSatuan.value = item.satuan || '';
+            inputSatuan.placeholder = 'Satuan';
+            // Event input langsung update jumlah di baris ini
+            inputSatuan.addEventListener('input', (e) => {
+                currentRabItems[idx].satuan = e.target.value;
+                const newItem = recalcRabItem(currentRabItems[idx]);
+                currentRabItems[idx] = newItem;
+                // Update kolom jumlah di baris ini
+                tdJumlah.textContent = formatRupiah(newItem.jumlah);
+                updateRabTotalDisplay();
+            });
+            tdSatuan.appendChild(inputSatuan);
+            
+            // Harga Satuan
+            const tdHarga = row.insertCell(2);
+            const inputHarga = document.createElement('input');
+            inputHarga.type = 'number';
+            inputHarga.value = item.hargaSatuan || 0;
+            inputHarga.min = 0;
+            inputHarga.step = 1000;
+            inputHarga.addEventListener('input', (e) => {
+                let val = parseFloat(e.target.value);
+                if (isNaN(val)) val = 0;
+                currentRabItems[idx].hargaSatuan = val;
+                const newItem = recalcRabItem(currentRabItems[idx]);
+                currentRabItems[idx] = newItem;
+                tdJumlah.textContent = formatRupiah(newItem.jumlah);
+                updateRabTotalDisplay();
+            });
+            tdHarga.appendChild(inputHarga);
+            
+            // Jumlah
+            const tdJumlah = row.insertCell(3);
+            tdJumlah.textContent = formatRupiah(item.jumlah || 0);
+            
+            // Aksi hapus
+            const tdAction = row.insertCell(4);
+            const delBtn = document.createElement('button');
+            delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            delBtn.className = 'btn-icon btn-icon-danger';
+            delBtn.addEventListener('click', () => {
+                currentRabItems.splice(idx, 1);
+                renderRabTable(); // re-render aman karena ini dari klik tombol, bukan dari input
+            });
+            tdAction.appendChild(delBtn);
+        });
+        updateRabTotalDisplay();
+    }
+    
+    function addRabRow() {
+        const newId = Date.now() + Math.random();
+        currentRabItems.push({ id: newId, uraian: '', satuan: '', hargaSatuan: 0, jumlah: 0 });
+        renderRabTable();
+        if (rabTableWrapper.style.display === 'none') rabTableWrapper.style.display = 'block';
     }
     
     function computeAvgProgressFromSubtasks(subtasks) {
@@ -665,19 +821,11 @@
         return Math.floor(total / subtasks.length);
     }
     
-    async function updateTaskStatus(taskId, updates) {
-        await updateDoc(doc(db, "tasks", taskId), updates);
-    }
+    async function updateTaskStatus(taskId, updates) { await updateDoc(doc(db, "tasks", taskId), updates); }
     
     async function toggleTaskCompletion(task) {
-        if (task.cancelled) {
-            await updateTaskStatus(task.id, { cancelled: false, completed: false, completedAt: null });
-            return;
-        }
-        if (task.completed) {
-            await updateTaskStatus(task.id, { completed: false, progress: 0, completedAt: null });
-            return;
-        }
+        if (task.cancelled) { await updateTaskStatus(task.id, { cancelled: false, completed: false, completedAt: null }); return; }
+        if (task.completed) { await updateTaskStatus(task.id, { completed: false, progress: 0, completedAt: null }); return; }
         const subtasks = task.subtasks || [];
         if (subtasks.length > 0) {
             const allCompleted = subtasks.every(st => st.progress === 100);
@@ -686,24 +834,14 @@
             const newAvgProgress = computeAvgProgressFromSubtasks(newSubtasks);
             const newCompleted = newSubtasks.every(st => st.progress === 100);
             const completedAtValue = newCompleted ? Timestamp.now() : null;
-            await updateDoc(doc(db, "tasks", task.id), {
-                subtasks: newSubtasks,
-                progress: newAvgProgress,
-                completed: newCompleted,
-                cancelled: false,
-                completedAt: completedAtValue
-            });
+            await updateDoc(doc(db, "tasks", task.id), { subtasks: newSubtasks, progress: newAvgProgress, completed: newCompleted, cancelled: false, completedAt: completedAtValue });
         } else {
             await updateDoc(doc(db, "tasks", task.id), { progress: 100, completed: true, cancelled: false, completedAt: Timestamp.now() });
         }
     }
     
-    async function addNewTab(name) {
-        await addDoc(tabsCol, { name, createdAt: Timestamp.now() });
-    }
-    async function updateTab(tabId, newName) {
-        await updateDoc(doc(db, "tabs", tabId), { name: newName });
-    }
+    async function addNewTab(name) { await addDoc(tabsCol, { name, createdAt: Timestamp.now() }); }
+    async function updateTab(tabId, newName) { await updateDoc(doc(db, "tabs", tabId), { name: newName }); }
     async function deleteTabById(tabId) {
         const batch = writeBatch(db);
         const q = query(tasksCol, where("tabId", "==", tabId));
@@ -757,61 +895,30 @@
     function applyFiltersAndRender() {
         const searchText = searchInput.value.trim().toLowerCase();
         const statusFilter = filterStatusSelect.value;
-        
         let filtered = [...allTasksGlobal];
-        
-        // Filter berdasarkan tab yang dipilih (termasuk tab prioritas tinggi)
-        if (currentTabId === 'high-priority-special') {
-            filtered = filtered.filter(task => task.priority === 'high');
-        } else if (currentTabId && currentTabId !== 'all') {
-            filtered = filtered.filter(task => task.tabId === currentTabId);
-        }
-        
-        if (searchText) {
-            filtered = filtered.filter(task => 
-                (task.title && task.title.toLowerCase().includes(searchText)) ||
-                (task.notes && task.notes.toLowerCase().includes(searchText))
-            );
-        }
-        
+        if (currentTabId === 'high-priority-special') filtered = filtered.filter(task => task.priority === 'high');
+        else if (currentTabId && currentTabId !== 'all') filtered = filtered.filter(task => task.tabId === currentTabId);
+        if (searchText) filtered = filtered.filter(task => (task.title && task.title.toLowerCase().includes(searchText)) || (task.notes && task.notes.toLowerCase().includes(searchText)));
         let active = filtered.filter(t => !t.completed && !t.cancelled);
         let completed = filtered.filter(t => t.completed && !t.cancelled);
         let cancelled = filtered.filter(t => t.cancelled);
-        
         active = sortTasksByCreatedDate(active);
         completed = sortTasksByCreatedDate(completed);
         cancelled = sortTasksByCreatedDate(cancelled);
-        
         let html = '';
-        if (statusFilter === 'all') {
-            html += renderSection('Aktif', 'far fa-circle', active);
-            html += renderSection('Selesai', 'fas fa-check-circle', completed);
-            html += renderSection('Batal', 'fas fa-ban', cancelled, '#dc2626');
-        } else if (statusFilter === 'active') {
-            html += renderSection('Aktif', 'far fa-circle', active);
-        } else if (statusFilter === 'completed') {
-            html += renderSection('Selesai', 'fas fa-check-circle', completed);
-        } else if (statusFilter === 'cancelled') {
-            html += renderSection('Batal', 'fas fa-ban', cancelled, '#dc2626');
-        }
-        
-        if (html === '') {
-            tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-frown"></i><p>Tidak ada tugas yang cocok.</p></div>';
-        } else {
-            tasksContainer.innerHTML = html;
-        }
+        if (statusFilter === 'all') { html += renderSection('Aktif', 'far fa-circle', active); html += renderSection('Selesai', 'fas fa-check-circle', completed); html += renderSection('Batal', 'fas fa-ban', cancelled, '#dc2626'); }
+        else if (statusFilter === 'active') html += renderSection('Aktif', 'far fa-circle', active);
+        else if (statusFilter === 'completed') html += renderSection('Selesai', 'fas fa-check-circle', completed);
+        else if (statusFilter === 'cancelled') html += renderSection('Batal', 'fas fa-ban', cancelled, '#dc2626');
+        if (html === '') tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-frown"></i><p>Tidak ada tugas yang cocok.</p></div>';
+        else tasksContainer.innerHTML = html;
         attachTaskEvents();
     }
     
     function renderSection(title, iconClass, tasks, colorHex = null) {
         let sectionHtml = `<div class="task-section"><div class="section-title" style="${colorHex ? `color: ${colorHex};` : ''}"><i class="${iconClass}"></i> ${title} (${tasks.length})</div>`;
-        if (tasks.length === 0) {
-            sectionHtml += `<div class="empty-placeholder">✨ Tidak ada tugas</div>`;
-        } else {
-            tasks.forEach(task => {
-                sectionHtml += renderTaskCard(task);
-            });
-        }
+        if (tasks.length === 0) sectionHtml += `<div class="empty-placeholder">✨ Tidak ada tugas</div>`;
+        else tasks.forEach(task => { sectionHtml += renderTaskCard(task); });
         sectionHtml += `</div>`;
         return sectionHtml;
     }
@@ -833,17 +940,13 @@
         else if (task.completed) { bullet = '<i class="fas fa-check-circle task-bullet-checked"></i>'; titleClass = 'completed-text'; }
         else { bullet = '<i class="far fa-circle task-bullet-unchecked"></i>'; titleClass = ''; }
         const color = getProgressColor(progressVal);
-        
         let completedHtml = '';
-        if (task.completed && task.completedAt) {
-            const formatted = formatDate(task.completedAt);
-            completedHtml = `<div class="completed-date"><i class="fas fa-calendar-check"></i> Selesai: ${formatted}</div>`;
-        }
-        
+        if (task.completed && task.completedAt) { completedHtml = `<div class="completed-date"><i class="fas fa-calendar-check"></i> Selesai: ${formatDate(task.completedAt)}</div>`; }
         const tab = allTabs.find(t => t.id === task.tabId);
         const tabBadge = tab ? `<span class="tab-badge">📁 ${escapeHtml(tab.name)}</span>` : '';
         const priorityBadge = getPriorityBadge(task.priority);
-        
+        const rabTotalVal = (task.rabTotal || 0);
+        const rabHtml = rabTotalVal > 0 ? `<span class="rab-badge"><i class="fas fa-coins"></i> ${formatRupiah(rabTotalVal)}</span>` : '';
         return `<div class="task-card ${cardClass}" data-id="${task.id}">
                     <div class="task-left">
                         <div class="task-bullet" data-id="${task.id}">${bullet}</div>
@@ -852,6 +955,7 @@
                                 <span>${escapeHtml(task.title)}</span>
                                 ${priorityBadge}
                                 ${tabBadge}
+                                ${rabHtml}
                                 <span class="created-date-badge"><i class="fas fa-calendar-alt"></i> dibuat: ${createdDateStr}</span>
                             </div>
                             <div class="task-meta">
@@ -877,53 +981,22 @@
     }
     
     function attachTaskEvents() {
-        document.querySelectorAll('.task-bullet').forEach(el => {
-            el.removeEventListener('click', bulletClickHandler);
-            el.addEventListener('click', bulletClickHandler);
-        });
-        document.querySelectorAll('.task-card').forEach(card => {
-            card.removeEventListener('click', cardClickHandler);
-            card.addEventListener('click', cardClickHandler);
-        });
-        document.querySelectorAll('.task-edit-btn').forEach(btn => {
-            btn.removeEventListener('click', editClickHandler);
-            btn.addEventListener('click', editClickHandler);
-        });
-        document.querySelectorAll('.task-delete-btn').forEach(btn => {
-            btn.removeEventListener('click', deleteClickHandler);
-            btn.addEventListener('click', deleteClickHandler);
-        });
+        document.querySelectorAll('.task-bullet').forEach(el => { el.removeEventListener('click', bulletClickHandler); el.addEventListener('click', bulletClickHandler); });
+        document.querySelectorAll('.task-card').forEach(card => { card.removeEventListener('click', cardClickHandler); card.addEventListener('click', cardClickHandler); });
+        document.querySelectorAll('.task-edit-btn').forEach(btn => { btn.removeEventListener('click', editClickHandler); btn.addEventListener('click', editClickHandler); });
+        document.querySelectorAll('.task-delete-btn').forEach(btn => { btn.removeEventListener('click', deleteClickHandler); btn.addEventListener('click', deleteClickHandler); });
     }
     
-    function bulletClickHandler(e) {
-        e.stopPropagation();
-        const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id);
-        if (task) toggleTaskCompletion(task);
-    }
-    function cardClickHandler(e) {
-        if (e.target.closest('.task-bullet') || e.target.closest('.task-edit-btn') || e.target.closest('.task-delete-btn')) return;
-        const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id);
-        if (task) openTaskModal(task);
-    }
-    function editClickHandler(e) {
-        e.stopPropagation();
-        const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id);
-        if (task) openTaskModal(task);
-    }
-    async function deleteClickHandler(e) {
-        e.stopPropagation();
-        if (confirm("Hapus tugas permanen?")) {
-            await deleteDoc(doc(db, "tasks", e.currentTarget.dataset.id));
-        }
-    }
+    function bulletClickHandler(e) { e.stopPropagation(); const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id); if (task) toggleTaskCompletion(task); }
+    function cardClickHandler(e) { if (e.target.closest('.task-bullet') || e.target.closest('.task-edit-btn') || e.target.closest('.task-delete-btn')) return; const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id); if (task) openTaskModal(task); }
+    function editClickHandler(e) { e.stopPropagation(); const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id); if (task) openTaskModal(task); }
+    async function deleteClickHandler(e) { e.stopPropagation(); if (confirm("Hapus tugas permanen?")) await deleteDoc(doc(db, "tasks", e.currentTarget.dataset.id)); }
     
     function startGlobalTasksListener() {
         if (allTasksUnsub) allTasksUnsub();
         allTasksUnsub = onSnapshot(tasksCol, (snapshot) => {
             allTasksGlobal = [];
-            snapshot.forEach(docSnap => {
-                allTasksGlobal.push({ id: docSnap.id, ...docSnap.data() });
-            });
+            snapshot.forEach(docSnap => { allTasksGlobal.push({ id: docSnap.id, ...docSnap.data() }); });
             applyFiltersAndRender();
         });
     }
@@ -932,38 +1005,22 @@
         tabsContainer.innerHTML = '';
         const highPriorityTab = { id: 'high-priority-special', name: '⭐ Prioritas Tinggi', isSpecial: true };
         const normalTabs = [...tabs];
-        
         const allTabsForRender = [highPriorityTab, ...normalTabs];
-        
         allTabsForRender.forEach(tab => {
             const tabDiv = document.createElement('div');
             const isActive = (tab.isSpecial && currentTabId === 'high-priority-special') || (!tab.isSpecial && currentTabId === tab.id);
             tabDiv.className = `tab-item ${isActive ? 'active' : ''} ${tab.isSpecial ? 'priority-high-tab' : ''}`;
             if (tab.isSpecial) {
                 tabDiv.innerHTML = `<span class="tab-name">${tab.name}</span>`;
-                tabDiv.addEventListener('click', () => {
-                    currentTabId = 'high-priority-special';
-                    filterTabSelect.value = 'all';
-                    addTaskBtn.style.display = 'none';
-                    applyFiltersAndRender();
-                    renderTabs(allTabs);
-                });
+                tabDiv.addEventListener('click', () => { currentTabId = 'high-priority-special'; filterTabSelect.value = 'all'; addTaskBtn.style.display = 'none'; applyFiltersAndRender(); renderTabs(allTabs); });
             } else {
                 tabDiv.innerHTML = `<span class="tab-name">${escapeHtml(tab.name)}</span><div class="tab-actions"><i class="fas fa-edit edit-tab" data-id="${tab.id}" data-name="${escapeHtml(tab.name)}"></i><i class="fas fa-trash-alt delete-tab" data-id="${tab.id}"></i></div>`;
-                tabDiv.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('edit-tab') || e.target.classList.contains('delete-tab')) return;
-                    currentTabId = tab.id;
-                    filterTabSelect.value = currentTabId;
-                    addTaskBtn.style.display = 'flex';
-                    applyFiltersAndRender();
-                    renderTabs(allTabs);
-                });
+                tabDiv.addEventListener('click', (e) => { if (e.target.classList.contains('edit-tab') || e.target.classList.contains('delete-tab')) return; currentTabId = tab.id; filterTabSelect.value = currentTabId; addTaskBtn.style.display = 'flex'; applyFiltersAndRender(); renderTabs(allTabs); });
             }
             tabsContainer.appendChild(tabDiv);
         });
-        
         document.querySelectorAll('.edit-tab').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openTabModal(btn.dataset.id, btn.dataset.name); }));
-        document.querySelectorAll('.delete-tab').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); if (confirm("Hapus tab beserta semua tugas?")) { await deleteTabById(btn.dataset.id); if (currentTabId === btn.dataset.id) { currentTabId = 'high-priority-special'; } } }));
+        document.querySelectorAll('.delete-tab').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); if (confirm("Hapus tab beserta semua tugas?")) { await deleteTabById(btn.dataset.id); if (currentTabId === btn.dataset.id) currentTabId = 'high-priority-special'; } }));
     }
     
     function loadTabs() {
@@ -975,20 +1032,8 @@
             allTabs = tabs;
             renderTabs(tabs);
             populateFilterTabSelect();
-            
-            // Set default ke tab prioritas tinggi jika belum ada currentTabId
-            if (!currentTabId || currentTabId === 'high-priority-special') {
-                currentTabId = 'high-priority-special';
-                addTaskBtn.style.display = 'none';
-                filterTabSelect.value = 'all';
-                applyFiltersAndRender();
-            } else if (currentTabId && currentTabId !== 'high-priority-special') {
-                addTaskBtn.style.display = 'flex';
-                if (filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) {
-                    filterTabSelect.value = currentTabId;
-                }
-                applyFiltersAndRender();
-            }
+            if (!currentTabId || currentTabId === 'high-priority-special') { currentTabId = 'high-priority-special'; addTaskBtn.style.display = 'none'; filterTabSelect.value = 'all'; applyFiltersAndRender(); }
+            else if (currentTabId && currentTabId !== 'high-priority-special') { addTaskBtn.style.display = 'flex'; if (filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) filterTabSelect.value = currentTabId; applyFiltersAndRender(); }
         });
     }
     
@@ -1005,107 +1050,50 @@
         activeTaskId = task.id;
         originalTabId = task.tabId;
         currentSubtasks = task.subtasks ? [...task.subtasks] : [];
+        currentRabItems = task.rabItems ? [...task.rabItems] : [];
         taskTitleInput.value = task.title || '';
         taskNotesInput.value = task.notes || '';
         taskDueDate.value = task.dueDate ? task.dueDate.slice(0, 16) : '';
-        if (task.createdAt) {
-            const createdDate = task.createdAt.toDate ? task.createdAt.toDate() : new Date(task.createdAt);
-            taskCreatedAtInput.value = createdDate.toISOString().slice(0, 16);
-        } else {
-            taskCreatedAtInput.value = '';
-        }
+        if (task.createdAt) { const createdDate = task.createdAt.toDate ? task.createdAt.toDate() : new Date(task.createdAt); taskCreatedAtInput.value = createdDate.toISOString().slice(0, 16); } else taskCreatedAtInput.value = '';
         taskPrioritySelect.value = task.priority || 'medium';
         await loadTabsForDropdown(task.tabId);
         const hasSubtasks = currentSubtasks.length > 0;
-        if (hasSubtasks) {
-            progressGroup.style.display = 'none';
-            progressInfo.style.display = 'block';
-            const avgProgress = computeAvgProgressFromSubtasks(currentSubtasks);
-            progressSlider.value = avgProgress;
-            progressPercent.innerText = `${avgProgress}%`;
-            progressSlider.disabled = true;
-            progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${avgProgress}%`;
-        } else {
-            progressGroup.style.display = 'block';
-            progressInfo.style.display = 'none';
-            progressSlider.disabled = false;
-            progressSlider.value = task.progress || 0;
-            progressPercent.innerText = `${task.progress || 0}%`;
-        }
-        if (task.completed && task.completedAt) {
-            completedInfo.style.display = 'block';
-            completedInfo.innerHTML = `<i class="fas fa-check-circle"></i> Tugas ini selesai pada: ${formatDate(task.completedAt)}`;
-        } else {
-            completedInfo.style.display = 'none';
-        }
+        if (hasSubtasks) { progressGroup.style.display = 'none'; progressInfo.style.display = 'block'; const avgProgress = computeAvgProgressFromSubtasks(currentSubtasks); progressSlider.value = avgProgress; progressPercent.innerText = `${avgProgress}%`; progressSlider.disabled = true; progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${avgProgress}%`; }
+        else { progressGroup.style.display = 'block'; progressInfo.style.display = 'none'; progressSlider.disabled = false; progressSlider.value = task.progress || 0; progressPercent.innerText = `${task.progress || 0}%`; }
+        if (task.completed && task.completedAt) { completedInfo.style.display = 'block'; completedInfo.innerHTML = `<i class="fas fa-check-circle"></i> Tugas ini selesai pada: ${formatDate(task.completedAt)}`; } else completedInfo.style.display = 'none';
         renderSubtasksModal();
+        // RAB: tampilkan tabel jika sudah ada item, sembunyikan jika kosong
+        if (currentRabItems.length > 0) { rabTableWrapper.style.display = 'block'; renderRabTable(); } else { rabTableWrapper.style.display = 'none'; }
         renderModalButtons(task);
         taskModal.style.display = 'flex';
-        const sliderHandler = () => {
-            if (currentSubtasks.length > 0) return;
-            let val = parseInt(progressSlider.value);
-            const steps = [0,25,50,75,100];
-            const closest = steps.reduce((a,b) => Math.abs(b-val) < Math.abs(a-val) ? b : a);
-            progressSlider.value = closest;
-            progressPercent.innerText = `${closest}%`;
-        };
+        const sliderHandler = () => { if (currentSubtasks.length > 0) return; let val = parseInt(progressSlider.value); const steps = [0,25,50,75,100]; const closest = steps.reduce((a,b) => Math.abs(b-val) < Math.abs(a-val) ? b : a); progressSlider.value = closest; progressPercent.innerText = `${closest}%`; };
         progressSlider.oninput = sliderHandler;
         sliderHandler();
     }
     
     function renderModalButtons(task) {
         modalButtonsContainer.innerHTML = '';
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn-danger';
-        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Hapus';
-        deleteBtn.onclick = async () => { if (confirm("Hapus tugas permanen?")) { await deleteDoc(doc(db, "tasks", activeTaskId)); taskModal.style.display = "none"; } };
-        modalButtonsContainer.appendChild(deleteBtn);
+        const deleteBtn = document.createElement('button'); deleteBtn.className = 'btn-danger'; deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Hapus'; deleteBtn.onclick = async () => { if (confirm("Hapus tugas permanen?")) { await deleteDoc(doc(db, "tasks", activeTaskId)); taskModal.style.display = "none"; } }; modalButtonsContainer.appendChild(deleteBtn);
         if (task.cancelled) {
-            const reactivateBtn = document.createElement('button');
-            reactivateBtn.className = 'btn-success';
-            reactivateBtn.innerHTML = '<i class="fas fa-undo-alt"></i> Kembalikan';
-            reactivateBtn.onclick = async () => { await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: false, completed: false, completedAt: null }); taskModal.style.display = "none"; };
-            modalButtonsContainer.appendChild(reactivateBtn);
+            const reactivateBtn = document.createElement('button'); reactivateBtn.className = 'btn-success'; reactivateBtn.innerHTML = '<i class="fas fa-undo-alt"></i> Kembalikan'; reactivateBtn.onclick = async () => { await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: false, completed: false, completedAt: null }); taskModal.style.display = "none"; }; modalButtonsContainer.appendChild(reactivateBtn);
         } else {
-            const cancelBtn = document.createElement('button');
-            cancelBtn.className = 'btn-warning';
-            cancelBtn.innerHTML = '<i class="fas fa-ban"></i> Batal';
-            cancelBtn.onclick = async () => { await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: true, completed: false, completedAt: null }); taskModal.style.display = "none"; };
-            modalButtonsContainer.appendChild(cancelBtn);
+            const cancelBtn = document.createElement('button'); cancelBtn.className = 'btn-warning'; cancelBtn.innerHTML = '<i class="fas fa-ban"></i> Batal'; cancelBtn.onclick = async () => { await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: true, completed: false, completedAt: null }); taskModal.style.display = "none"; }; modalButtonsContainer.appendChild(cancelBtn);
         }
-        const saveBtn = document.createElement('button');
-        saveBtn.className = 'btn-primary';
-        saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan';
-        saveBtn.onclick = async () => {
-            const title = taskTitleInput.value.trim();
-            if (!title) return alert("Judul tugas wajib diisi!");
+        const saveBtn = document.createElement('button'); saveBtn.className = 'btn-primary'; saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan'; saveBtn.onclick = async () => {
+            const title = taskTitleInput.value.trim(); if (!title) return alert("Judul tugas wajib diisi!");
             let finalProgress, finalCompleted;
-            if (currentSubtasks.length > 0) {
-                finalProgress = computeAvgProgressFromSubtasks(currentSubtasks);
-                finalCompleted = currentSubtasks.every(st => st.progress === 100);
-            } else {
-                finalProgress = parseInt(progressSlider.value);
-                finalCompleted = (finalProgress === 100);
-            }
+            if (currentSubtasks.length > 0) { finalProgress = computeAvgProgressFromSubtasks(currentSubtasks); finalCompleted = currentSubtasks.every(st => st.progress === 100); }
+            else { finalProgress = parseInt(progressSlider.value); finalCompleted = (finalProgress === 100); }
             const newTabId = moveTabSelect.value;
             let completedAtValue = null;
-            if (finalCompleted && !task.completed) {
-                completedAtValue = Timestamp.now();
-            } else if (!finalCompleted) {
-                completedAtValue = null;
-            } else {
-                completedAtValue = task.completedAt || null;
-            }
+            if (finalCompleted && !task.completed) completedAtValue = Timestamp.now();
+            else if (!finalCompleted) completedAtValue = null;
+            else completedAtValue = task.completedAt || null;
+            const rabTotalFinal = computeRabTotal(currentRabItems);
             const updateData = { 
-                title, 
-                notes: taskNotesInput.value, 
-                dueDate: taskDueDate.value || null, 
-                progress: finalProgress, 
-                completed: finalCompleted, 
-                subtasks: currentSubtasks, 
-                cancelled: false, 
-                completedAt: completedAtValue,
-                priority: taskPrioritySelect.value
+                title, notes: taskNotesInput.value, dueDate: taskDueDate.value || null, progress: finalProgress, completed: finalCompleted, 
+                subtasks: currentSubtasks, cancelled: false, completedAt: completedAtValue, priority: taskPrioritySelect.value,
+                rabItems: currentRabItems, rabTotal: rabTotalFinal
             };
             if (newTabId && newTabId !== originalTabId) updateData.tabId = newTabId;
             await updateDoc(doc(db, "tasks", activeTaskId), updateData);
@@ -1116,113 +1104,60 @@
     
     function renderSubtasksModal() {
         subtasksContainer.innerHTML = '';
-        if (!currentSubtasks.length) { subtasksContainer.innerHTML = '<div class="empty-placeholder">Belum ada sub-tugas. Tambahkan di bawah.</div>'; } else {
+        if (!currentSubtasks.length) { subtasksContainer.innerHTML = '<div class="empty-placeholder">Belum ada sub-tugas. Tambahkan di bawah.</div>'; }
+        else {
             currentSubtasks.forEach((sub, idx) => {
-                const div = document.createElement('div');
-                div.className = 'subtask-item';
-                const subColor = getProgressColor(sub.progress || 0);
+                const div = document.createElement('div'); div.className = 'subtask-item'; const subColor = getProgressColor(sub.progress || 0);
                 div.innerHTML = `<div class="subtask-header"><span class="subtask-name">${escapeHtml(sub.text)}</span><i class="fas fa-trash-alt delete-subtask" data-idx="${idx}"></i></div><div class="subtask-range"><input type="range" class="subtask-progress" data-idx="${idx}" min="0" max="100" step="1" value="${sub.progress || 0}" style="accent-color: ${subColor};"><span class="subtask-percent" style="color: ${subColor};">${sub.progress || 0}%</span></div>`;
                 subtasksContainer.appendChild(div);
             });
             document.querySelectorAll('.subtask-progress').forEach(slider => {
-                slider.addEventListener('input', (e) => {
-                    const idx = parseInt(e.target.dataset.idx);
-                    let val = parseInt(e.target.value);
-                    const steps = [0,25,50,75,100];
-                    const closest = steps.reduce((a,b) => Math.abs(b-val) < Math.abs(a-val) ? b : a);
-                    e.target.value = closest;
-                    currentSubtasks[idx].progress = closest;
-                    const percentSpan = e.target.parentElement.querySelector('.subtask-percent');
-                    if (percentSpan) { percentSpan.innerText = `${closest}%`; percentSpan.style.color = getProgressColor(closest); }
-                    e.target.style.accentColor = getProgressColor(closest);
-                    updateMainProgressFromSubtasks();
-                });
+                slider.addEventListener('input', (e) => { const idx = parseInt(e.target.dataset.idx); let val = parseInt(e.target.value); const steps = [0,25,50,75,100]; const closest = steps.reduce((a,b) => Math.abs(b-val) < Math.abs(a-val) ? b : a); e.target.value = closest; currentSubtasks[idx].progress = closest; const percentSpan = e.target.parentElement.querySelector('.subtask-percent'); if (percentSpan) { percentSpan.innerText = `${closest}%`; percentSpan.style.color = getProgressColor(closest); } e.target.style.accentColor = getProgressColor(closest); updateMainProgressFromSubtasks(); });
             });
             document.querySelectorAll('.delete-subtask').forEach(btn => btn.addEventListener('click', () => { const idx = parseInt(btn.dataset.idx); currentSubtasks.splice(idx, 1); renderSubtasksModal(); if (currentSubtasks.length === 0) { progressGroup.style.display = 'block'; progressInfo.style.display = 'none'; progressSlider.disabled = false; const originalProgress = allTasksGlobal.find(t => t.id === activeTaskId)?.progress || 0; progressSlider.value = originalProgress; progressPercent.innerText = `${originalProgress}%`; } else { updateMainProgressFromSubtasks(); } }));
         }
-        addSubtaskBtn.onclick = () => {
-            const text = newSubtaskInput.value.trim();
-            if (!text) return alert("Isi nama sub-tugas");
-            currentSubtasks.push({ id: Date.now().toString(), text, progress: 0 });
-            newSubtaskInput.value = '';
-            renderSubtasksModal();
-            progressGroup.style.display = 'none';
-            progressInfo.style.display = 'block';
-            progressSlider.disabled = true;
-            updateMainProgressFromSubtasks();
-        };
+        addSubtaskBtn.onclick = () => { const text = newSubtaskInput.value.trim(); if (!text) return alert("Isi nama sub-tugas"); currentSubtasks.push({ id: Date.now().toString(), text, progress: 0 }); newSubtaskInput.value = ''; renderSubtasksModal(); progressGroup.style.display = 'none'; progressInfo.style.display = 'block'; progressSlider.disabled = true; updateMainProgressFromSubtasks(); };
     }
     
     async function createNewTask(tabId) {
         if (!tabId) return alert("Pilih tab terlebih dahulu");
         const now = Timestamp.now();
         const newTask = { 
-            tabId, 
-            title: "", 
-            notes: "", 
-            dueDate: null, 
-            progress: 0, 
-            completed: false, 
-            cancelled: false, 
-            subtasks: [], 
-            createdAt: now,
-            completedAt: null,
-            priority: "medium"
+            tabId, title: "", notes: "", dueDate: null, progress: 0, completed: false, cancelled: false, subtasks: [], createdAt: now,
+            completedAt: null, priority: "medium", rabItems: [], rabTotal: 0
         };
         const docRef = await addDoc(tasksCol, newTask);
         openTaskModal({ id: docRef.id, ...newTask });
     }
     
-    function openTabModal(id = null, name = '') {
-        tabIdField.value = id || '';
-        tabNameInput.value = name || '';
-        deleteTabBtn.style.display = id ? 'flex' : 'none';
-        tabModal.style.display = "flex";
-    }
+    function openTabModal(id = null, name = '') { tabIdField.value = id || ''; tabNameInput.value = name || ''; deleteTabBtn.style.display = id ? 'flex' : 'none'; tabModal.style.display = "flex"; }
     function closeAllModals() { taskModal.style.display = "none"; tabModal.style.display = "none"; }
     
     addTabBtn.addEventListener('click', () => openTabModal());
     saveTabBtn.addEventListener('click', async () => { const name = tabNameInput.value.trim(); if (!name) return alert("Nama tab tidak boleh kosong"); if (tabIdField.value) await updateTab(tabIdField.value, name); else await addNewTab(name); tabModal.style.display = "none"; });
     deleteTabBtn.addEventListener('click', async () => { if (tabIdField.value && confirm("Hapus tab dan semua tugas?")) { await deleteTabById(tabIdField.value); tabModal.style.display = "none"; } });
-    addTaskBtn.addEventListener('click', () => { 
-        if (currentTabId === 'high-priority-special') { 
-            alert("Tidak bisa menambah tugas di tab Prioritas Tinggi. Pilih tab biasa terlebih dahulu."); 
-            return; 
-        } 
-        if (!currentTabId && allTabs.length > 0) currentTabId = allTabs[0].id; 
-        if (!currentTabId) alert("Buat tab terlebih dahulu"); 
-        else createNewTask(currentTabId); 
-    });
+    addTaskBtn.addEventListener('click', () => { if (currentTabId === 'high-priority-special') { alert("Tidak bisa menambah tugas di tab Prioritas Tinggi. Pilih tab biasa terlebih dahulu."); return; } if (!currentTabId && allTabs.length > 0) currentTabId = allTabs[0].id; if (!currentTabId) alert("Buat tab terlebih dahulu"); else createNewTask(currentTabId); });
     closeModal.addEventListener('click', closeAllModals);
     closeTabModal.addEventListener('click', closeAllModals);
     window.onclick = (e) => { if (e.target === taskModal || e.target === tabModal) closeAllModals(); };
-    
     searchInput.addEventListener('input', applyFiltersAndRender);
     filterStatusSelect.addEventListener('change', applyFiltersAndRender);
-    filterTabSelect.addEventListener('change', () => {
-        if (filterTabSelect.value !== 'all') {
-            currentTabId = filterTabSelect.value;
-            addTaskBtn.style.display = 'flex';
-        } else if (currentTabId !== 'high-priority-special') {
-            currentTabId = 'high-priority-special';
-            addTaskBtn.style.display = 'none';
-        }
-        applyFiltersAndRender();
-        renderTabs(allTabs);
-    });
-    resetFilterBtn.addEventListener('click', () => {
-        searchInput.value = '';
-        filterStatusSelect.value = 'all';
-        if (currentTabId && currentTabId !== 'high-priority-special') filterTabSelect.value = currentTabId;
-        else filterTabSelect.value = 'all';
-        applyFiltersAndRender();
-    });
+    filterTabSelect.addEventListener('change', () => { if (filterTabSelect.value !== 'all') { currentTabId = filterTabSelect.value; addTaskBtn.style.display = 'flex'; } else if (currentTabId !== 'high-priority-special') { currentTabId = 'high-priority-special'; addTaskBtn.style.display = 'none'; } applyFiltersAndRender(); renderTabs(allTabs); });
+    resetFilterBtn.addEventListener('click', () => { searchInput.value = ''; filterStatusSelect.value = 'all'; if (currentTabId && currentTabId !== 'high-priority-special') filterTabSelect.value = currentTabId; else filterTabSelect.value = 'all'; applyFiltersAndRender(); });
     
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW registered:', reg)).catch(err => console.log('SW error:', err));
-        });
-    }
+    // RAB toggle & tambah baris
+    toggleRabBtn.addEventListener('click', () => {
+        if (rabTableWrapper.style.display === 'none') {
+            rabTableWrapper.style.display = 'block';
+            if (currentRabItems.length === 0) addRabRow();
+            else renderRabTable();
+        } else {
+            rabTableWrapper.style.display = 'none';
+        }
+    });
+    addRabRowBtn.addEventListener('click', addRabRow);
+    
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW registered:', reg)).catch(err => console.log('SW error:', err)); }); }
     
     loadTabs();
     startGlobalTasksListener();
