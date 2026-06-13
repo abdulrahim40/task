@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400,500,600,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* semua style sama seperti kode terakhir yang diberikan */
         * {
             margin: 0;
             padding: 0;
@@ -601,7 +600,7 @@
             <div id="rabTableWrapper" style="display: none;">
                 <table class="rab-table" id="rabTable">
                     <thead>
-                        <tr><th>Uraian</th><th>Satuan</th><th>Harga Satuan</th><th>Jumlah</th><th></th></table>
+                        <tr><th>Uraian</th><th>Satuan</th><th>Harga Satuan</th><th>Jumlah</th><th></th></tr>
                     </thead>
                     <tbody id="rabTbody"></tbody>
                 </table>
@@ -702,8 +701,7 @@
     let originalTabId = null;
     let currentRabItems = [];
     
-    // State untuk accordion: hanya satu yang terbuka (completed atau cancelled), null jika keduanya tutup
-    let openSection = null; // 'completed' atau 'cancelled'
+    let openSection = null;
     
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
     
@@ -744,7 +742,7 @@
         rabTbody.innerHTML = '';
         if (!currentRabItems.length) {
             const emptyRow = rabTbody.insertRow();
-            emptyRow.innerHTML = '<td colspan="5" style="text-align:center">Belum ada item. Klik "+ Baris"</td>';
+            emptyRow.innerHTML = '<td colspan="5" style="text-align:center">Belum ada item. Klik "+ Baris" </td>';
             updateRabTotalDisplay();
             return;
         }
@@ -888,7 +886,6 @@
         });
     }
     
-    // Sorting untuk completed: berdasarkan completedAt descending (terbaru di atas)
     function sortTasksByCompletedDate(tasks) {
         return [...tasks].sort((a, b) => {
             const dateA = a.completedAt ? (a.completedAt.toDate ? a.completedAt.toDate().getTime() : new Date(a.completedAt).getTime()) : 0;
@@ -897,107 +894,32 @@
         });
     }
     
-    // Sorting untuk cancelled: bisa pakai createdAt descending (atau jika ingin cancelledAt nanti)
     function sortTasksByCancelledDate(tasks) {
-        return sortTasksByCreatedDate(tasks); // sementara pakai createdAt
+        return sortTasksByCreatedDate(tasks);
     }
     
-    // Fungsi render section dengan scroll untuk semua section (aktif, completed, cancelled)
-    function renderSection(title, iconClass, tasks, sectionType, colorHex = null) {
-        const taskCount = tasks.length;
-        let sectionHtml = `<div class="task-section" data-section-type="${sectionType}">`;
-        
-        if (sectionType === 'active') {
-            sectionHtml += `<div class="section-header">
-                <div class="section-title" style="${colorHex ? `color: ${colorHex};` : ''}">
-                    <i class="${iconClass}"></i> ${title} (${taskCount})
-                </div>
-            </div>`;
-            sectionHtml += `<div class="task-list-container active-scroll">`;
-        } else {
-            const isOpen = (openSection === sectionType);
-            const toggleIconClass = isOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-right';
-            sectionHtml += `<div class="section-header" data-toggle="${sectionType}">
-                <div class="section-title" style="${colorHex ? `color: ${colorHex};` : ''}">
-                    <i class="${iconClass}"></i> ${title} (${taskCount})
-                </div>
-                <i class="${toggleIconClass} toggle-icon ${!isOpen ? 'collapsed' : ''}"></i>
-            </div>`;
-            // Container dengan scroll (active-scroll) untuk completed dan cancelled
-            sectionHtml += `<div class="task-list-container active-scroll" style="${isOpen ? 'display: block;' : 'display: none;'}">`;
-        }
-        
-        if (taskCount === 0) {
-            sectionHtml += `<div class="empty-placeholder">✨ Tidak ada tugas</div>`;
-        } else {
-            tasks.forEach(task => { sectionHtml += renderTaskCard(task); });
-        }
-        sectionHtml += `</div></div>`;
-        return sectionHtml;
-    }
-    
-    function bindSectionToggles() {
-        document.querySelectorAll('.section-header[data-toggle]').forEach(header => {
-            header.removeEventListener('click', toggleHandler);
-            header.addEventListener('click', toggleHandler);
-        });
-    }
-    
-    function toggleHandler(e) {
-        const header = e.currentTarget;
-        const sectionType = header.dataset.toggle;
-        const container = header.parentElement.querySelector('.task-list-container');
-        const icon = header.querySelector('.toggle-icon');
-        
-        if (openSection === sectionType) {
-            container.style.display = 'none';
-            icon.classList.add('collapsed');
-            icon.classList.remove('fa-chevron-down');
-            icon.classList.add('fa-chevron-right');
-            openSection = null;
-        } else {
-            if (openSection) {
-                const prevContainer = document.querySelector(`.task-section[data-section-type="${openSection}"] .task-list-container`);
-                const prevIcon = document.querySelector(`.section-header[data-toggle="${openSection}"] .toggle-icon`);
-                if (prevContainer) prevContainer.style.display = 'none';
-                if (prevIcon) {
-                    prevIcon.classList.add('collapsed');
-                    prevIcon.classList.remove('fa-chevron-down');
-                    prevIcon.classList.add('fa-chevron-right');
-                }
-            }
-            container.style.display = 'block';
-            icon.classList.remove('collapsed');
-            icon.classList.remove('fa-chevron-right');
-            icon.classList.add('fa-chevron-down');
-            openSection = sectionType;
-        }
-    }
-    
+    // ========== WARNA PROGRES GRADASI (MERAH -> KUNING -> HIJAU) ==========
     function getProgressStyle(percent) {
         percent = Math.min(100, Math.max(0, percent));
-        let bgColor, textColor;
-        if (percent === 0) {
-            bgColor = '#dc2626';
-            textColor = '#ffffff';
-        } else if (percent === 100) {
-            bgColor = '#22c55e';
-            textColor = '#ffffff';
-        } else if (percent <= 30) {
-            bgColor = '#ef4444';
-            textColor = '#ffffff';
-        } else if (percent <= 60) {
-            bgColor = '#f97316';
-            textColor = '#ffffff';
-        } else if (percent <= 80) {
-            bgColor = '#f59e0b';
-            textColor = '#000000';
+        let r, g, b;
+        if (percent <= 50) {
+            // merah (255,0,0) ke kuning (255,255,0)
+            r = 255;
+            g = Math.floor(255 * (percent / 50));
+            b = 0;
         } else {
-            bgColor = '#84cc16';
-            textColor = '#000000';
+            // kuning (255,255,0) ke hijau (0,255,0)
+            r = Math.floor(255 * (1 - (percent - 50) / 50));
+            g = 255;
+            b = 0;
         }
+        const bgColor = `rgb(${r}, ${g}, ${b})`;
+        // Hitung luminansi untuk teks kontras
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        const textColor = luminance > 0.5 ? '#000000' : '#ffffff';
         return `background: ${bgColor}; color: ${textColor};`;
     }
+    // ==================================================================
     
     function getPriorityBadge(priority) {
         const p = priority || 'medium';
@@ -1056,6 +978,59 @@
                 </div>`;
     }
     
+    function renderSection(title, iconClass, tasks, sectionType, colorHex = null) {
+        const taskCount = tasks.length;
+        let sectionHtml = `<div class="task-section" data-section-type="${sectionType}">`;
+        if (sectionType === 'active') {
+            sectionHtml += `<div class="section-header"><div class="section-title" style="${colorHex ? `color: ${colorHex};` : ''}"><i class="${iconClass}"></i> ${title} (${taskCount})</div></div><div class="task-list-container active-scroll">`;
+        } else {
+            const isOpen = (openSection === sectionType);
+            const toggleIconClass = isOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-right';
+            sectionHtml += `<div class="section-header" data-toggle="${sectionType}"><div class="section-title" style="${colorHex ? `color: ${colorHex};` : ''}"><i class="${iconClass}"></i> ${title} (${taskCount})</div><i class="${toggleIconClass} toggle-icon ${!isOpen ? 'collapsed' : ''}"></i></div><div class="task-list-container active-scroll" style="${isOpen ? 'display: block;' : 'display: none;'}">`;
+        }
+        if (taskCount === 0) sectionHtml += `<div class="empty-placeholder">✨ Tidak ada tugas</div>`;
+        else tasks.forEach(task => { sectionHtml += renderTaskCard(task); });
+        sectionHtml += `</div></div>`;
+        return sectionHtml;
+    }
+    
+    function bindSectionToggles() {
+        document.querySelectorAll('.section-header[data-toggle]').forEach(header => {
+            header.removeEventListener('click', toggleHandler);
+            header.addEventListener('click', toggleHandler);
+        });
+    }
+    
+    function toggleHandler(e) {
+        const header = e.currentTarget;
+        const sectionType = header.dataset.toggle;
+        const container = header.parentElement.querySelector('.task-list-container');
+        const icon = header.querySelector('.toggle-icon');
+        if (openSection === sectionType) {
+            container.style.display = 'none';
+            icon.classList.add('collapsed');
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-right');
+            openSection = null;
+        } else {
+            if (openSection) {
+                const prevContainer = document.querySelector(`.task-section[data-section-type="${openSection}"] .task-list-container`);
+                const prevIcon = document.querySelector(`.section-header[data-toggle="${openSection}"] .toggle-icon`);
+                if (prevContainer) prevContainer.style.display = 'none';
+                if (prevIcon) {
+                    prevIcon.classList.add('collapsed');
+                    prevIcon.classList.remove('fa-chevron-down');
+                    prevIcon.classList.add('fa-chevron-right');
+                }
+            }
+            container.style.display = 'block';
+            icon.classList.remove('collapsed');
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-down');
+            openSection = sectionType;
+        }
+    }
+    
     function attachTaskEvents() {
         document.querySelectorAll('.task-bullet').forEach(el => { el.removeEventListener('click', bulletClickHandler); el.addEventListener('click', bulletClickHandler); });
         document.querySelectorAll('.task-card').forEach(card => { card.removeEventListener('click', cardClickHandler); card.addEventListener('click', cardClickHandler); });
@@ -1090,7 +1065,6 @@
         let cancelled = filtered.filter(t => t.cancelled);
         
         active = sortTasksByCreatedDate(active);
-        // Completed diurutkan berdasarkan completedAt terbaru di atas
         completed = sortTasksByCompletedDate(completed);
         cancelled = sortTasksByCancelledDate(cancelled);
         
@@ -1106,10 +1080,8 @@
         } else if (statusFilter === 'cancelled') {
             html += renderSection('Batal', 'fas fa-ban', cancelled, 'cancelled', '#dc2626');
         }
-        
         if (html === '') tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-frown"></i><p>Tidak ada tugas</p></div>';
         else tasksContainer.innerHTML = html;
-        
         bindSectionToggles();
         attachTaskEvents();
     }
