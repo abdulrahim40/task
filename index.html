@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400,500,600,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* semua style sama seperti kode terakhir yang diberikan */
         * {
             margin: 0;
             padding: 0;
@@ -600,7 +601,7 @@
             <div id="rabTableWrapper" style="display: none;">
                 <table class="rab-table" id="rabTable">
                     <thead>
-                        <tr><th>Uraian</th><th>Satuan</th><th>Harga Satuan</th><th>Jumlah</th><th></th></tr>
+                        <tr><th>Uraian</th><th>Satuan</th><th>Harga Satuan</th><th>Jumlah</th><th></th></table>
                     </thead>
                     <tbody id="rabTbody"></tbody>
                 </table>
@@ -887,20 +888,31 @@
         });
     }
     
-    // Fungsi render section baru dengan scroll untuk aktif dan accordion untuk selesai/batal
+    // Sorting untuk completed: berdasarkan completedAt descending (terbaru di atas)
+    function sortTasksByCompletedDate(tasks) {
+        return [...tasks].sort((a, b) => {
+            const dateA = a.completedAt ? (a.completedAt.toDate ? a.completedAt.toDate().getTime() : new Date(a.completedAt).getTime()) : 0;
+            const dateB = b.completedAt ? (b.completedAt.toDate ? b.completedAt.toDate().getTime() : new Date(b.completedAt).getTime()) : 0;
+            return dateB - dateA;
+        });
+    }
+    
+    // Sorting untuk cancelled: bisa pakai createdAt descending (atau jika ingin cancelledAt nanti)
+    function sortTasksByCancelledDate(tasks) {
+        return sortTasksByCreatedDate(tasks); // sementara pakai createdAt
+    }
+    
+    // Fungsi render section dengan scroll untuk semua section (aktif, completed, cancelled)
     function renderSection(title, iconClass, tasks, sectionType, colorHex = null) {
-        // sectionType: 'active', 'completed', 'cancelled'
         const taskCount = tasks.length;
         let sectionHtml = `<div class="task-section" data-section-type="${sectionType}">`;
         
-        // Header dengan toggle untuk completed/cancelled, tanpa toggle untuk active
         if (sectionType === 'active') {
             sectionHtml += `<div class="section-header">
                 <div class="section-title" style="${colorHex ? `color: ${colorHex};` : ''}">
                     <i class="${iconClass}"></i> ${title} (${taskCount})
                 </div>
             </div>`;
-            // Container dengan scroll (max-height 400px)
             sectionHtml += `<div class="task-list-container active-scroll">`;
         } else {
             const isOpen = (openSection === sectionType);
@@ -911,8 +923,8 @@
                 </div>
                 <i class="${toggleIconClass} toggle-icon ${!isOpen ? 'collapsed' : ''}"></i>
             </div>`;
-            // Container yang bisa di-toggle
-            sectionHtml += `<div class="task-list-container" style="${isOpen ? 'display: block;' : 'display: none;'}">`;
+            // Container dengan scroll (active-scroll) untuk completed dan cancelled
+            sectionHtml += `<div class="task-list-container active-scroll" style="${isOpen ? 'display: block;' : 'display: none;'}">`;
         }
         
         if (taskCount === 0) {
@@ -924,7 +936,6 @@
         return sectionHtml;
     }
     
-    // Fungsi untuk mengikat event toggle pada header section Selesai dan Batal
     function bindSectionToggles() {
         document.querySelectorAll('.section-header[data-toggle]').forEach(header => {
             header.removeEventListener('click', toggleHandler);
@@ -939,14 +950,12 @@
         const icon = header.querySelector('.toggle-icon');
         
         if (openSection === sectionType) {
-            // Tutup section yang sedang terbuka
             container.style.display = 'none';
             icon.classList.add('collapsed');
             icon.classList.remove('fa-chevron-down');
             icon.classList.add('fa-chevron-right');
             openSection = null;
         } else {
-            // Tutup section lain yang mungkin terbuka
             if (openSection) {
                 const prevContainer = document.querySelector(`.task-section[data-section-type="${openSection}"] .task-list-container`);
                 const prevIcon = document.querySelector(`.section-header[data-toggle="${openSection}"] .toggle-icon`);
@@ -957,7 +966,6 @@
                     prevIcon.classList.add('fa-chevron-right');
                 }
             }
-            // Buka section ini
             container.style.display = 'block';
             icon.classList.remove('collapsed');
             icon.classList.remove('fa-chevron-right');
@@ -966,7 +974,6 @@
         }
     }
     
-    // Fungsi renderTaskCard (sama seperti sebelumnya)
     function getProgressStyle(percent) {
         percent = Math.min(100, Math.max(0, percent));
         let bgColor, textColor;
@@ -1083,8 +1090,9 @@
         let cancelled = filtered.filter(t => t.cancelled);
         
         active = sortTasksByCreatedDate(active);
-        completed = sortTasksByCreatedDate(completed);
-        cancelled = sortTasksByCreatedDate(cancelled);
+        // Completed diurutkan berdasarkan completedAt terbaru di atas
+        completed = sortTasksByCompletedDate(completed);
+        cancelled = sortTasksByCancelledDate(cancelled);
         
         let html = '';
         if (statusFilter === 'all') {
@@ -1102,12 +1110,10 @@
         if (html === '') tasksContainer.innerHTML = '<div class="empty-placeholder"><i class="far fa-frown"></i><p>Tidak ada tugas</p></div>';
         else tasksContainer.innerHTML = html;
         
-        // Setelah render, binding toggle untuk section Selesai/Batal
         bindSectionToggles();
         attachTaskEvents();
     }
     
-    // Fungsi renderTabs, loadTabs, dll sama seperti sebelumnya (tidak diubah)
     function renderTabs(tabs) {
         tabsContainer.innerHTML = '';
         const highPriorityTab = { id: 'high-priority-special', name: '⭐ Prioritas Tinggi', isSpecial: true };
@@ -1143,14 +1149,6 @@
             else if (currentTabId && currentTabId !== 'high-priority-special') { addTaskBtn.style.display = 'flex'; if (filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) filterTabSelect.value = currentTabId; applyFiltersAndRender(); }
         });
     }
-    
-    // Fungsi modal, openTaskModal, renderModalButtons, dll (sama seperti kode sebelumnya, disalin lengkap)
-    // ... (saya akan salin dari kode sebelumnya untuk bagian yang belum)
-    
-    // Karena kode sangat panjang, saya asumsikan fungsi-fungsi yang tidak berubah (openTaskModal, renderModalButtons, renderSubtasksModal, createNewTask, dll) masih sama.
-    // Untuk memastikan kelengkapan, saya akan menyertakan semua fungsi yang diperlukan dari kode sebelumnya.
-    
-    // Berikut adalah fungsi-fungsi yang belum didefinisikan ulang (diambil dari kode terakhir yang berhasil):
     
     function updateMainProgressFromSubtasks() {
         if (currentSubtasks.length > 0) {
