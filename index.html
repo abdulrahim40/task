@@ -16,6 +16,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
     <style>
+        /* semua style sama seperti sebelumnya */
         * {
             margin: 0;
             padding: 0;
@@ -1166,11 +1167,34 @@
         });
     }
     
-    // ========== EXPORT PDF dengan Total ==========
+    // ========== EXPORT PDF dengan total, warna prioritas & progres ==========
     function getTabDisplayName() {
         if (currentTabId === 'high-priority-special') return 'Prioritas Tinggi';
         const tab = allTabs.find(t => t.id === currentTabId);
         return tab ? tab.name : 'Tidak diketahui';
+    }
+    
+    // Fungsi untuk mendapatkan warna prioritas (RGB array)
+    function getPriorityColor(priority) {
+        if (priority === 'high') return [255, 200, 200]; // merah muda
+        if (priority === 'low') return [200, 255, 200]; // hijau muda
+        return [255, 255, 200]; // kuning muda (medium)
+    }
+    
+    // Fungsi untuk mendapatkan warna progres (gradasi)
+    function getProgressColorRGB(percent) {
+        percent = Math.min(100, Math.max(0, percent));
+        let r, g, b;
+        if (percent <= 50) {
+            r = 255;
+            g = Math.floor(255 * (percent / 50));
+            b = 0;
+        } else {
+            r = Math.floor(255 * (1 - (percent - 50) / 50));
+            g = 255;
+            b = 0;
+        }
+        return [r, g, b];
     }
     
     function exportPDF() {
@@ -1190,70 +1214,120 @@
         const doc = new window.jspdf.jsPDF('p', 'mm', 'a4');
         const margin = 14;
         
+        // Judul halaman
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('TARGET DAN REALISASI ANGGARAN', margin, 20);
         doc.setFontSize(9);
-        doc.text(`Tab: ${getTabDisplayName()}`, margin, 20);
-        let startY = 25;
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Tab: ${getTabDisplayName()}`, margin, 27);
+        let startY = 33;
         
-        function buildTable(head, body, startY) {
-            const colWidths = ['65%', '10%', '10%', '15%'];
-            const haligns = ['left', 'center', 'center', 'right'];
+        // Fungsi bantu untuk membuat tabel dengan gaya modern
+        function buildTable(head, body, startY, isActive) {
+            // Untuk tabel aktif: 5 kolom, untuk selesai: 4 kolom
+            const colCount = head.length;
+            let colWidths, haligns;
+            if (isActive) {
+                colWidths = ['50%', '10%', '12%', '12%', '16%']; // Uraian, Prioritas, Progres, Tgl Deadline, RAB
+                haligns = ['left', 'center', 'center', 'center', 'right'];
+            } else {
+                colWidths = ['65%', '10%', '12%', '13%']; // Uraian, Prioritas, Tgl Selesai, LPJ
+                haligns = ['left', 'center', 'center', 'right'];
+            }
             const colStyles = {};
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < colCount; i++) {
                 colStyles[i] = { cellWidth: colWidths[i], halign: haligns[i] };
             }
-            const totalRowIndex = body.length - 1;
+            
+            // Header warna modern (biru tua)
+            const headerFill = [44, 62, 80]; // #2c3e50
             doc.autoTable({
                 startY: startY,
                 head: [head],
                 body: body,
                 theme: 'grid',
                 styles: { fontSize: 9, cellPadding: 2 },
-                headStyles: { fillColor: [220, 220, 220], textColor: [0,0,0], fontSize: 9, fontStyle: 'bold', halign: 'center' },
+                headStyles: { fillColor: headerFill, textColor: [255,255,255], fontSize: 9, fontStyle: 'bold', halign: 'center' },
                 columnStyles: colStyles,
-                rowStyles: (data) => {
-                    if (data.row.index === totalRowIndex && data.row.index > 0) {
-                        return { fontStyle: 'bold' };
-                    }
-                    return {};
-                },
+                // Untuk memberi warna pada sel prioritas dan progres, kita gunakan rowStyles atau didParseCell
+                // Karena kita sudah menyimpan styles di body, kita bisa gunakan 'body' dengan format {content, styles}
                 margin: { left: margin, right: margin },
                 tableWidth: 'auto',
+                didParseCell: function(data) {
+                    // Jika cell memiliki styles, terapkan
+                    if (data.cell.raw && typeof data.cell.raw === 'object' && data.cell.raw.styles) {
+                        Object.assign(data.cell.styles, data.cell.raw.styles);
+                    }
+                }
             });
             return doc.lastAutoTable.finalY + 5;
         }
         
-        // Tabel Aktif
+        // --- Tabel Aktif ---
         if (active.length > 0) {
-            const activeRows = active.map(t => [
-                t.title || '',
-                getPriorityLabel(t.priority),
-                t.dueDate ? new Date(t.dueDate).toLocaleDateString('id-ID') : '-',
-                formatRupiah(t.rabTotal || 0)
-            ]);
+            const headActive = ['Uraian', 'Prioritas', 'Progres', 'Tgl Deadline', 'RAB'];
+            const bodyActive = active.map(t => {
+                const priorityLabel = getPriorityLabel(t.priority);
+                const priorityColor = getPriorityColor(t.priority);
+                const progressVal = t.progress || 0;
+                const progressColor = getProgressColorRGB(progressVal);
+                // Tentukan teks kontras untuk progres berdasarkan luminance
+                const lum = (0.299*progressColor[0] + 0.587*progressColor[1] + 0.114*progressColor[2]) / 255;
+                const textColor = lum > 0.5 ? [0,0,0] : [255,255,255];
+                return [
+                    t.title || '',
+                    { content: priorityLabel, styles: { fillColor: priorityColor, halign: 'center' } },
+                    { content: `${progressVal}%`, styles: { fillColor: progressColor, textColor: textColor, halign: 'center' } },
+                    t.dueDate ? new Date(t.dueDate).toLocaleDateString('id-ID') : '-',
+                    { content: formatRupiah(t.rabTotal || 0), styles: { halign: 'right' } }
+                ];
+            });
             const totalRAB = active.reduce((sum, t) => sum + (t.rabTotal || 0), 0);
-            activeRows.push(['', '', 'Total', formatRupiah(totalRAB)]);
+            bodyActive.push([
+                { content: '', styles: { halign: 'left' } },
+                { content: '', styles: { halign: 'center' } },
+                { content: '', styles: { halign: 'center' } },
+                { content: 'Total', styles: { fontStyle: 'bold', halign: 'center' } },
+                { content: formatRupiah(totalRAB), styles: { fontStyle: 'bold', halign: 'right' } }
+            ]);
             doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
             doc.text('Aktif', margin, startY);
             startY += 5;
-            startY = buildTable(['Uraian', 'Prioritas', 'Tgl Deadline', 'RAB'], activeRows, startY);
+            doc.setFont('helvetica', 'normal');
+            startY = buildTable(headActive, bodyActive, startY, true);
         } else {
             doc.text('Aktif: tidak ada tugas', margin, startY);
             startY += 5;
         }
         
-        // Tabel Selesai
+        // --- Tabel Selesai ---
         if (completed.length > 0) {
-            const completedRows = completed.map(t => [
-                t.title || '',
-                getPriorityLabel(t.priority),
-                t.completedAt ? formatDateShort(t.completedAt) : '-',
-                formatRupiah(t.rabTotal || 0)
-            ]);
+            const headCompleted = ['Uraian', 'Prioritas', 'Tgl Selesai', 'LPJ'];
+            const bodyCompleted = completed.map(t => {
+                const priorityLabel = getPriorityLabel(t.priority);
+                const priorityColor = getPriorityColor(t.priority);
+                return [
+                    t.title || '',
+                    { content: priorityLabel, styles: { fillColor: priorityColor, halign: 'center' } },
+                    t.completedAt ? formatDateShort(t.completedAt) : '-',
+                    { content: formatRupiah(t.rabTotal || 0), styles: { halign: 'right' } }
+                ];
+            });
             const totalLPJ = completed.reduce((sum, t) => sum + (t.rabTotal || 0), 0);
-            completedRows.push(['', '', 'Total', formatRupiah(totalLPJ)]);
+            bodyCompleted.push([
+                { content: '', styles: { halign: 'left' } },
+                { content: '', styles: { halign: 'center' } },
+                { content: 'Total', styles: { fontStyle: 'bold', halign: 'center' } },
+                { content: formatRupiah(totalLPJ), styles: { fontStyle: 'bold', halign: 'right' } }
+            ]);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
             doc.text('Selesai', margin, startY);
             startY += 5;
-            startY = buildTable(['Uraian', 'Prioritas', 'Tgl Selesai', 'LPJ'], completedRows, startY);
+            doc.setFont('helvetica', 'normal');
+            startY = buildTable(headCompleted, bodyCompleted, startY, false);
         } else {
             doc.text('Selesai: tidak ada tugas', margin, startY);
             startY += 5;
