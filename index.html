@@ -637,7 +637,11 @@
             <input type="hidden" id="taskIdField" />
             <input type="text" id="taskTitle" placeholder="Judul tugas" />
             <textarea id="taskNotes" rows="2" placeholder="Catatan..."></textarea>
+
+            <!-- Label Tanggal Deadline ditambahkan di sini -->
+            <label><i class="fas fa-calendar-alt"></i> Tanggal Deadline</label>
             <input type="datetime-local" id="taskDueDate" />
+
             <div style="margin-bottom: 6px;">
                 <label><i class="fas fa-calendar-plus"></i> Tanggal Pembuatan</label>
                 <input type="datetime-local" id="taskCreatedAt" style="background:#ffffff;" />
@@ -1570,20 +1574,18 @@
             renderModalButtons(task);
             taskModal.style.display = 'flex';
 
-            // ===== PERBAIKAN: tambahkan event listener untuk tombol tambah sub-tugas =====
+            // Event listener untuk tombol tambah sub-tugas
             addSubtaskBtn.onclick = () => {
                 const text = newSubtaskInput.value.trim();
                 if (!text) return alert("Isi nama sub-tugas");
                 currentSubtasks.push({ id: Date.now().toString(), text, progress: 0 });
                 newSubtaskInput.value = '';
                 renderSubtasksModal();
-                // ubah tampilan progres ke mode sub-tugas
                 progressGroup.style.display = 'none';
                 progressInfo.style.display = 'block';
                 progressSlider.disabled = true;
                 updateMainProgressFromSubtasks();
             };
-            // ========================================================================
 
             const sliderHandler = () => {
                 if (currentSubtasks.length > 0) return;
