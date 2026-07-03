@@ -1531,7 +1531,6 @@
                 taskCreatedAtInput.value = toDatetimeLocal(new Date());
             }
 
-            // Isi tanggal selesai jika ada
             if (task.completed && task.completedAt) {
                 const completedDate = task.completedAt.toDate ? task.completedAt.toDate() : new Date(task.completedAt);
                 taskCompletedAtInput.value = toDatetimeLocal(completedDate);
@@ -1570,6 +1569,21 @@
             }
             renderModalButtons(task);
             taskModal.style.display = 'flex';
+
+            // ===== PERBAIKAN: tambahkan event listener untuk tombol tambah sub-tugas =====
+            addSubtaskBtn.onclick = () => {
+                const text = newSubtaskInput.value.trim();
+                if (!text) return alert("Isi nama sub-tugas");
+                currentSubtasks.push({ id: Date.now().toString(), text, progress: 0 });
+                newSubtaskInput.value = '';
+                renderSubtasksModal();
+                // ubah tampilan progres ke mode sub-tugas
+                progressGroup.style.display = 'none';
+                progressInfo.style.display = 'block';
+                progressSlider.disabled = true;
+                updateMainProgressFromSubtasks();
+            };
+            // ========================================================================
 
             const sliderHandler = () => {
                 if (currentSubtasks.length > 0) return;
@@ -1636,7 +1650,6 @@
 
                 const newTabId = moveTabSelect.value;
 
-                // Tanggal selesai: ambil dari input jika ada
                 let completedAtValue = null;
                 if (taskCompletedAtInput.value) {
                     const d = new Date(taskCompletedAtInput.value);
@@ -1644,11 +1657,9 @@
                         completedAtValue = Timestamp.fromDate(d);
                     }
                 } else {
-                    // Jika tidak ada input, gunakan nilai lama (atau null)
                     completedAtValue = task.completedAt || null;
                 }
 
-                // Jika tugas sekarang selesai tapi tidak ada completedAt, set ke sekarang
                 if (finalCompleted && !completedAtValue) {
                     completedAtValue = Timestamp.now();
                 } else if (!finalCompleted) {
@@ -1702,7 +1713,6 @@
                 const header = document.createElement('div');
                 header.className = 'subtask-header';
 
-                // Input teks untuk nama sub-tugas (bisa diedit)
                 const nameInput = document.createElement('input');
                 nameInput.type = 'text';
                 nameInput.className = 'subtask-name-input';
