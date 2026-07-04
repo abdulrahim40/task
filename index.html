@@ -98,8 +98,14 @@
         .info-completed { background: #f0fdf4; border-radius: 20px; padding: 8px; margin: 8px 0; font-size: 0.75rem; color: #166534; }
         .tab-badge { font-size: 0.6rem; background: #e2e8f0; padding: 2px 6px; border-radius: 20px; display: inline-block; }
         .created-date-badge { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 20px; display: inline-flex; align-items: center; gap: 3px; }
+
+        /* Tab "Segera" - Kuning */
         .tab-due-soon { background: #fef3c7 !important; border-color: #f59e0b !important; }
         .tab-due-soon.active { background: #f59e0b !important; color: white !important; border-color: #f59e0b !important; }
+
+        /* Tab "Penting" - Merah */
+        .tab-penting { background: #fee2e2 !important; border-color: #dc2626 !important; }
+        .tab-penting.active { background: #dc2626 !important; color: white !important; border-color: #dc2626 !important; }
     </style>
 </head>
 <body>
@@ -426,7 +432,8 @@
         tabsContainer.innerHTML='';
         // Tab "Segera" selalu di posisi pertama
         const dueSoonTab={id:DUE_SOON_ID, name:'⏳ Segera', isSpecial:true, cls:'tab-due-soon'};
-        const highPriorityTab={id:HIGH_PRIORITY_ID, name:'⭐ Prioritas Tinggi', isSpecial:true};
+        // Tab "Penting" di posisi kedua (warna merah)
+        const highPriorityTab={id:HIGH_PRIORITY_ID, name:'🔴 Penting', isSpecial:true, cls:'tab-penting'};
         const normalTabs=[...tabs];
         const allTabsForRender=[dueSoonTab, highPriorityTab, ...normalTabs];
 
@@ -486,7 +493,7 @@
     // ---------- EXPORT PDF ----------
     function getTabDisplayName(){
         if(currentTabId===DUE_SOON_ID) return 'Segera';
-        if(currentTabId===HIGH_PRIORITY_ID) return 'Prioritas Tinggi';
+        if(currentTabId===HIGH_PRIORITY_ID) return 'Penting';
         const tab=allTabs.find(t=>t.id===currentTabId);
         return tab?tab.name:'Tidak diketahui';
     }
@@ -704,7 +711,6 @@
             currentTabId=filterTabSelect.value;
             addTaskBtn.style.display='flex';
         } else {
-            // jika pilih 'Semua Tab', default ke 'Segera'? lebih baik tetap di tab sebelumnya atau ke Segera? Saya set ke Segera.
             currentTabId=DUE_SOON_ID;
             addTaskBtn.style.display='none';
         }
@@ -714,7 +720,6 @@
     resetFilterBtn.addEventListener('click',()=>{
         searchInput.value='';
         filterStatusSelect.value='all';
-        // reset ke tab Segera
         currentTabId=DUE_SOON_ID;
         filterTabSelect.value='all';
         addTaskBtn.style.display='none';
