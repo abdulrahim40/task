@@ -15,1891 +15,723 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f7fb;
-            padding: 16px 12px 32px;
-            color: #1e293b;
-        }
-        .app-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        .header-left {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-        }
-        h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #3b82f6, #06b6d4);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .header-actions {
-            display: flex;
-            gap: 6px;
-        }
-        .add-tab-btn {
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 6px 12px;
-            border-radius: 40px;
-            font-weight: 500;
-            font-size: 0.8rem;
-            color: #3b82f6;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .add-tab-btn i {
-            font-size: 0.8rem;
-        }
-        .add-tab-btn:hover {
-            background: #f1f5f9;
-        }
-        .tabs-scroll {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 16px;
-            scrollbar-width: thin;
-        }
-        .tab-item {
-            background: white;
-            padding: 6px 14px;
-            border-radius: 40px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            font-size: 0.85rem;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-            cursor: pointer;
-            border: 1px solid #eef2ff;
-            flex-shrink: 0;
-        }
-        .tab-item.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-        }
-        .tab-actions i {
-            font-size: 0.7rem;
-            margin-left: 4px;
-            opacity: 0.7;
-            cursor: pointer;
-        }
-        .filters-panel {
-            background: white;
-            border-radius: 24px;
-            padding: 12px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-        .search-box {
-            flex: 2;
-            position: relative;
-        }
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 0.8rem;
-        }
-        .search-box input {
-            width: 100%;
-            padding: 8px 10px 8px 32px;
-            border-radius: 40px;
-            border: 1px solid #e2e8f0;
-            font-family: inherit;
-            font-size: 0.8rem;
-            background: #f8fafc;
-        }
-        .filter-select {
-            flex: 1;
-            min-width: 100px;
-        }
-        .filter-select select {
-            width: 100%;
-            padding: 8px 10px;
-            border-radius: 40px;
-            border: 1px solid #e2e8f0;
-            background: #f8fafc;
-            font-family: inherit;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-        .reset-filter {
-            background: #f1f5f9;
-            border: none;
-            width: 34px;
-            height: 34px;
-            border-radius: 40px;
-            cursor: pointer;
-            color: #475569;
-            transition: 0.2s;
-        }
-        .task-section {
-            background: white;
-            border-radius: 24px;
-            padding: 12px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-        }
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            margin-bottom: 8px;
-        }
-        .section-title {
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: #334155;
-            font-size: 0.9rem;
-            margin: 0;
-        }
-        .toggle-icon {
-            font-size: 0.8rem;
-            transition: transform 0.2s;
-            color: #3b82f6;
-        }
-        .toggle-icon.collapsed {
-            transform: rotate(-90deg);
-        }
-        .task-list-container {
-            overflow-y: auto;
-            transition: all 0.2s;
-        }
-        .task-list-container.active-scroll {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .task-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f8fafc;
-            padding: 8px 10px;
-            border-radius: 16px;
-            margin-bottom: 6px;
-            border: 1px solid #f0f2f5;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .task-card.cancelled {
-            background: #fef2f2;
-            border-color: #fecaca;
-        }
-        .task-left {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex: 1;
-        }
-        .task-bullet {
-            cursor: pointer;
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-        }
-        .task-bullet-unchecked {
-            color: #94a3b8;
-        }
-        .task-bullet-checked {
-            color: #22c55e;
-        }
-        .task-bullet-cancelled {
-            color: #dc2626;
-        }
-        .task-info {
-            flex: 1;
-        }
-        .task-title {
-            font-weight: 500;
-            margin-bottom: 4px;
-            font-size: 0.85rem;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 6px;
-        }
-        .priority-badge {
-            font-size: 0.6rem;
-            padding: 2px 6px;
-            border-radius: 20px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-        }
-        .priority-high {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        .priority-medium {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        .priority-low {
-            background: #e0f2fe;
-            color: #0284c7;
-        }
-        .task-meta {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.65rem;
-            color: #5b6e8c;
-        }
-        .rab-badge {
-            background: #e6f0ff;
-            color: #1e40af;
-            border-radius: 20px;
-            padding: 2px 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            font-weight: 600;
-            font-size: 0.65rem;
-        }
-        .completed-date {
-            background: #e6f7e6;
-            padding: 2px 6px;
-            border-radius: 30px;
-            font-size: 0.65rem;
-            color: #15803d;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            margin-top: 2px;
-        }
-        .task-progress-badge {
-            padding: 2px 6px;
-            border-radius: 30px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-        .task-actions {
-            display: flex;
-            gap: 8px;
-            color: #94a3b8;
-        }
-        .task-actions i {
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        .empty-placeholder {
-            text-align: center;
-            padding: 20px;
-            color: #94a3b8;
-            font-size: 0.8rem;
-        }
-        .add-task-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 16px;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 25px;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 16px;
-        }
-        .modal-content {
-            background: white;
-            border-radius: 28px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 85vh;
-            overflow-y: auto;
-            padding: 20px 16px;
-        }
-        .modal-content h2 {
-            margin-bottom: 16px;
-            font-size: 1.3rem;
-        }
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 20px;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 14px;
-            font-family: inherit;
-            font-size: 0.85rem;
-            background: white;
-        }
-        .range-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        .range-group input {
-            flex: 1;
-            accent-color: #3b82f6;
-        }
-        .subtask-item {
-            background: #f1f5f9;
-            border-radius: 40px;
-            padding: 8px 12px;
-            margin-bottom: 10px;
-        }
-        .subtask-item .subtask-header {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .subtask-item .subtask-name-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 4px 0;
-            font-size: 0.85rem;
-            font-family: inherit;
-            border-bottom: 1px dashed #94a3b8;
-            outline: none;
-        }
-        .subtask-item .subtask-name-input:focus {
-            border-bottom-color: #3b82f6;
-        }
-        .subtask-item .subtask-range {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 4px;
-        }
-        .subtask-item .subtask-range input[type="range"] {
-            flex: 1;
-            accent-color: #3b82f6;
-            margin: 0;
-        }
-        .subtask-item .subtask-percent {
-            font-size: 0.75rem;
-            font-weight: 600;
-            min-width: 32px;
-        }
-        .delete-subtask {
-            cursor: pointer;
-            color: #dc2626;
-            font-size: 0.8rem;
-        }
-        .rab-section {
-            margin-top: 16px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 12px;
-        }
-        .rab-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .rab-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.75rem;
-        }
-        .rab-table th,
-        .rab-table td {
-            border: 1px solid #e2e8f0;
-            padding: 6px 4px;
-            text-align: left;
-            vertical-align: middle;
-        }
-        .rab-table th {
-            background: #f1f5f9;
-        }
-        .rab-table input {
-            width: 100%;
-            margin: 0;
-            padding: 4px;
-            font-size: 0.7rem;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        .rab-total {
-            text-align: right;
-            font-weight: bold;
-            margin-top: 6px;
-            font-size: 0.8rem;
-        }
-        .btn-icon {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 0.8rem;
-            color: #3b82f6;
-        }
-        .btn-icon-danger {
-            color: #dc2626;
-        }
-        .small-btn {
-            background: #eef2ff;
-            border: none;
-            border-radius: 30px;
-            padding: 3px 10px;
-            font-size: 0.7rem;
-            cursor: pointer;
-        }
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 8px 0;
-            border-radius: 40px;
-            flex: 1;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 0.85rem;
-        }
-        .btn-danger {
-            background: #fee2e2;
-            color: #dc2626;
-            border: none;
-            border-radius: 40px;
-            flex: 1;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 0.85rem;
-        }
-        .btn-warning {
-            background: #ffedd5;
-            color: #ea580c;
-            border: none;
-            border-radius: 40px;
-            flex: 1;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 0.85rem;
-        }
-        .btn-success {
-            background: #dcfce7;
-            color: #16a34a;
-            border: none;
-            border-radius: 40px;
-            flex: 1;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 0.85rem;
-        }
-        .close-modal,
-        .close-tab-modal {
-            float: right;
-            font-size: 1.6rem;
-            cursor: pointer;
-        }
-        label {
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: #475569;
-            margin-bottom: 3px;
-            display: block;
-        }
-        .info-completed {
-            background: #f0fdf4;
-            border-radius: 20px;
-            padding: 8px;
-            margin: 8px 0;
-            font-size: 0.75rem;
-            color: #166534;
-        }
-        .tab-badge {
-            font-size: 0.6rem;
-            background: #e2e8f0;
-            padding: 2px 6px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-        .created-date-badge {
-            font-size: 0.6rem;
-            background: #e0e7ff;
-            color: #4338ca;
-            padding: 2px 6px;
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: #f5f7fb; padding: 16px 12px 32px; color: #1e293b; }
+        .app-container { max-width: 600px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .header-left { display: flex; align-items: baseline; gap: 8px; }
+        h1 { font-size: 1.6rem; font-weight: 700; background: linear-gradient(135deg, #3b82f6, #06b6d4); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .header-actions { display: flex; gap: 6px; }
+        .add-tab-btn { background: white; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 40px; font-weight: 500; font-size: 0.8rem; color: #3b82f6; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 4px; }
+        .add-tab-btn i { font-size: 0.8rem; }
+        .add-tab-btn:hover { background: #f1f5f9; }
+        .tabs-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 16px; scrollbar-width: thin; }
+        .tab-item { background: white; padding: 6px 14px; border-radius: 40px; display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.85rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03); cursor: pointer; border: 1px solid #eef2ff; flex-shrink: 0; }
+        .tab-item.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .tab-actions i { font-size: 0.7rem; margin-left: 4px; opacity: 0.7; cursor: pointer; }
+        .filters-panel { background: white; border-radius: 24px; padding: 12px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .search-box { flex: 2; position: relative; }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.8rem; }
+        .search-box input { width: 100%; padding: 8px 10px 8px 32px; border-radius: 40px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.8rem; background: #f8fafc; }
+        .filter-select { flex: 1; min-width: 100px; }
+        .filter-select select { width: 100%; padding: 8px 10px; border-radius: 40px; border: 1px solid #e2e8f0; background: #f8fafc; font-family: inherit; font-size: 0.8rem; cursor: pointer; }
+        .reset-filter { background: #f1f5f9; border: none; width: 34px; height: 34px; border-radius: 40px; cursor: pointer; color: #475569; transition: 0.2s; }
+        .task-section { background: white; border-radius: 24px; padding: 12px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 8px; }
+        .section-title { font-weight: 600; display: flex; align-items: center; gap: 6px; color: #334155; font-size: 0.9rem; margin: 0; }
+        .toggle-icon { font-size: 0.8rem; transition: transform 0.2s; color: #3b82f6; }
+        .toggle-icon.collapsed { transform: rotate(-90deg); }
+        .task-list-container { overflow-y: auto; transition: all 0.2s; }
+        .task-list-container.active-scroll { max-height: 400px; overflow-y: auto; }
+        .task-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px 10px; border-radius: 16px; margin-bottom: 6px; border: 1px solid #f0f2f5; cursor: pointer; transition: 0.1s; }
+        .task-card.cancelled { background: #fef2f2; border-color: #fecaca; }
+        .task-left { display: flex; gap: 8px; align-items: center; flex: 1; }
+        .task-bullet { cursor: pointer; font-size: 1.2rem; width: 24px; text-align: center; }
+        .task-bullet-unchecked { color: #94a3b8; }
+        .task-bullet-checked { color: #22c55e; }
+        .task-bullet-cancelled { color: #dc2626; }
+        .task-info { flex: 1; }
+        .task-title { font-weight: 500; margin-bottom: 4px; font-size: 0.85rem; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .priority-badge { font-size: 0.6rem; padding: 2px 6px; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
+        .priority-high { background: #fee2e2; color: #dc2626; }
+        .priority-medium { background: #fef3c7; color: #d97706; }
+        .priority-low { background: #e0f2fe; color: #0284c7; }
+        .task-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.65rem; color: #5b6e8c; }
+        .rab-badge { background: #e6f0ff; color: #1e40af; border-radius: 20px; padding: 2px 6px; display: inline-flex; align-items: center; gap: 3px; font-weight: 600; font-size: 0.65rem; }
+        .completed-date { background: #e6f7e6; padding: 2px 6px; border-radius: 30px; font-size: 0.65rem; color: #15803d; display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; }
+        .task-progress-badge { padding: 2px 6px; border-radius: 30px; font-size: 0.65rem; font-weight: 600; display: inline-block; }
+        .task-actions { display: flex; gap: 8px; color: #94a3b8; }
+        .task-actions i { cursor: pointer; font-size: 0.9rem; }
+        .empty-placeholder { text-align: center; padding: 20px; color: #94a3b8; font-size: 0.8rem; }
+        .add-task-btn { position: fixed; bottom: 20px; right: 16px; background: #3b82f6; color: white; border: none; width: 50px; height: 50px; border-radius: 25px; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(59,130,246,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+        .modal-content { background: white; border-radius: 28px; max-width: 500px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 20px 16px; }
+        .modal-content h2 { margin-bottom: 16px; font-size: 1.3rem; }
+        input, textarea, select { width: 100%; padding: 10px 12px; border-radius: 20px; border: 1px solid #e2e8f0; margin-bottom: 14px; font-family: inherit; font-size: 0.85rem; background: white; }
+        .range-group { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .range-group input { flex: 1; accent-color: #3b82f6; }
+        .subtask-item { background: #f1f5f9; border-radius: 40px; padding: 8px 12px; margin-bottom: 10px; }
+        .subtask-item .subtask-header { display: flex; align-items: center; gap: 6px; }
+        .subtask-item .subtask-name-input { flex: 1; border: none; background: transparent; padding: 4px 0; font-size: 0.85rem; font-family: inherit; border-bottom: 1px dashed #94a3b8; outline: none; }
+        .subtask-item .subtask-name-input:focus { border-bottom-color: #3b82f6; }
+        .subtask-item .subtask-range { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+        .subtask-item .subtask-range input[type="range"] { flex: 1; accent-color: #3b82f6; margin: 0; }
+        .subtask-item .subtask-percent { font-size: 0.75rem; font-weight: 600; min-width: 32px; }
+        .delete-subtask { cursor: pointer; color: #dc2626; font-size: 0.8rem; }
+        .rab-section { margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 12px; }
+        .rab-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .rab-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        .rab-table th, .rab-table td { border: 1px solid #e2e8f0; padding: 6px 4px; text-align: left; vertical-align: middle; }
+        .rab-table th { background: #f1f5f9; }
+        .rab-table input { width: 100%; margin: 0; padding: 4px; font-size: 0.7rem; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .rab-total { text-align: right; font-weight: bold; margin-top: 6px; font-size: 0.8rem; }
+        .btn-icon { background: none; border: none; cursor: pointer; font-size: 0.8rem; color: #3b82f6; }
+        .btn-icon-danger { color: #dc2626; }
+        .small-btn { background: #eef2ff; border: none; border-radius: 30px; padding: 3px 10px; font-size: 0.7rem; cursor: pointer; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+        .btn-primary { background: #3b82f6; color: white; border: none; padding: 8px 0; border-radius: 40px; flex: 1; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; }
+        .btn-danger { background: #fee2e2; color: #dc2626; border: none; border-radius: 40px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; }
+        .btn-warning { background: #ffedd5; color: #ea580c; border: none; border-radius: 40px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; }
+        .btn-success { background: #dcfce7; color: #16a34a; border: none; border-radius: 40px; flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; }
+        .close-modal, .close-tab-modal { float: right; font-size: 1.6rem; cursor: pointer; }
+        label { font-size: 0.75rem; font-weight: 500; color: #475569; margin-bottom: 3px; display: block; }
+        .info-completed { background: #f0fdf4; border-radius: 20px; padding: 8px; margin: 8px 0; font-size: 0.75rem; color: #166534; }
+        .tab-badge { font-size: 0.6rem; background: #e2e8f0; padding: 2px 6px; border-radius: 20px; display: inline-block; }
+        .created-date-badge { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 20px; display: inline-flex; align-items: center; gap: 3px; }
+        .tab-due-soon { background: #fef3c7 !important; border-color: #f59e0b !important; }
+        .tab-due-soon.active { background: #f59e0b !important; color: white !important; border-color: #f59e0b !important; }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="header">
-            <div class="header-left">
-                <h1>📋 TaskAbr</h1>
-            </div>
-            <div class="header-actions">
-                <button class="add-tab-btn" id="exportPdfBtn" title="Export PDF"><i class="fas fa-file-pdf"></i></button>
-                <button class="add-tab-btn" id="addTabBtn"><i class="fas fa-plus"></i> Tab</button>
-            </div>
-        </div>
-        <div class="tabs-scroll" id="tabsContainer"></div>
-
-        <div class="filters-panel">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Cari..." />
-            </div>
-            <div class="filter-select">
-                <select id="filterStatusSelect">
-                    <option value="all">Semua</option>
-                    <option value="active">Aktif</option>
-                    <option value="completed">Selesai</option>
-                    <option value="cancelled">Batal</option>
-                </select>
-            </div>
-            <div class="filter-select">
-                <select id="filterTabSelect"></select>
-            </div>
-            <button id="resetFilterBtn" class="reset-filter" title="Reset filter"><i class="fas fa-undo-alt"></i></button>
-        </div>
-
-        <div id="tasksContainer"></div>
-        <button class="add-task-btn" id="addTaskBtn" style="display: none;"><i class="fas fa-plus"></i></button>
-    </div>
-
-    <!-- Modal Task -->
-    <div id="taskModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 id="modalTitle">Detail Tugas</h2>
-            <input type="hidden" id="taskIdField" />
-            <input type="text" id="taskTitle" placeholder="Judul tugas" />
-            <textarea id="taskNotes" rows="2" placeholder="Catatan..."></textarea>
-
-            <!-- Label Tanggal Deadline ditambahkan di sini -->
-            <label><i class="fas fa-calendar-alt"></i> Tanggal Deadline</label>
-            <input type="datetime-local" id="taskDueDate" />
-
-            <div style="margin-bottom: 6px;">
-                <label><i class="fas fa-calendar-plus"></i> Tanggal Pembuatan</label>
-                <input type="datetime-local" id="taskCreatedAt" style="background:#ffffff;" />
-            </div>
-            <label><i class="fas fa-flag"></i> Prioritas</label>
-            <select id="taskPriority">
-                <option value="low">Rendah</option>
-                <option value="medium" selected>Sedang</option>
-                <option value="high">Tinggi</option>
-            </select>
-
-            <div style="margin-bottom: 12px;">
-                <label><i class="fas fa-exchange-alt"></i> Pindah ke tab</label>
-                <select id="moveTabSelect"></select>
-            </div>
-
-            <div id="progressGroup">
-                <label>Progres tugas:</label>
-                <div class="range-group">
-                    <input type="range" id="progressSlider" min="0" max="100" step="1" />
-                    <span id="progressPercent">0%</span>
-                </div>
-            </div>
-            <div id="progressInfo" style="display:none; background:#eef2ff; border-radius:20px; padding:8px; margin:8px 0; font-size:0.75rem;"></div>
-
-            <!-- Completed info + edit tanggal selesai -->
-            <div id="completedInfo" style="display:none;" class="info-completed">
-                <div><i class="fas fa-check-circle"></i> Tugas selesai</div>
-                <div style="margin-top:6px;">
-                    <label>Tanggal Selesai</label>
-                    <input type="datetime-local" id="taskCompletedAt" style="background:#ffffff;" />
-                </div>
-            </div>
-
-            <h4><i class="fas fa-tasks"></i> Sub Tugas</h4>
-            <div id="subtasksContainer" style="margin-bottom:10px;"></div>
-            <div style="display:flex; gap:8px;">
-                <input type="text" id="newSubtaskInput" placeholder="Nama sub tugas" />
-                <button id="addSubtaskBtn" class="btn-primary" style="padding:0 12px; flex:0;">+</button>
-            </div>
-
-            <!-- Rencana Anggaran -->
-            <div class="rab-section">
-                <div class="rab-header">
-                    <h4><i class="fas fa-coins"></i> Rencana Anggaran</h4>
-                    <button id="toggleRabBtn" class="small-btn"><i class="fas fa-plus"></i> Tampilkan</button>
-                </div>
-                <div id="rabTableWrapper" style="display: none;">
-                    <table class="rab-table" id="rabTable">
-                        <thead>
-                            <tr><th>Uraian</th><th>Satuan</th><th>Harga Satuan</th><th>Jumlah</th><th></th></tr>
-                        </thead>
-                        <tbody id="rabTbody"></tbody>
-                    </table>
-                    <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-                        <button id="addRabRowBtn" class="small-btn"><i class="fas fa-plus"></i> Baris</button>
-                        <div class="rab-total">Total: <span id="rabTotalDisplay">Rp 0</span></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-buttons" id="modalButtonsContainer"></div>
+<div class="app-container">
+    <div class="header">
+        <div class="header-left"><h1>📋 TaskAbr</h1></div>
+        <div class="header-actions">
+            <button class="add-tab-btn" id="exportPdfBtn" title="Export PDF"><i class="fas fa-file-pdf"></i></button>
+            <button class="add-tab-btn" id="addTabBtn"><i class="fas fa-plus"></i> Tab</button>
         </div>
     </div>
+    <div class="tabs-scroll" id="tabsContainer"></div>
 
-    <!-- Modal Tab -->
-    <div id="tabModal" class="modal">
-        <div class="modal-content">
-            <span class="close-tab-modal">&times;</span>
-            <h2>Atur Tab</h2>
-            <input type="hidden" id="tabIdField" />
-            <input type="text" id="tabName" placeholder="Nama tab" />
-            <div class="modal-buttons">
-                <button id="saveTabBtn" class="btn-primary"><i class="fas fa-save"></i> Simpan</button>
-                <button id="deleteTabBtn" class="btn-danger"><i class="fas fa-trash-alt"></i> Hapus</button>
-            </div>
-        </div>
+    <div class="filters-panel">
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Cari..." /></div>
+        <div class="filter-select"><select id="filterStatusSelect"><option value="all">Semua</option><option value="active">Aktif</option><option value="completed">Selesai</option><option value="cancelled">Batal</option></select></div>
+        <div class="filter-select"><select id="filterTabSelect"></select></div>
+        <button id="resetFilterBtn" class="reset-filter" title="Reset filter"><i class="fas fa-undo-alt"></i></button>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import {
-            getFirestore,
-            collection,
-            doc,
-            addDoc,
-            updateDoc,
-            deleteDoc,
-            query,
-            where,
-            onSnapshot,
-            Timestamp,
-            writeBatch,
-            getDocs
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <div id="tasksContainer"></div>
+    <button class="add-task-btn" id="addTaskBtn" style="display: none;"><i class="fas fa-plus"></i></button>
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDtryifWRdYyU8oMbB-l5bMhgnms0Y4K2w",
-            authDomain: "task-bb3db.firebaseapp.com",
-            projectId: "task-bb3db",
-            storageBucket: "task-bb3db.firebasestorage.app",
-            messagingSenderId: "227588110683",
-            appId: "1:227588110683:web:be696631b12d00ab56027e"
-        };
+<!-- Modal Task -->
+<div id="taskModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 id="modalTitle">Detail Tugas</h2>
+        <input type="hidden" id="taskIdField" />
+        <input type="text" id="taskTitle" placeholder="Judul tugas" />
+        <textarea id="taskNotes" rows="2" placeholder="Catatan..."></textarea>
+        <label><i class="fas fa-calendar-alt"></i> Tanggal Deadline</label>
+        <input type="datetime-local" id="taskDueDate" />
+        <div style="margin-bottom: 6px;">
+            <label><i class="fas fa-calendar-plus"></i> Tanggal Pembuatan</label>
+            <input type="datetime-local" id="taskCreatedAt" style="background:#ffffff;" />
+        </div>
+        <label><i class="fas fa-flag"></i> Prioritas</label>
+        <select id="taskPriority"><option value="low">Rendah</option><option value="medium" selected>Sedang</option><option value="high">Tinggi</option></select>
+        <div style="margin-bottom: 12px;">
+            <label><i class="fas fa-exchange-alt"></i> Pindah ke tab</label>
+            <select id="moveTabSelect"></select>
+        </div>
+        <div id="progressGroup">
+            <label>Progres tugas:</label>
+            <div class="range-group"><input type="range" id="progressSlider" min="0" max="100" step="1" /><span id="progressPercent">0%</span></div>
+        </div>
+        <div id="progressInfo" style="display:none; background:#eef2ff; border-radius:20px; padding:8px; margin:8px 0; font-size:0.75rem;"></div>
+        <div id="completedInfo" style="display:none;" class="info-completed">
+            <div><i class="fas fa-check-circle"></i> Tugas selesai</div>
+            <div style="margin-top:6px;"><label>Tanggal Selesai</label><input type="datetime-local" id="taskCompletedAt" style="background:#ffffff;" /></div>
+        </div>
+        <h4><i class="fas fa-tasks"></i> Sub Tugas</h4>
+        <div id="subtasksContainer" style="margin-bottom:10px;"></div>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="newSubtaskInput" placeholder="Nama sub tugas" />
+            <button id="addSubtaskBtn" class="btn-primary" style="padding:0 12px; flex:0;">+</button>
+        </div>
+        <div class="rab-section">
+            <div class="rab-header"><h4><i class="fas fa-coins"></i> Rencana Anggaran</h4><button id="toggleRabBtn" class="small-btn"><i class="fas fa-plus"></i> Tampilkan</button></div>
+            <div id="rabTableWrapper" style="display: none;">
+                <table class="rab-table" id="rabTable"><thead><tr><th>Uraian</th><th>Satuan</th><th>Harga Satuan</th><th>Jumlah</th><th></th></tr></thead><tbody id="rabTbody"></tbody></table>
+                <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+                    <button id="addRabRowBtn" class="small-btn"><i class="fas fa-plus"></i> Baris</button>
+                    <div class="rab-total">Total: <span id="rabTotalDisplay">Rp 0</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-buttons" id="modalButtonsContainer"></div>
+    </div>
+</div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+<!-- Modal Tab -->
+<div id="tabModal" class="modal">
+    <div class="modal-content">
+        <span class="close-tab-modal">&times;</span>
+        <h2>Atur Tab</h2>
+        <input type="hidden" id="tabIdField" />
+        <input type="text" id="tabName" placeholder="Nama tab" />
+        <div class="modal-buttons">
+            <button id="saveTabBtn" class="btn-primary"><i class="fas fa-save"></i> Simpan</button>
+            <button id="deleteTabBtn" class="btn-danger"><i class="fas fa-trash-alt"></i> Hapus</button>
+        </div>
+    </div>
+</div>
 
-        const tabsCol = collection(db, "tabs");
-        const tasksCol = collection(db, "tasks");
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, query, where, onSnapshot, Timestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        let currentTabId = 'high-priority-special';
-        let tabsUnsub = null;
-        let allTasksUnsub = null;
-        let allTasksGlobal = [];
-        let allTabs = [];
+    const firebaseConfig = {
+        apiKey: "AIzaSyDtryifWRdYyU8oMbB-l5bMhgnms0Y4K2w",
+        authDomain: "task-bb3db.firebaseapp.com",
+        projectId: "task-bb3db",
+        storageBucket: "task-bb3db.firebasestorage.app",
+        messagingSenderId: "227588110683",
+        appId: "1:227588110683:web:be696631b12d00ab56027e"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const tabsCol = collection(db, "tabs");
+    const tasksCol = collection(db, "tasks");
 
-        // Elemen
-        const tabsContainer = document.getElementById("tabsContainer");
-        const addTabBtn = document.getElementById("addTabBtn");
-        const tasksContainer = document.getElementById("tasksContainer");
-        const addTaskBtn = document.getElementById("addTaskBtn");
-        const taskModal = document.getElementById("taskModal");
-        const tabModal = document.getElementById("tabModal");
-        const closeModal = document.querySelector(".close-modal");
-        const closeTabModal = document.querySelector(".close-tab-modal");
-        const taskTitleInput = document.getElementById("taskTitle");
-        const taskNotesInput = document.getElementById("taskNotes");
-        const taskDueDate = document.getElementById("taskDueDate");
-        const taskCreatedAtInput = document.getElementById("taskCreatedAt");
-        const taskCompletedAtInput = document.getElementById("taskCompletedAt");
-        const taskPrioritySelect = document.getElementById("taskPriority");
-        const progressSlider = document.getElementById("progressSlider");
-        const progressPercent = document.getElementById("progressPercent");
-        const subtasksContainer = document.getElementById("subtasksContainer");
-        const newSubtaskInput = document.getElementById("newSubtaskInput");
-        const addSubtaskBtn = document.getElementById("addSubtaskBtn");
-        const taskIdField = document.getElementById("taskIdField");
-        const progressGroup = document.getElementById("progressGroup");
-        const progressInfo = document.getElementById("progressInfo");
-        const completedInfo = document.getElementById("completedInfo");
-        const modalTitle = document.getElementById("modalTitle");
-        const tabNameInput = document.getElementById("tabName");
-        const tabIdField = document.getElementById("tabIdField");
-        const saveTabBtn = document.getElementById("saveTabBtn");
-        const deleteTabBtn = document.getElementById("deleteTabBtn");
-        const modalButtonsContainer = document.getElementById("modalButtonsContainer");
-        const moveTabSelect = document.getElementById("moveTabSelect");
-        const filterStatusSelect = document.getElementById("filterStatusSelect");
-        const filterTabSelect = document.getElementById("filterTabSelect");
-        const resetFilterBtn = document.getElementById("resetFilterBtn");
-        const searchInput = document.getElementById("searchInput");
+    // ID khusus
+    const DUE_SOON_ID = 'due-soon-special';
+    const HIGH_PRIORITY_ID = 'high-priority-special';
 
-        // RAB
-        const toggleRabBtn = document.getElementById("toggleRabBtn");
-        const rabTableWrapper = document.getElementById("rabTableWrapper");
-        const rabTbody = document.getElementById("rabTbody");
-        const addRabRowBtn = document.getElementById("addRabRowBtn");
-        const rabTotalDisplay = document.getElementById("rabTotalDisplay");
-        const exportPdfBtn = document.getElementById("exportPdfBtn");
+    let currentTabId = DUE_SOON_ID; // default ke Segera
+    let tabsUnsub = null;
+    let allTasksUnsub = null;
+    let allTasksGlobal = [];
+    let allTabs = [];
 
-        let activeTaskId = null;
-        let currentSubtasks = [];
-        let originalTabId = null;
-        let currentRabItems = [];
-        let openSection = null;
+    // Elemen
+    const tabsContainer = document.getElementById("tabsContainer");
+    const addTabBtn = document.getElementById("addTabBtn");
+    const tasksContainer = document.getElementById("tasksContainer");
+    const addTaskBtn = document.getElementById("addTaskBtn");
+    const taskModal = document.getElementById("taskModal");
+    const tabModal = document.getElementById("tabModal");
+    const closeModal = document.querySelector(".close-modal");
+    const closeTabModal = document.querySelector(".close-tab-modal");
+    const taskTitleInput = document.getElementById("taskTitle");
+    const taskNotesInput = document.getElementById("taskNotes");
+    const taskDueDate = document.getElementById("taskDueDate");
+    const taskCreatedAtInput = document.getElementById("taskCreatedAt");
+    const taskCompletedAtInput = document.getElementById("taskCompletedAt");
+    const taskPrioritySelect = document.getElementById("taskPriority");
+    const progressSlider = document.getElementById("progressSlider");
+    const progressPercent = document.getElementById("progressPercent");
+    const subtasksContainer = document.getElementById("subtasksContainer");
+    const newSubtaskInput = document.getElementById("newSubtaskInput");
+    const addSubtaskBtn = document.getElementById("addSubtaskBtn");
+    const taskIdField = document.getElementById("taskIdField");
+    const progressGroup = document.getElementById("progressGroup");
+    const progressInfo = document.getElementById("progressInfo");
+    const completedInfo = document.getElementById("completedInfo");
+    const modalTitle = document.getElementById("modalTitle");
+    const tabNameInput = document.getElementById("tabName");
+    const tabIdField = document.getElementById("tabIdField");
+    const saveTabBtn = document.getElementById("saveTabBtn");
+    const deleteTabBtn = document.getElementById("deleteTabBtn");
+    const modalButtonsContainer = document.getElementById("modalButtonsContainer");
+    const moveTabSelect = document.getElementById("moveTabSelect");
+    const filterStatusSelect = document.getElementById("filterStatusSelect");
+    const filterTabSelect = document.getElementById("filterTabSelect");
+    const resetFilterBtn = document.getElementById("resetFilterBtn");
+    const searchInput = document.getElementById("searchInput");
+    const toggleRabBtn = document.getElementById("toggleRabBtn");
+    const rabTableWrapper = document.getElementById("rabTableWrapper");
+    const rabTbody = document.getElementById("rabTbody");
+    const addRabRowBtn = document.getElementById("addRabRowBtn");
+    const rabTotalDisplay = document.getElementById("rabTotalDisplay");
+    const exportPdfBtn = document.getElementById("exportPdfBtn");
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+    let activeTaskId = null;
+    let currentSubtasks = [];
+    let originalTabId = null;
+    let currentRabItems = [];
+    let openSection = null;
+
+    // ---------- Utility ----------
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
+    function formatDate(ts) { if (!ts) return null; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleString('id-ID', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+    function formatDateShort(d) { if (!d) return '-'; const dt = d.toDate ? d.toDate() : new Date(d); return dt.toLocaleDateString('id-ID', {day:'numeric',month:'short',year:'numeric'}); }
+    function toDatetimeLocal(date) { if (!date) return ''; const d=new Date(date); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+    function parseSatuanNumber(s) { if (!s) return 1; const m=s.match(/\d+(?:\.\d+)?/); return m ? parseFloat(m[0]) : 1; }
+    function formatRupiah(angka) { return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(angka); }
+    function getPriorityLabel(p) { return {high:'Tinggi',medium:'Sedang',low:'Rendah'}[p]||'Sedang'; }
+    function computeRabTotal(items) { return items.reduce((s,i)=>s+(i.jumlah||0),0); }
+    function recalcRabItem(item) { const qty=parseSatuanNumber(item.satuan); const harga=item.hargaSatuan||0; return {...item, jumlah:qty*harga}; }
+    function updateRabTotalDisplay() { rabTotalDisplay.textContent=formatRupiah(computeRabTotal(currentRabItems)); }
+    function renderRabTable() {
+        rabTbody.innerHTML='';
+        if(!currentRabItems.length){ const r=rabTbody.insertRow(); r.innerHTML='<td colspan="5" style="text-align:center">Belum ada item. Klik "+ Baris"</td>'; updateRabTotalDisplay(); return; }
+        currentRabItems.forEach((item,idx)=>{
+            const row=rabTbody.insertRow();
+            const tdUraian=row.insertCell(0), inputUraian=document.createElement('input'); inputUraian.type='text'; inputUraian.value=item.uraian||''; inputUraian.placeholder='Nama'; inputUraian.addEventListener('change',e=>{currentRabItems[idx].uraian=e.target.value;}); tdUraian.appendChild(inputUraian);
+            const tdSatuan=row.insertCell(1), inputSatuan=document.createElement('input'); inputSatuan.type='text'; inputSatuan.value=item.satuan||''; inputSatuan.placeholder='Satuan'; inputSatuan.addEventListener('input',e=>{currentRabItems[idx].satuan=e.target.value; const newItem=recalcRabItem(currentRabItems[idx]); currentRabItems[idx]=newItem; tdJumlah.textContent=formatRupiah(newItem.jumlah); updateRabTotalDisplay();}); tdSatuan.appendChild(inputSatuan);
+            const tdHarga=row.insertCell(2), inputHarga=document.createElement('input'); inputHarga.type='number'; inputHarga.value=item.hargaSatuan||0; inputHarga.min=0; inputHarga.step=1000; inputHarga.addEventListener('input',e=>{let val=parseFloat(e.target.value); if(isNaN(val))val=0; currentRabItems[idx].hargaSatuan=val; const newItem=recalcRabItem(currentRabItems[idx]); currentRabItems[idx]=newItem; tdJumlah.textContent=formatRupiah(newItem.jumlah); updateRabTotalDisplay();}); tdHarga.appendChild(inputHarga);
+            const tdJumlah=row.insertCell(3); tdJumlah.textContent=formatRupiah(item.jumlah||0);
+            const tdAction=row.insertCell(4), delBtn=document.createElement('button'); delBtn.innerHTML='<i class="fas fa-trash-alt"></i>'; delBtn.className='btn-icon btn-icon-danger'; delBtn.addEventListener('click',()=>{currentRabItems.splice(idx,1); renderRabTable();}); tdAction.appendChild(delBtn);
+        });
+        updateRabTotalDisplay();
+    }
+    function addRabRow(){ currentRabItems.push({id:Date.now()+Math.random(), uraian:'', satuan:'', hargaSatuan:0, jumlah:0}); renderRabTable(); if(rabTableWrapper.style.display==='none') rabTableWrapper.style.display='block'; }
+    function computeAvgProgressFromSubtasks(subtasks){ if(!subtasks||subtasks.length===0) return null; const total=subtasks.reduce((s,sub)=>s+(sub.progress||0),0); return Math.floor(total/subtasks.length); }
+    async function updateTaskStatus(taskId, updates){ await updateDoc(doc(db,"tasks",taskId), updates); }
+    async function toggleTaskCompletion(task) {
+        if(task.cancelled){ await updateTaskStatus(task.id,{cancelled:false, completed:false, completedAt:null}); return; }
+        if(task.completed){ await updateTaskStatus(task.id,{completed:false, progress:0, completedAt:null}); return; }
+        const subtasks=task.subtasks||[];
+        if(subtasks.length>0){
+            const allCompleted=subtasks.every(st=>st.progress===100);
+            const newProgressValue=allCompleted?0:100;
+            const newSubtasks=subtasks.map(st=>({...st, progress:newProgressValue}));
+            const newAvgProgress=computeAvgProgressFromSubtasks(newSubtasks);
+            const newCompleted=newSubtasks.every(st=>st.progress===100);
+            const completedAtValue=newCompleted?Timestamp.now():null;
+            await updateDoc(doc(db,"tasks",task.id), {subtasks:newSubtasks, progress:newAvgProgress, completed:newCompleted, cancelled:false, completedAt:completedAtValue});
+        } else {
+            await updateDoc(doc(db,"tasks",task.id), {progress:100, completed:true, cancelled:false, completedAt:Timestamp.now()});
+        }
+    }
+    async function addNewTab(name){ await addDoc(tabsCol,{name, createdAt:Timestamp.now()}); }
+    async function updateTab(tabId,newName){ await updateDoc(doc(db,"tabs",tabId),{name:newName}); }
+    async function deleteTabById(tabId){ const batch=writeBatch(db); const q=query(tasksCol,where("tabId","==",tabId)); const snap=await getDocs(q); snap.forEach(taskDoc=>batch.delete(doc(db,"tasks",taskDoc.id))); batch.delete(doc(db,"tabs",tabId)); await batch.commit(); }
+    async function loadTabsForDropdown(selectedTabId){ const snapshot=await getDocs(tabsCol); allTabs=[]; snapshot.forEach(docSnap=>allTabs.push({id:docSnap.id, name:docSnap.data().name})); allTabs.sort((a,b)=>a.name.localeCompare(b.name)); moveTabSelect.innerHTML=''; allTabs.forEach(tab=>{const opt=document.createElement('option'); opt.value=tab.id; opt.textContent=escapeHtml(tab.name); if(tab.id===selectedTabId) opt.selected=true; moveTabSelect.appendChild(opt);}); if(allTabs.length===0) moveTabSelect.innerHTML='<option disabled>Tidak ada tab</option>'; }
+    function populateFilterTabSelect(){ filterTabSelect.innerHTML=''; const allOpt=document.createElement('option'); allOpt.value='all'; allOpt.textContent='📂 Semua Tab'; filterTabSelect.appendChild(allOpt); allTabs.forEach(tab=>{const opt=document.createElement('option'); opt.value=tab.id; opt.textContent=escapeHtml(tab.name); filterTabSelect.appendChild(opt);}); if(currentTabId && currentTabId!==DUE_SOON_ID && currentTabId!==HIGH_PRIORITY_ID && filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) filterTabSelect.value=currentTabId; }
+    function sortTasksByCreatedDate(tasks){ return [...tasks].sort((a,b)=>{const da=a.createdAt?(a.createdAt.toDate?a.createdAt.toDate().getTime():new Date(a.createdAt).getTime()):0; const db=b.createdAt?(b.createdAt.toDate?b.createdAt.toDate().getTime():new Date(b.createdAt).getTime()):0; return db-da;}); }
+    function sortTasksByCompletedDate(tasks){ return [...tasks].sort((a,b)=>{const da=a.completedAt?(a.completedAt.toDate?a.completedAt.toDate().getTime():new Date(a.completedAt).getTime()):0; const db=b.completedAt?(b.completedAt.toDate?b.completedAt.toDate().getTime():new Date(b.completedAt).getTime()):0; return db-da;}); }
+    function sortTasksByCancelledDate(tasks){ return sortTasksByCreatedDate(tasks); }
+    function getProgressStyle(percent){ percent=Math.min(100,Math.max(0,percent)); let r,g,b; if(percent<=50){ r=255; g=Math.floor(255*(percent/50)); b=0; } else { r=Math.floor(255*(1-(percent-50)/50)); g=255; b=0; } const bg=`rgb(${r},${g},${b})`; const lum=(0.299*r+0.587*g+0.114*b)/255; return `background:${bg}; color:${lum>0.5?'#000000':'#ffffff'};`; }
+    function getPriorityBadge(priority){ const p=priority||'medium'; const labels={high:'Tinggi',medium:'Sedang',low:'Rendah'}; const icons={high:'🔴',medium:'🟡',low:'🟢'}; const classes={high:'priority-high',medium:'priority-medium',low:'priority-low'}; return `<span class="priority-badge ${classes[p]}">${icons[p]} ${labels[p]}</span>`; }
+    function renderTaskCard(task){
+        const progressVal=task.progress||0;
+        const dueDateStr=task.dueDate?new Date(task.dueDate).toLocaleString('id-ID'):'Tidak ada deadline';
+        const createdDateStr=task.createdAt?formatDate(task.createdAt):'-';
+        let bullet, cardClass='';
+        if(task.cancelled){ bullet='<i class="fas fa-ban task-bullet-cancelled"></i>'; cardClass='cancelled'; }
+        else if(task.completed){ bullet='<i class="fas fa-check-circle task-bullet-checked"></i>'; }
+        else { bullet='<i class="far fa-circle task-bullet-unchecked"></i>'; }
+        let completedHtml='';
+        if(task.completed && task.completedAt) completedHtml=`<div class="completed-date"><i class="fas fa-calendar-check"></i> Selesai: ${formatDate(task.completedAt)}</div>`;
+        const tab=allTabs.find(t=>t.id===task.tabId);
+        const tabBadge=tab?`<span class="tab-badge">📁 ${escapeHtml(tab.name)}</span>`:'';
+        const priorityBadge=getPriorityBadge(task.priority);
+        const rabTotalVal=(task.rabTotal||0);
+        const rabHtml=rabTotalVal>0?`<span class="rab-badge"><i class="fas fa-coins"></i> ${formatRupiah(rabTotalVal)}</span>`:'';
+        const progressStyle=getProgressStyle(progressVal);
+        return `<div class="task-card ${cardClass}" data-id="${task.id}">
+            <div class="task-left"><div class="task-bullet" data-id="${task.id}">${bullet}</div>
+            <div class="task-info"><div class="task-title"><span>${escapeHtml(task.title)}</span>${priorityBadge}${tabBadge}<span class="created-date-badge"><i class="fas fa-calendar-alt"></i> ${createdDateStr}</span>${rabHtml}</div>
+            <div class="task-meta"><span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span><span class="task-progress-badge" style="${progressStyle}">${progressVal}%</span></div>${completedHtml}</div></div>
+            <div class="task-actions"><i class="fas fa-edit task-edit-btn" data-id="${task.id}"></i><i class="fas fa-trash-alt task-delete-btn" data-id="${task.id}"></i></div>
+        </div>`;
+    }
+    function renderSection(title, iconClass, tasks, sectionType, colorHex=null){
+        const taskCount=tasks.length;
+        let html=`<div class="task-section" data-section-type="${sectionType}">`;
+        if(sectionType==='active'){
+            html+=`<div class="section-header"><div class="section-title" style="${colorHex?`color:${colorHex};`:''}"><i class="${iconClass}"></i> ${title} (${taskCount})</div></div><div class="task-list-container active-scroll">`;
+        } else {
+            const isOpen=(openSection===sectionType);
+            const toggleClass=isOpen?'fas fa-chevron-down':'fas fa-chevron-right';
+            html+=`<div class="section-header" data-toggle="${sectionType}"><div class="section-title" style="${colorHex?`color:${colorHex};`:''}"><i class="${iconClass}"></i> ${title} (${taskCount})</div><i class="${toggleClass} toggle-icon ${!isOpen?'collapsed':''}"></i></div><div class="task-list-container active-scroll" style="${isOpen?'display:block;':'display:none;'}">`;
+        }
+        if(taskCount===0) html+=`<div class="empty-placeholder">✨ Tidak ada tugas</div>`;
+        else tasks.forEach(task=>{html+=renderTaskCard(task);});
+        html+=`</div></div>`;
+        return html;
+    }
+    function bindSectionToggles(){ document.querySelectorAll('.section-header[data-toggle]').forEach(h=>{h.removeEventListener('click', toggleHandler); h.addEventListener('click', toggleHandler);}); }
+    function toggleHandler(e){ const header=e.currentTarget; const sectionType=header.dataset.toggle; const container=header.parentElement.querySelector('.task-list-container'); const icon=header.querySelector('.toggle-icon'); if(openSection===sectionType){ container.style.display='none'; icon.classList.add('collapsed'); icon.classList.remove('fa-chevron-down'); icon.classList.add('fa-chevron-right'); openSection=null; } else { if(openSection){ const prevContainer=document.querySelector(`.task-section[data-section-type="${openSection}"] .task-list-container`); const prevIcon=document.querySelector(`.section-header[data-toggle="${openSection}"] .toggle-icon`); if(prevContainer) prevContainer.style.display='none'; if(prevIcon){ prevIcon.classList.add('collapsed'); prevIcon.classList.remove('fa-chevron-down'); prevIcon.classList.add('fa-chevron-right'); } } container.style.display='block'; icon.classList.remove('collapsed'); icon.classList.remove('fa-chevron-right'); icon.classList.add('fa-chevron-down'); openSection=sectionType; } }
+    function attachTaskEvents(){
+        document.querySelectorAll('.task-bullet').forEach(el=>{el.removeEventListener('click',bulletClickHandler); el.addEventListener('click',bulletClickHandler);});
+        document.querySelectorAll('.task-card').forEach(card=>{card.removeEventListener('click',cardClickHandler); card.addEventListener('click',cardClickHandler);});
+        document.querySelectorAll('.task-edit-btn').forEach(btn=>{btn.removeEventListener('click',editClickHandler); btn.addEventListener('click',editClickHandler);});
+        document.querySelectorAll('.task-delete-btn').forEach(btn=>{btn.removeEventListener('click',deleteClickHandler); btn.addEventListener('click',deleteClickHandler);});
+    }
+    function bulletClickHandler(e){ e.stopPropagation(); const task=allTasksGlobal.find(t=>t.id===e.currentTarget.dataset.id); if(task) toggleTaskCompletion(task); }
+    function cardClickHandler(e){ if(e.target.closest('.task-bullet')||e.target.closest('.task-edit-btn')||e.target.closest('.task-delete-btn')) return; const task=allTasksGlobal.find(t=>t.id===e.currentTarget.dataset.id); if(task) openTaskModal(task); }
+    function editClickHandler(e){ e.stopPropagation(); const task=allTasksGlobal.find(t=>t.id===e.currentTarget.dataset.id); if(task) openTaskModal(task); }
+    async function deleteClickHandler(e){ e.stopPropagation(); if(confirm("Hapus tugas permanen?")) await deleteDoc(doc(db,"tasks",e.currentTarget.dataset.id)); }
+
+    function startGlobalTasksListener(){ if(allTasksUnsub) allTasksUnsub(); allTasksUnsub=onSnapshot(tasksCol, snapshot=>{ allTasksGlobal=[]; snapshot.forEach(docSnap=>{allTasksGlobal.push({id:docSnap.id,...docSnap.data()});}); applyFiltersAndRender(); }); }
+
+    // Fungsi untuk mengecek apakah tugas memiliki deadline dalam 3 hari ke depan (aktif & belum batal)
+    function isDueSoon(task){
+        if(!task.dueDate) return false;
+        if(task.completed || task.cancelled) return false;
+        const now=new Date();
+        now.setHours(0,0,0,0);
+        const due=new Date(task.dueDate);
+        due.setHours(0,0,0,0);
+        const diffDays=Math.ceil((due-now)/(1000*60*60*24));
+        return diffDays>=0 && diffDays<=3;
+    }
+
+    function applyFiltersAndRender(){
+        const searchText=searchInput.value.trim().toLowerCase();
+        const statusFilter=filterStatusSelect.value;
+        let filtered=[...allTasksGlobal];
+
+        // Filter berdasarkan tab
+        if(currentTabId===DUE_SOON_ID){
+            filtered=filtered.filter(t=>isDueSoon(t));
+        } else if(currentTabId===HIGH_PRIORITY_ID){
+            filtered=filtered.filter(t=>t.priority==='high');
+        } else if(currentTabId && currentTabId!=='all'){
+            filtered=filtered.filter(t=>t.tabId===currentTabId);
         }
 
-        function formatDate(timestamp) {
-            if (!timestamp) return null;
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit',
-                minute: '2-digit' });
+        if(searchText) filtered=filtered.filter(t=>(t.title&&t.title.toLowerCase().includes(searchText))||(t.notes&&t.notes.toLowerCase().includes(searchText)));
+
+        let active=filtered.filter(t=>!t.completed&&!t.cancelled);
+        let completed=filtered.filter(t=>t.completed&&!t.cancelled);
+        let cancelled=filtered.filter(t=>t.cancelled);
+
+        active=sortTasksByCreatedDate(active);
+        completed=sortTasksByCompletedDate(completed);
+        cancelled=sortTasksByCancelledDate(cancelled);
+
+        let html='';
+        if(statusFilter==='all'){
+            html+=renderSection('Aktif','far fa-circle', active, 'active');
+            html+=renderSection('Selesai','fas fa-check-circle', completed, 'completed');
+            html+=renderSection('Batal','fas fa-ban', cancelled, 'cancelled', '#dc2626');
+        } else if(statusFilter==='active'){
+            html+=renderSection('Aktif','far fa-circle', active, 'active');
+        } else if(statusFilter==='completed'){
+            html+=renderSection('Selesai','fas fa-check-circle', completed, 'completed');
+        } else if(statusFilter==='cancelled'){
+            html+=renderSection('Batal','fas fa-ban', cancelled, 'cancelled', '#dc2626');
         }
-
-        function formatDateShort(dateObj) {
-            if (!dateObj) return '-';
-            const d = dateObj.toDate ? dateObj.toDate() : new Date(dateObj);
-            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-        }
-
-        function toDatetimeLocal(date) {
-            if (!date) return '';
-            const d = new Date(date);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
-
-        function parseSatuanNumber(satuanStr) {
-            if (!satuanStr) return 1;
-            const match = satuanStr.match(/\d+(?:\.\d+)?/);
-            if (match) return parseFloat(match[0]);
-            return 1;
-        }
-
-        function formatRupiah(angka) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
-                .format(angka);
-        }
-
-        function getPriorityLabel(priority) {
-            const labels = { high: 'Tinggi', medium: 'Sedang', low: 'Rendah' };
-            return labels[priority] || 'Sedang';
-        }
-
-        function computeRabTotal(items) {
-            return items.reduce((sum, item) => sum + (item.jumlah || 0), 0);
-        }
-
-        function recalcRabItem(item) {
-            const qty = parseSatuanNumber(item.satuan);
-            const harga = item.hargaSatuan || 0;
-            const jumlah = qty * harga;
-            return { ...item, jumlah };
-        }
-
-        function updateRabTotalDisplay() {
-            const total = computeRabTotal(currentRabItems);
-            rabTotalDisplay.textContent = formatRupiah(total);
-        }
-
-        function renderRabTable() {
-            rabTbody.innerHTML = '';
-            if (!currentRabItems.length) {
-                const emptyRow = rabTbody.insertRow();
-                emptyRow.innerHTML = '<td colspan="5" style="text-align:center">Belum ada item. Klik "+ Baris"</td>';
-                updateRabTotalDisplay();
-                return;
-            }
-            currentRabItems.forEach((item, idx) => {
-                const row = rabTbody.insertRow();
-                const tdUraian = row.insertCell(0);
-                const inputUraian = document.createElement('input');
-                inputUraian.type = 'text';
-                inputUraian.value = item.uraian || '';
-                inputUraian.placeholder = 'Nama';
-                inputUraian.addEventListener('change', (e) => { currentRabItems[idx].uraian = e.target.value; });
-                tdUraian.appendChild(inputUraian);
-
-                const tdSatuan = row.insertCell(1);
-                const inputSatuan = document.createElement('input');
-                inputSatuan.type = 'text';
-                inputSatuan.value = item.satuan || '';
-                inputSatuan.placeholder = 'Satuan';
-                inputSatuan.addEventListener('input', (e) => {
-                    currentRabItems[idx].satuan = e.target.value;
-                    const newItem = recalcRabItem(currentRabItems[idx]);
-                    currentRabItems[idx] = newItem;
-                    tdJumlah.textContent = formatRupiah(newItem.jumlah);
-                    updateRabTotalDisplay();
-                });
-                tdSatuan.appendChild(inputSatuan);
-
-                const tdHarga = row.insertCell(2);
-                const inputHarga = document.createElement('input');
-                inputHarga.type = 'number';
-                inputHarga.value = item.hargaSatuan || 0;
-                inputHarga.min = 0;
-                inputHarga.step = 1000;
-                inputHarga.addEventListener('input', (e) => {
-                    let val = parseFloat(e.target.value);
-                    if (isNaN(val)) val = 0;
-                    currentRabItems[idx].hargaSatuan = val;
-                    const newItem = recalcRabItem(currentRabItems[idx]);
-                    currentRabItems[idx] = newItem;
-                    tdJumlah.textContent = formatRupiah(newItem.jumlah);
-                    updateRabTotalDisplay();
-                });
-                tdHarga.appendChild(inputHarga);
-
-                const tdJumlah = row.insertCell(3);
-                tdJumlah.textContent = formatRupiah(item.jumlah || 0);
-
-                const tdAction = row.insertCell(4);
-                const delBtn = document.createElement('button');
-                delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-                delBtn.className = 'btn-icon btn-icon-danger';
-                delBtn.addEventListener('click', () => {
-                    currentRabItems.splice(idx, 1);
-                    renderRabTable();
-                });
-                tdAction.appendChild(delBtn);
-            });
-            updateRabTotalDisplay();
-        }
-
-        function addRabRow() {
-            currentRabItems.push({ id: Date.now() + Math.random(), uraian: '', satuan: '', hargaSatuan: 0, jumlah: 0 });
-            renderRabTable();
-            if (rabTableWrapper.style.display === 'none') rabTableWrapper.style.display = 'block';
-        }
-
-        function computeAvgProgressFromSubtasks(subtasks) {
-            if (!subtasks || subtasks.length === 0) return null;
-            const total = subtasks.reduce((sum, sub) => sum + (sub.progress || 0), 0);
-            return Math.floor(total / subtasks.length);
-        }
-
-        async function updateTaskStatus(taskId, updates) {
-            await updateDoc(doc(db, "tasks", taskId), updates);
-        }
-
-        async function toggleTaskCompletion(task) {
-            if (task.cancelled) {
-                await updateTaskStatus(task.id, { cancelled: false, completed: false, completedAt: null });
-                return;
-            }
-            if (task.completed) {
-                await updateTaskStatus(task.id, { completed: false, progress: 0, completedAt: null });
-                return;
-            }
-            const subtasks = task.subtasks || [];
-            if (subtasks.length > 0) {
-                const allCompleted = subtasks.every(st => st.progress === 100);
-                const newProgressValue = allCompleted ? 0 : 100;
-                const newSubtasks = subtasks.map(st => ({ ...st, progress: newProgressValue }));
-                const newAvgProgress = computeAvgProgressFromSubtasks(newSubtasks);
-                const newCompleted = newSubtasks.every(st => st.progress === 100);
-                const completedAtValue = newCompleted ? Timestamp.now() : null;
-                await updateDoc(doc(db, "tasks", task.id), { subtasks: newSubtasks, progress: newAvgProgress,
-                    completed: newCompleted, cancelled: false, completedAt: completedAtValue });
-            } else {
-                await updateDoc(doc(db, "tasks", task.id), { progress: 100, completed: true, cancelled: false,
-                    completedAt: Timestamp.now() });
-            }
-        }
-
-        async function addNewTab(name) {
-            await addDoc(tabsCol, { name, createdAt: Timestamp.now() });
-        }
-        async function updateTab(tabId, newName) {
-            await updateDoc(doc(db, "tabs", tabId), { name: newName });
-        }
-        async function deleteTabById(tabId) {
-            const batch = writeBatch(db);
-            const q = query(tasksCol, where("tabId", "==", tabId));
-            const snap = await getDocs(q);
-            snap.forEach(taskDoc => batch.delete(doc(db, "tasks", taskDoc.id)));
-            batch.delete(doc(db, "tabs", tabId));
-            await batch.commit();
-        }
-
-        async function loadTabsForDropdown(selectedTabId) {
-            const snapshot = await getDocs(tabsCol);
-            allTabs = [];
-            snapshot.forEach(docSnap => allTabs.push({ id: docSnap.id, name: docSnap.data().name }));
-            allTabs.sort((a, b) => a.name.localeCompare(b.name));
-            moveTabSelect.innerHTML = '';
-            allTabs.forEach(tab => {
-                const option = document.createElement('option');
-                option.value = tab.id;
-                option.textContent = escapeHtml(tab.name);
-                if (tab.id === selectedTabId) option.selected = true;
-                moveTabSelect.appendChild(option);
-            });
-            if (allTabs.length === 0) moveTabSelect.innerHTML = '<option disabled>Tidak ada tab</option>';
-        }
-
-        function populateFilterTabSelect() {
-            filterTabSelect.innerHTML = '';
-            const allOption = document.createElement('option');
-            allOption.value = 'all';
-            allOption.textContent = '📂 Semua Tab';
-            filterTabSelect.appendChild(allOption);
-            allTabs.forEach(tab => {
-                const option = document.createElement('option');
-                option.value = tab.id;
-                option.textContent = escapeHtml(tab.name);
-                filterTabSelect.appendChild(option);
-            });
-            if (currentTabId && currentTabId !== 'high-priority-special' && filterTabSelect.querySelector(
-                    `option[value="${currentTabId}"]`)) {
-                filterTabSelect.value = currentTabId;
-            }
-        }
-
-        function sortTasksByCreatedDate(tasks) {
-            return [...tasks].sort((a, b) => {
-                const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate().getTime() : new Date(a
-                    .createdAt).getTime()) : 0;
-                const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b
-                    .createdAt).getTime()) : 0;
-                return dateB - dateA;
-            });
-        }
-
-        function sortTasksByCompletedDate(tasks) {
-            return [...tasks].sort((a, b) => {
-                const dateA = a.completedAt ? (a.completedAt.toDate ? a.completedAt.toDate().getTime() : new Date(a
-                    .completedAt).getTime()) : 0;
-                const dateB = b.completedAt ? (b.completedAt.toDate ? b.completedAt.toDate().getTime() : new Date(b
-                    .completedAt).getTime()) : 0;
-                return dateB - dateA;
-            });
-        }
-
-        function sortTasksByCancelledDate(tasks) {
-            return sortTasksByCreatedDate(tasks);
-        }
-
-        function getProgressStyle(percent) {
-            percent = Math.min(100, Math.max(0, percent));
-            let r, g, b;
-            if (percent <= 50) {
-                r = 255;
-                g = Math.floor(255 * (percent / 50));
-                b = 0;
-            } else {
-                r = Math.floor(255 * (1 - (percent - 50) / 50));
-                g = 255;
-                b = 0;
-            }
-            const bgColor = `rgb(${r}, ${g}, ${b})`;
-            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-            const textColor = luminance > 0.5 ? '#000000' : '#ffffff';
-            return `background: ${bgColor}; color: ${textColor};`;
-        }
-
-        function getPriorityBadge(priority) {
-            const p = priority || 'medium';
-            const labels = { high: 'Tinggi', medium: 'Sedang', low: 'Rendah' };
-            const icons = { high: '🔴', medium: '🟡', low: '🟢' };
-            const classes = { high: 'priority-high', medium: 'priority-medium', low: 'priority-low' };
-            return `<span class="priority-badge ${classes[p]}">${icons[p]} ${labels[p]}</span>`;
-        }
-
-        function renderTaskCard(task) {
-            const progressVal = task.progress || 0;
-            const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleString('id-ID') : 'Tidak ada deadline';
-            const createdDateStr = task.createdAt ? formatDate(task.createdAt) : '-';
-            let bullet, cardClass = '';
-            if (task.cancelled) {
-                bullet = '<i class="fas fa-ban task-bullet-cancelled"></i>';
-                cardClass = 'cancelled';
-            } else if (task.completed) {
-                bullet = '<i class="fas fa-check-circle task-bullet-checked"></i>';
-            } else {
-                bullet = '<i class="far fa-circle task-bullet-unchecked"></i>';
-            }
-            let completedHtml = '';
-            if (task.completed && task.completedAt) {
-                completedHtml =
-                    `<div class="completed-date"><i class="fas fa-calendar-check"></i> Selesai: ${formatDate(task.completedAt)}</div>`;
-            }
-            const tab = allTabs.find(t => t.id === task.tabId);
-            const tabBadge = tab ? `<span class="tab-badge">📁 ${escapeHtml(tab.name)}</span>` : '';
-            const priorityBadge = getPriorityBadge(task.priority);
-            const rabTotalVal = (task.rabTotal || 0);
-            const rabHtml = rabTotalVal > 0 ?
-                `<span class="rab-badge"><i class="fas fa-coins"></i> ${formatRupiah(rabTotalVal)}</span>` : '';
-            const progressStyle = getProgressStyle(progressVal);
-
-            return `<div class="task-card ${cardClass}" data-id="${task.id}">
-                        <div class="task-left">
-                            <div class="task-bullet" data-id="${task.id}">${bullet}</div>
-                            <div class="task-info">
-                                <div class="task-title">
-                                    <span>${escapeHtml(task.title)}</span>
-                                    ${priorityBadge}
-                                    ${tabBadge}
-                                    <span class="created-date-badge"><i class="fas fa-calendar-alt"></i> ${createdDateStr}</span>
-                                    ${rabHtml}
-                                </div>
-                                <div class="task-meta">
-                                    <span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span>
-                                    <span class="task-progress-badge" style="${progressStyle}">${progressVal}%</span>
-                                </div>
-                                ${completedHtml}
-                            </div>
-                        </div>
-                        <div class="task-actions">
-                            <i class="fas fa-edit task-edit-btn" data-id="${task.id}"></i>
-                            <i class="fas fa-trash-alt task-delete-btn" data-id="${task.id}"></i>
-                        </div>
-                    </div>`;
-        }
-
-        function renderSection(title, iconClass, tasks, sectionType, colorHex = null) {
-            const taskCount = tasks.length;
-            let sectionHtml = `<div class="task-section" data-section-type="${sectionType}">`;
-            if (sectionType === 'active') {
-                sectionHtml +=
-                    `<div class="section-header"><div class="section-title" style="${colorHex ? `color: ${colorHex};` : ''}"><i class="${iconClass}"></i> ${title} (${taskCount})</div></div><div class="task-list-container active-scroll">`;
-            } else {
-                const isOpen = (openSection === sectionType);
-                const toggleIconClass = isOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-right';
-                sectionHtml +=
-                    `<div class="section-header" data-toggle="${sectionType}"><div class="section-title" style="${colorHex ? `color: ${colorHex};` : ''}"><i class="${iconClass}"></i> ${title} (${taskCount})</div><i class="${toggleIconClass} toggle-icon ${!isOpen ? 'collapsed' : ''}"></i></div><div class="task-list-container active-scroll" style="${isOpen ? 'display: block;' : 'display: none;'}">`;
-            }
-            if (taskCount === 0) sectionHtml += `<div class="empty-placeholder">✨ Tidak ada tugas</div>`;
-            else tasks.forEach(task => { sectionHtml += renderTaskCard(task); });
-            sectionHtml += `</div></div>`;
-            return sectionHtml;
-        }
-
-        function bindSectionToggles() {
-            document.querySelectorAll('.section-header[data-toggle]').forEach(header => {
-                header.removeEventListener('click', toggleHandler);
-                header.addEventListener('click', toggleHandler);
-            });
-        }
-
-        function toggleHandler(e) {
-            const header = e.currentTarget;
-            const sectionType = header.dataset.toggle;
-            const container = header.parentElement.querySelector('.task-list-container');
-            const icon = header.querySelector('.toggle-icon');
-            if (openSection === sectionType) {
-                container.style.display = 'none';
-                icon.classList.add('collapsed');
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-right');
-                openSection = null;
-            } else {
-                if (openSection) {
-                    const prevContainer = document.querySelector(
-                        `.task-section[data-section-type="${openSection}"] .task-list-container`);
-                    const prevIcon = document.querySelector(
-                        `.section-header[data-toggle="${openSection}"] .toggle-icon`);
-                    if (prevContainer) prevContainer.style.display = 'none';
-                    if (prevIcon) {
-                        prevIcon.classList.add('collapsed');
-                        prevIcon.classList.remove('fa-chevron-down');
-                        prevIcon.classList.add('fa-chevron-right');
-                    }
-                }
-                container.style.display = 'block';
-                icon.classList.remove('collapsed');
-                icon.classList.remove('fa-chevron-right');
-                icon.classList.add('fa-chevron-down');
-                openSection = sectionType;
-            }
-        }
-
-        function attachTaskEvents() {
-            document.querySelectorAll('.task-bullet').forEach(el => {
-                el.removeEventListener('click', bulletClickHandler);
-                el.addEventListener('click', bulletClickHandler);
-            });
-            document.querySelectorAll('.task-card').forEach(card => {
-                card.removeEventListener('click', cardClickHandler);
-                card.addEventListener('click', cardClickHandler);
-            });
-            document.querySelectorAll('.task-edit-btn').forEach(btn => {
-                btn.removeEventListener('click', editClickHandler);
-                btn.addEventListener('click', editClickHandler);
-            });
-            document.querySelectorAll('.task-delete-btn').forEach(btn => {
-                btn.removeEventListener('click', deleteClickHandler);
-                btn.addEventListener('click', deleteClickHandler);
-            });
-        }
-
-        function bulletClickHandler(e) {
-            e.stopPropagation();
-            const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id);
-            if (task) toggleTaskCompletion(task);
-        }
-
-        function cardClickHandler(e) {
-            if (e.target.closest('.task-bullet') || e.target.closest('.task-edit-btn') || e.target.closest(
-                    '.task-delete-btn')) return;
-            const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id);
-            if (task) openTaskModal(task);
-        }
-
-        function editClickHandler(e) {
-            e.stopPropagation();
-            const task = allTasksGlobal.find(t => t.id === e.currentTarget.dataset.id);
-            if (task) openTaskModal(task);
-        }
-
-        async function deleteClickHandler(e) {
-            e.stopPropagation();
-            if (confirm("Hapus tugas permanen?")) await deleteDoc(doc(db, "tasks", e.currentTarget.dataset.id));
-        }
-
-        function startGlobalTasksListener() {
-            if (allTasksUnsub) allTasksUnsub();
-            allTasksUnsub = onSnapshot(tasksCol, (snapshot) => {
-                allTasksGlobal = [];
-                snapshot.forEach(docSnap => { allTasksGlobal.push({ id: docSnap.id, ...docSnap.data() }); });
-                applyFiltersAndRender();
-            });
-        }
-
-        function applyFiltersAndRender() {
-            const searchText = searchInput.value.trim().toLowerCase();
-            const statusFilter = filterStatusSelect.value;
-            let filtered = [...allTasksGlobal];
-            if (currentTabId === 'high-priority-special') filtered = filtered.filter(task => task.priority === 'high');
-            else if (currentTabId && currentTabId !== 'all') filtered = filtered.filter(task => task.tabId ===
-                currentTabId);
-            if (searchText) filtered = filtered.filter(task => (task.title && task.title.toLowerCase().includes(
-                searchText)) || (task.notes && task.notes.toLowerCase().includes(searchText)));
-
-            let active = filtered.filter(t => !t.completed && !t.cancelled);
-            let completed = filtered.filter(t => t.completed && !t.cancelled);
-            let cancelled = filtered.filter(t => t.cancelled);
-
-            active = sortTasksByCreatedDate(active);
-            completed = sortTasksByCompletedDate(completed);
-            cancelled = sortTasksByCancelledDate(cancelled);
-
-            let html = '';
-            if (statusFilter === 'all') {
-                html += renderSection('Aktif', 'far fa-circle', active, 'active');
-                html += renderSection('Selesai', 'fas fa-check-circle', completed, 'completed');
-                html += renderSection('Batal', 'fas fa-ban', cancelled, 'cancelled', '#dc2626');
-            } else if (statusFilter === 'active') {
-                html += renderSection('Aktif', 'far fa-circle', active, 'active');
-            } else if (statusFilter === 'completed') {
-                html += renderSection('Selesai', 'fas fa-check-circle', completed, 'completed');
-            } else if (statusFilter === 'cancelled') {
-                html += renderSection('Batal', 'fas fa-ban', cancelled, 'cancelled', '#dc2626');
-            }
-            if (html === '') tasksContainer.innerHTML =
-                '<div class="empty-placeholder"><i class="far fa-frown"></i><p>Tidak ada tugas</p></div>';
-            else tasksContainer.innerHTML = html;
-            bindSectionToggles();
-            attachTaskEvents();
-        }
-
-        function renderTabs(tabs) {
-            tabsContainer.innerHTML = '';
-            const highPriorityTab = { id: 'high-priority-special', name: '⭐ Prioritas Tinggi', isSpecial: true };
-            const normalTabs = [...tabs];
-            const allTabsForRender = [highPriorityTab, ...normalTabs];
-            allTabsForRender.forEach(tab => {
-                const tabDiv = document.createElement('div');
-                const isActive = (tab.isSpecial && currentTabId === 'high-priority-special') || (!tab.isSpecial &&
-                    currentTabId === tab.id);
-                tabDiv.className = `tab-item ${isActive ? 'active' : ''} ${tab.isSpecial ? 'priority-high-tab' : ''}`;
-                if (tab.isSpecial) {
-                    tabDiv.innerHTML = `<span class="tab-name">${tab.name}</span>`;
-                    tabDiv.addEventListener('click', () => {
-                        currentTabId = 'high-priority-special';
-                        filterTabSelect.value = 'all';
-                        addTaskBtn.style.display = 'none';
-                        applyFiltersAndRender();
-                        renderTabs(allTabs);
-                    });
-                } else {
-                    tabDiv.innerHTML =
-                        `<span class="tab-name">${escapeHtml(tab.name)}</span><div class="tab-actions"><i class="fas fa-edit edit-tab" data-id="${tab.id}" data-name="${escapeHtml(tab.name)}"></i><i class="fas fa-trash-alt delete-tab" data-id="${tab.id}"></i></div>`;
-                    tabDiv.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('edit-tab') || e.target.classList.contains(
-                                'delete-tab')) return;
-                        currentTabId = tab.id;
-                        filterTabSelect.value = currentTabId;
-                        addTaskBtn.style.display = 'flex';
-                        applyFiltersAndRender();
-                        renderTabs(allTabs);
-                    });
-                }
-                tabsContainer.appendChild(tabDiv);
-            });
-            document.querySelectorAll('.edit-tab').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openTabModal(btn.dataset.id, btn.dataset.name);
-            }));
-            document.querySelectorAll('.delete-tab').forEach(btn => btn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                if (confirm("Hapus tab beserta semua tugas?")) {
-                    await deleteTabById(btn.dataset.id);
-                    if (currentTabId === btn.dataset.id) currentTabId = 'high-priority-special';
-                }
-            }));
-        }
-
-        function loadTabs() {
-            if (tabsUnsub) tabsUnsub();
-            tabsUnsub = onSnapshot(tabsCol, (snapshot) => {
-                let tabs = [];
-                snapshot.forEach(docSnap => tabs.push({ id: docSnap.id, ...docSnap.data() }));
-                tabs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
-                allTabs = tabs;
-                renderTabs(tabs);
-                populateFilterTabSelect();
-                if (!currentTabId || currentTabId === 'high-priority-special') {
-                    currentTabId = 'high-priority-special';
-                    addTaskBtn.style.display = 'none';
-                    filterTabSelect.value = 'all';
-                    applyFiltersAndRender();
-                } else if (currentTabId && currentTabId !== 'high-priority-special') {
-                    addTaskBtn.style.display = 'flex';
-                    if (filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) filterTabSelect.value =
-                        currentTabId;
-                    applyFiltersAndRender();
-                }
-            });
-        }
-
-        // ========== EXPORT PDF ==========
-        function getTabDisplayName() {
-            if (currentTabId === 'high-priority-special') return 'Prioritas Tinggi';
-            const tab = allTabs.find(t => t.id === currentTabId);
-            return tab ? tab.name : 'Tidak diketahui';
-        }
-
-        function getPriorityColor(priority) {
-            if (priority === 'high') return [255, 200, 200];
-            if (priority === 'low') return [200, 255, 200];
-            return [255, 255, 200];
-        }
-
-        function getProgressColorRGB(percent) {
-            percent = Math.min(100, Math.max(0, percent));
-            let r, g, b;
-            if (percent <= 50) {
-                r = 255;
-                g = Math.floor(255 * (percent / 50));
-                b = 0;
-            } else {
-                r = Math.floor(255 * (1 - (percent - 50) / 50));
-                g = 255;
-                b = 0;
-            }
-            return [r, g, b];
-        }
-
-        function exportPDF() {
-            let tasks = [];
-            if (currentTabId === 'high-priority-special') {
-                tasks = allTasksGlobal.filter(t => t.priority === 'high' && !t.cancelled);
-            } else {
-                tasks = allTasksGlobal.filter(t => t.tabId === currentTabId && !t.cancelled);
-            }
-
-            const active = tasks.filter(t => !t.completed);
-            const completed = tasks.filter(t => t.completed);
-
-            active.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
-            completed.sort((a, b) => (b.completedAt?.toDate?.() || 0) - (a.completedAt?.toDate?.() || 0));
-
-            const doc = new window.jspdf.jsPDF('p', 'mm', 'a4');
-            const margin = 14;
-
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text('TARGET DAN REALISASI ANGGARAN', margin, 20);
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Tab: ${getTabDisplayName()}`, margin, 27);
-            let startY = 33;
-
-            function buildTable(head, body, startY, isActive) {
-                const colCount = head.length;
-                let colWidths, haligns;
-                if (isActive) {
-                    colWidths = ['50%', '10%', '12%', '12%', '16%'];
-                    haligns = ['left', 'center', 'center', 'center', 'right'];
-                } else {
-                    colWidths = ['65%', '10%', '12%', '13%'];
-                    haligns = ['left', 'center', 'center', 'right'];
-                }
-                const colStyles = {};
-                for (let i = 0; i < colCount; i++) {
-                    colStyles[i] = { cellWidth: colWidths[i], halign: haligns[i] };
-                }
-                const headerFill = [44, 62, 80];
-                doc.autoTable({
-                    startY: startY,
-                    head: [head],
-                    body: body,
-                    theme: 'grid',
-                    styles: { fontSize: 9, cellPadding: 2 },
-                    headStyles: { fillColor: headerFill, textColor: [255, 255, 255], fontSize: 9,
-                        fontStyle: 'bold', halign: 'center' },
-                    columnStyles: colStyles,
-                    margin: { left: margin, right: margin },
-                    tableWidth: 'auto',
-                    didParseCell: function(data) {
-                        if (data.cell.raw && typeof data.cell.raw === 'object' && data.cell.raw.styles) {
-                            Object.assign(data.cell.styles, data.cell.raw.styles);
-                        }
-                    }
-                });
-                return doc.lastAutoTable.finalY + 5;
-            }
-
-            if (active.length > 0) {
-                const headActive = ['Uraian', 'Prioritas', 'Progres', 'Tgl Deadline', 'RAB'];
-                const bodyActive = active.map(t => {
-                    const priorityLabel = getPriorityLabel(t.priority);
-                    const priorityColor = getPriorityColor(t.priority);
-                    const progressVal = t.progress || 0;
-                    const progressColor = getProgressColorRGB(progressVal);
-                    const lum = (0.299 * progressColor[0] + 0.587 * progressColor[1] + 0.114 * progressColor[2]) /
-                        255;
-                    const textColor = lum > 0.5 ? [0, 0, 0] : [255, 255, 255];
-                    return [
-                        t.title || '',
-                        { content: priorityLabel, styles: { fillColor: priorityColor, halign: 'center' } },
-                        { content: `${progressVal}%`, styles: { fillColor: progressColor,
-                                textColor: textColor, halign: 'center' } },
-                        t.dueDate ? new Date(t.dueDate).toLocaleDateString('id-ID') : '-',
-                        { content: formatRupiah(t.rabTotal || 0), styles: { halign: 'right' } }
-                    ];
-                });
-                const totalRAB = active.reduce((sum, t) => sum + (t.rabTotal || 0), 0);
-                bodyActive.push([
-                    { content: '', styles: { halign: 'left' } },
-                    { content: '', styles: { halign: 'center' } },
-                    { content: '', styles: { halign: 'center' } },
-                    { content: 'Total', styles: { fontStyle: 'bold', halign: 'center' } },
-                    { content: formatRupiah(totalRAB), styles: { fontStyle: 'bold', halign: 'right' } }
-                ]);
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Aktif', margin, startY);
-                startY += 5;
-                doc.setFont('helvetica', 'normal');
-                startY = buildTable(headActive, bodyActive, startY, true);
-            } else {
-                doc.text('Aktif: tidak ada tugas', margin, startY);
-                startY += 5;
-            }
-
-            if (completed.length > 0) {
-                const headCompleted = ['Uraian', 'Prioritas', 'Tgl Selesai', 'LPJ'];
-                const bodyCompleted = completed.map(t => {
-                    const priorityLabel = getPriorityLabel(t.priority);
-                    const priorityColor = getPriorityColor(t.priority);
-                    return [
-                        t.title || '',
-                        { content: priorityLabel, styles: { fillColor: priorityColor, halign: 'center' } },
-                        t.completedAt ? formatDateShort(t.completedAt) : '-',
-                        { content: formatRupiah(t.rabTotal || 0), styles: { halign: 'right' } }
-                    ];
-                });
-                const totalLPJ = completed.reduce((sum, t) => sum + (t.rabTotal || 0), 0);
-                bodyCompleted.push([
-                    { content: '', styles: { halign: 'left' } },
-                    { content: '', styles: { halign: 'center' } },
-                    { content: 'Total', styles: { fontStyle: 'bold', halign: 'center' } },
-                    { content: formatRupiah(totalLPJ), styles: { fontStyle: 'bold', halign: 'right' } }
-                ]);
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Selesai', margin, startY);
-                startY += 5;
-                doc.setFont('helvetica', 'normal');
-                startY = buildTable(headCompleted, bodyCompleted, startY, false);
-            } else {
-                doc.text('Selesai: tidak ada tugas', margin, startY);
-                startY += 5;
-            }
-
-            doc.save(`TaskAbr_${getTabDisplayName()}.pdf`);
-        }
-
-        exportPdfBtn.addEventListener('click', exportPDF);
-        // ====================================================================
-
-        function updateMainProgressFromSubtasks() {
-            if (currentSubtasks.length > 0) {
-                const avg = computeAvgProgressFromSubtasks(currentSubtasks);
-                progressSlider.value = avg;
-                progressPercent.innerText = `${avg}%`;
-                progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${avg}%`;
-            }
-        }
-
-        async function openTaskModal(task) {
-            activeTaskId = task.id;
-            originalTabId = task.tabId;
-            currentSubtasks = task.subtasks ? [...task.subtasks] : [];
-            currentRabItems = task.rabItems ? [...task.rabItems] : [];
-            taskTitleInput.value = task.title || '';
-            taskNotesInput.value = task.notes || '';
-            taskDueDate.value = task.dueDate ? task.dueDate.slice(0, 16) : '';
-
-            if (task.createdAt) {
-                const createdDate = task.createdAt.toDate ? task.createdAt.toDate() : new Date(task.createdAt);
-                taskCreatedAtInput.value = toDatetimeLocal(createdDate);
-            } else {
-                taskCreatedAtInput.value = toDatetimeLocal(new Date());
-            }
-
-            if (task.completed && task.completedAt) {
-                const completedDate = task.completedAt.toDate ? task.completedAt.toDate() : new Date(task.completedAt);
-                taskCompletedAtInput.value = toDatetimeLocal(completedDate);
-                completedInfo.style.display = 'block';
-            } else {
-                taskCompletedAtInput.value = '';
-                completedInfo.style.display = 'none';
-            }
-
-            taskPrioritySelect.value = task.priority || 'medium';
-            await loadTabsForDropdown(task.tabId);
-
-            const hasSubtasks = currentSubtasks.length > 0;
-            if (hasSubtasks) {
-                progressGroup.style.display = 'none';
-                progressInfo.style.display = 'block';
-                const avgProgress = computeAvgProgressFromSubtasks(currentSubtasks);
-                progressSlider.value = avgProgress;
-                progressPercent.innerText = `${avgProgress}%`;
-                progressSlider.disabled = true;
-                progressInfo.innerHTML = `<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${avgProgress}%`;
-            } else {
-                progressGroup.style.display = 'block';
-                progressInfo.style.display = 'none';
-                progressSlider.disabled = false;
-                progressSlider.value = task.progress || 0;
-                progressPercent.innerText = `${task.progress || 0}%`;
-            }
-
-            renderSubtasksModal();
-            if (currentRabItems.length > 0) {
-                rabTableWrapper.style.display = 'block';
-                renderRabTable();
-            } else {
-                rabTableWrapper.style.display = 'none';
-            }
-            renderModalButtons(task);
-            taskModal.style.display = 'flex';
-
-            // Event listener untuk tombol tambah sub-tugas
-            addSubtaskBtn.onclick = () => {
-                const text = newSubtaskInput.value.trim();
-                if (!text) return alert("Isi nama sub-tugas");
-                currentSubtasks.push({ id: Date.now().toString(), text, progress: 0 });
-                newSubtaskInput.value = '';
-                renderSubtasksModal();
-                progressGroup.style.display = 'none';
-                progressInfo.style.display = 'block';
-                progressSlider.disabled = true;
-                updateMainProgressFromSubtasks();
-            };
-
-            const sliderHandler = () => {
-                if (currentSubtasks.length > 0) return;
-                let val = parseInt(progressSlider.value);
-                const steps = [0, 25, 50, 75, 100];
-                const closest = steps.reduce((a, b) => Math.abs(b - val) < Math.abs(a - val) ? b : a);
-                progressSlider.value = closest;
-                progressPercent.innerText = `${closest}%`;
-            };
-            progressSlider.oninput = sliderHandler;
-            sliderHandler();
-        }
-
-        function renderModalButtons(task) {
-            modalButtonsContainer.innerHTML = '';
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'btn-danger';
-            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Hapus';
-            deleteBtn.onclick = async () => {
-                if (confirm("Hapus tugas permanen?")) {
-                    await deleteDoc(doc(db, "tasks", activeTaskId));
-                    taskModal.style.display = "none";
-                }
-            };
-            modalButtonsContainer.appendChild(deleteBtn);
-
-            if (task.cancelled) {
-                const reactivateBtn = document.createElement('button');
-                reactivateBtn.className = 'btn-success';
-                reactivateBtn.innerHTML = '<i class="fas fa-undo-alt"></i> Kembalikan';
-                reactivateBtn.onclick = async () => {
-                    await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: false, completed: false,
-                        completedAt: null });
-                    taskModal.style.display = "none";
-                };
-                modalButtonsContainer.appendChild(reactivateBtn);
-            } else {
-                const cancelBtn = document.createElement('button');
-                cancelBtn.className = 'btn-warning';
-                cancelBtn.innerHTML = '<i class="fas fa-ban"></i> Batal';
-                cancelBtn.onclick = async () => {
-                    await updateDoc(doc(db, "tasks", activeTaskId), { cancelled: true, completed: false,
-                        completedAt: null });
-                    taskModal.style.display = "none";
-                };
-                modalButtonsContainer.appendChild(cancelBtn);
-            }
-
-            const saveBtn = document.createElement('button');
-            saveBtn.className = 'btn-primary';
-            saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan';
-            saveBtn.onclick = async () => {
-                const title = taskTitleInput.value.trim();
-                if (!title) return alert("Judul tugas wajib diisi!");
-
-                let finalProgress, finalCompleted;
-                if (currentSubtasks.length > 0) {
-                    finalProgress = computeAvgProgressFromSubtasks(currentSubtasks);
-                    finalCompleted = currentSubtasks.every(st => st.progress === 100);
-                } else {
-                    finalProgress = parseInt(progressSlider.value);
-                    finalCompleted = (finalProgress === 100);
-                }
-
-                const newTabId = moveTabSelect.value;
-
-                let completedAtValue = null;
-                if (taskCompletedAtInput.value) {
-                    const d = new Date(taskCompletedAtInput.value);
-                    if (!isNaN(d.getTime())) {
-                        completedAtValue = Timestamp.fromDate(d);
-                    }
-                } else {
-                    completedAtValue = task.completedAt || null;
-                }
-
-                if (finalCompleted && !completedAtValue) {
-                    completedAtValue = Timestamp.now();
-                } else if (!finalCompleted) {
-                    completedAtValue = null;
-                }
-
-                const rabTotalFinal = computeRabTotal(currentRabItems);
-
-                let createdAtTimestamp = task.createdAt;
-                if (taskCreatedAtInput.value) {
-                    const newCreatedDate = new Date(taskCreatedAtInput.value);
-                    if (!isNaN(newCreatedDate.getTime())) {
-                        createdAtTimestamp = Timestamp.fromDate(newCreatedDate);
-                    }
-                } else {
-                    createdAtTimestamp = Timestamp.now();
-                }
-
-                const updateData = {
-                    title,
-                    notes: taskNotesInput.value,
-                    dueDate: taskDueDate.value || null,
-                    progress: finalProgress,
-                    completed: finalCompleted,
-                    subtasks: currentSubtasks,
-                    cancelled: false,
-                    completedAt: completedAtValue,
-                    priority: taskPrioritySelect.value,
-                    rabItems: currentRabItems,
-                    rabTotal: rabTotalFinal,
-                    createdAt: createdAtTimestamp
-                };
-                if (newTabId && newTabId !== originalTabId) updateData.tabId = newTabId;
-
-                await updateDoc(doc(db, "tasks", activeTaskId), updateData);
-                taskModal.style.display = "none";
-            };
-            modalButtonsContainer.appendChild(saveBtn);
-        }
-
-        function renderSubtasksModal() {
-            subtasksContainer.innerHTML = '';
-            if (!currentSubtasks.length) {
-                subtasksContainer.innerHTML = '<div class="empty-placeholder">Belum ada sub-tugas.</div>';
-                return;
-            }
-            currentSubtasks.forEach((sub, idx) => {
-                const div = document.createElement('div');
-                div.className = 'subtask-item';
-
-                const header = document.createElement('div');
-                header.className = 'subtask-header';
-
-                const nameInput = document.createElement('input');
-                nameInput.type = 'text';
-                nameInput.className = 'subtask-name-input';
-                nameInput.value = sub.text || '';
-                nameInput.placeholder = 'Nama sub-tugas';
-                nameInput.addEventListener('change', (e) => {
-                    currentSubtasks[idx].text = e.target.value.trim() || 'Sub-tugas';
-                });
-                nameInput.addEventListener('blur', (e) => {
-                    if (!e.target.value.trim()) {
-                        e.target.value = 'Sub-tugas';
-                        currentSubtasks[idx].text = 'Sub-tugas';
-                    }
-                });
-
-                const delIcon = document.createElement('i');
-                delIcon.className = 'fas fa-trash-alt delete-subtask';
-                delIcon.dataset.idx = idx;
-                delIcon.addEventListener('click', () => {
-                    currentSubtasks.splice(idx, 1);
-                    renderSubtasksModal();
-                    if (currentSubtasks.length === 0) {
-                        progressGroup.style.display = 'block';
-                        progressInfo.style.display = 'none';
-                        progressSlider.disabled = false;
-                        const originalProgress = allTasksGlobal.find(t => t.id === activeTaskId)?.progress || 0;
-                        progressSlider.value = originalProgress;
-                        progressPercent.innerText = `${originalProgress}%`;
+        if(html==='') tasksContainer.innerHTML='<div class="empty-placeholder"><i class="far fa-frown"></i><p>Tidak ada tugas</p></div>';
+        else tasksContainer.innerHTML=html;
+        bindSectionToggles();
+        attachTaskEvents();
+    }
+
+    function renderTabs(tabs){
+        tabsContainer.innerHTML='';
+        // Tab "Segera" selalu di posisi pertama
+        const dueSoonTab={id:DUE_SOON_ID, name:'⏳ Segera', isSpecial:true, cls:'tab-due-soon'};
+        const highPriorityTab={id:HIGH_PRIORITY_ID, name:'⭐ Penting', isSpecial:true};
+        const normalTabs=[...tabs];
+        const allTabsForRender=[dueSoonTab, highPriorityTab, ...normalTabs];
+
+        allTabsForRender.forEach(tab=>{
+            const tabDiv=document.createElement('div');
+            const isActive=(tab.id===currentTabId);
+            tabDiv.className=`tab-item ${isActive?'active':''} ${tab.cls||''}`;
+            if(tab.isSpecial){
+                tabDiv.innerHTML=`<span class="tab-name">${tab.name}</span>`;
+                tabDiv.addEventListener('click', ()=>{
+                    currentTabId=tab.id;
+                    filterTabSelect.value='all';
+                    if(tab.id===DUE_SOON_ID || tab.id===HIGH_PRIORITY_ID){
+                        addTaskBtn.style.display='none';
                     } else {
-                        updateMainProgressFromSubtasks();
+                        addTaskBtn.style.display='flex';
                     }
+                    applyFiltersAndRender();
+                    renderTabs(allTabs);
                 });
-
-                header.appendChild(nameInput);
-                header.appendChild(delIcon);
-
-                const rangeDiv = document.createElement('div');
-                rangeDiv.className = 'subtask-range';
-
-                const rangeInput = document.createElement('input');
-                rangeInput.type = 'range';
-                rangeInput.min = 0;
-                rangeInput.max = 100;
-                rangeInput.step = 1;
-                rangeInput.value = sub.progress || 0;
-                rangeInput.dataset.idx = idx;
-                rangeInput.style.accentColor = getProgressColor(sub.progress || 0);
-
-                const percentSpan = document.createElement('span');
-                percentSpan.className = 'subtask-percent';
-                percentSpan.textContent = `${sub.progress || 0}%`;
-                percentSpan.style.color = getProgressColor(sub.progress || 0);
-
-                rangeInput.addEventListener('input', (e) => {
-                    let val = parseInt(e.target.value);
-                    const steps = [0, 25, 50, 75, 100];
-                    const closest = steps.reduce((a, b) => Math.abs(b - val) < Math.abs(a - val) ? b : a);
-                    e.target.value = closest;
-                    currentSubtasks[idx].progress = closest;
-                    percentSpan.textContent = `${closest}%`;
-                    const color = getProgressColor(closest);
-                    percentSpan.style.color = color;
-                    e.target.style.accentColor = color;
-                    updateMainProgressFromSubtasks();
-                });
-
-                rangeDiv.appendChild(rangeInput);
-                rangeDiv.appendChild(percentSpan);
-
-                div.appendChild(header);
-                div.appendChild(rangeDiv);
-                subtasksContainer.appendChild(div);
-            });
-        }
-
-        function getProgressColor(percent) {
-            if (percent >= 80) return '#22c55e';
-            if (percent >= 50) return '#f59e0b';
-            if (percent >= 20) return '#f97316';
-            return '#ef4444';
-        }
-
-        async function createNewTask(tabId) {
-            if (!tabId) return alert("Pilih tab terlebih dahulu");
-            const now = Timestamp.now();
-            const newTask = {
-                tabId,
-                title: "",
-                notes: "",
-                dueDate: null,
-                progress: 0,
-                completed: false,
-                cancelled: false,
-                subtasks: [],
-                createdAt: now,
-                completedAt: null,
-                priority: "medium",
-                rabItems: [],
-                rabTotal: 0
-            };
-            const docRef = await addDoc(tasksCol, newTask);
-            openTaskModal({ id: docRef.id, ...newTask });
-        }
-
-        function openTabModal(id = null, name = '') {
-            tabIdField.value = id || '';
-            tabNameInput.value = name || '';
-            deleteTabBtn.style.display = id ? 'flex' : 'none';
-            tabModal.style.display = "flex";
-        }
-
-        function closeAllModals() {
-            taskModal.style.display = "none";
-            tabModal.style.display = "none";
-        }
-
-        addTabBtn.addEventListener('click', () => openTabModal());
-        saveTabBtn.addEventListener('click', async () => {
-            const name = tabNameInput.value.trim();
-            if (!name) return alert("Nama tab tidak boleh kosong");
-            if (tabIdField.value) await updateTab(tabIdField.value, name);
-            else await addNewTab(name);
-            tabModal.style.display = "none";
-        });
-        deleteTabBtn.addEventListener('click', async () => {
-            if (tabIdField.value && confirm("Hapus tab dan semua tugas?")) {
-                await deleteTabById(tabIdField.value);
-                tabModal.style.display = "none";
-            }
-        });
-        addTaskBtn.addEventListener('click', () => {
-            if (currentTabId === 'high-priority-special') {
-                alert("Tidak bisa menambah tugas di tab Prioritas Tinggi. Pilih tab biasa terlebih dahulu.");
-                return;
-            }
-            if (!currentTabId && allTabs.length > 0) currentTabId = allTabs[0].id;
-            if (!currentTabId) alert("Buat tab terlebih dahulu");
-            else createNewTask(currentTabId);
-        });
-        closeModal.addEventListener('click', closeAllModals);
-        closeTabModal.addEventListener('click', closeAllModals);
-        window.onclick = (e) => {
-            if (e.target === taskModal || e.target === tabModal) closeAllModals();
-        };
-        searchInput.addEventListener('input', applyFiltersAndRender);
-        filterStatusSelect.addEventListener('change', applyFiltersAndRender);
-        filterTabSelect.addEventListener('change', () => {
-            if (filterTabSelect.value !== 'all') {
-                currentTabId = filterTabSelect.value;
-                addTaskBtn.style.display = 'flex';
-            } else if (currentTabId !== 'high-priority-special') {
-                currentTabId = 'high-priority-special';
-                addTaskBtn.style.display = 'none';
-            }
-            applyFiltersAndRender();
-            renderTabs(allTabs);
-        });
-        resetFilterBtn.addEventListener('click', () => {
-            searchInput.value = '';
-            filterStatusSelect.value = 'all';
-            if (currentTabId && currentTabId !== 'high-priority-special') filterTabSelect.value = currentTabId;
-            else filterTabSelect.value = 'all';
-            applyFiltersAndRender();
-        });
-
-        toggleRabBtn.addEventListener('click', () => {
-            if (rabTableWrapper.style.display === 'none') {
-                rabTableWrapper.style.display = 'block';
-                if (currentRabItems.length === 0) addRabRow();
-                else renderRabTable();
             } else {
-                rabTableWrapper.style.display = 'none';
+                tabDiv.innerHTML=`<span class="tab-name">${escapeHtml(tab.name)}</span><div class="tab-actions"><i class="fas fa-edit edit-tab" data-id="${tab.id}" data-name="${escapeHtml(tab.name)}"></i><i class="fas fa-trash-alt delete-tab" data-id="${tab.id}"></i></div>`;
+                tabDiv.addEventListener('click', (e)=>{
+                    if(e.target.classList.contains('edit-tab')||e.target.classList.contains('delete-tab')) return;
+                    currentTabId=tab.id;
+                    filterTabSelect.value=currentTabId;
+                    addTaskBtn.style.display='flex';
+                    applyFiltersAndRender();
+                    renderTabs(allTabs);
+                });
             }
+            tabsContainer.appendChild(tabDiv);
         });
-        addRabRowBtn.addEventListener('click', addRabRow);
+        document.querySelectorAll('.edit-tab').forEach(btn=>btn.addEventListener('click',(e)=>{e.stopPropagation(); openTabModal(btn.dataset.id, btn.dataset.name);}));
+        document.querySelectorAll('.delete-tab').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); if(confirm("Hapus tab beserta semua tugas?")){ await deleteTabById(btn.dataset.id); if(currentTabId===btn.dataset.id) currentTabId=DUE_SOON_ID; }}));
+    }
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW registered:', reg))
-                    .catch(err => console.log('SW error:', err));
-            });
+    function loadTabs(){
+        if(tabsUnsub) tabsUnsub();
+        tabsUnsub=onSnapshot(tabsCol, snapshot=>{
+            let tabs=[]; snapshot.forEach(docSnap=>tabs.push({id:docSnap.id,...docSnap.data()}));
+            tabs.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+            allTabs=tabs;
+            renderTabs(tabs);
+            populateFilterTabSelect();
+            // Pastikan tombol tambah sesuai tab aktif
+            if(currentTabId===DUE_SOON_ID || currentTabId===HIGH_PRIORITY_ID){
+                addTaskBtn.style.display='none';
+            } else {
+                addTaskBtn.style.display='flex';
+                if(filterTabSelect.querySelector(`option[value="${currentTabId}"]`)) filterTabSelect.value=currentTabId;
+            }
+            applyFiltersAndRender();
+        });
+    }
+
+    // ---------- EXPORT PDF ----------
+    function getTabDisplayName(){
+        if(currentTabId===DUE_SOON_ID) return 'Segera';
+        if(currentTabId===HIGH_PRIORITY_ID) return 'Prioritas Tinggi';
+        const tab=allTabs.find(t=>t.id===currentTabId);
+        return tab?tab.name:'Tidak diketahui';
+    }
+    function getPriorityColor(p){ if(p==='high') return [255,200,200]; if(p==='low') return [200,255,200]; return [255,255,200]; }
+    function getProgressColorRGB(percent){ percent=Math.min(100,Math.max(0,percent)); let r,g,b; if(percent<=50){r=255; g=Math.floor(255*(percent/50)); b=0;} else {r=Math.floor(255*(1-(percent-50)/50)); g=255; b=0;} return [r,g,b]; }
+    function exportPDF(){
+        let tasks=[];
+        if(currentTabId===DUE_SOON_ID){
+            tasks=allTasksGlobal.filter(t=>isDueSoon(t));
+        } else if(currentTabId===HIGH_PRIORITY_ID){
+            tasks=allTasksGlobal.filter(t=>t.priority==='high'&&!t.cancelled);
+        } else {
+            tasks=allTasksGlobal.filter(t=>t.tabId===currentTabId&&!t.cancelled);
         }
+        const active=tasks.filter(t=>!t.completed);
+        const completed=tasks.filter(t=>t.completed);
+        active.sort((a,b)=>(b.createdAt?.toDate?.()||0)-(a.createdAt?.toDate?.()||0));
+        completed.sort((a,b)=>(b.completedAt?.toDate?.()||0)-(a.completedAt?.toDate?.()||0));
+        const doc=new window.jspdf.jsPDF('p','mm','a4');
+        const margin=14;
+        doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.text('TARGET DAN REALISASI ANGGARAN', margin,20);
+        doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.text(`Tab: ${getTabDisplayName()}`, margin,27);
+        let startY=33;
+        function buildTable(head, body, startY, isActive){
+            const colCount=head.length;
+            let colWidths, haligns;
+            if(isActive){ colWidths=['50%','10%','12%','12%','16%']; haligns=['left','center','center','center','right']; }
+            else { colWidths=['65%','10%','12%','13%']; haligns=['left','center','center','right']; }
+            const colStyles={}; for(let i=0;i<colCount;i++) colStyles[i]={cellWidth:colWidths[i], halign:haligns[i]};
+            const headerFill=[44,62,80];
+            doc.autoTable({
+                startY, head:[head], body, theme:'grid', styles:{fontSize:9,cellPadding:2},
+                headStyles:{fillColor:headerFill,textColor:[255,255,255],fontSize:9,fontStyle:'bold',halign:'center'},
+                columnStyles:colStyles, margin:{left:margin,right:margin}, tableWidth:'auto',
+                didParseCell:function(data){ if(data.cell.raw&&typeof data.cell.raw==='object'&&data.cell.raw.styles) Object.assign(data.cell.styles,data.cell.raw.styles); }
+            });
+            return doc.lastAutoTable.finalY+5;
+        }
+        if(active.length>0){
+            const headActive=['Uraian','Prioritas','Progres','Tgl Deadline','RAB'];
+            const bodyActive=active.map(t=>{
+                const pl=getPriorityLabel(t.priority), pc=getPriorityColor(t.priority);
+                const pv=t.progress||0, prc=getProgressColorRGB(pv);
+                const lum=(0.299*prc[0]+0.587*prc[1]+0.114*prc[2])/255;
+                const tc=lum>0.5?[0,0,0]:[255,255,255];
+                return [
+                    t.title||'',
+                    {content:pl, styles:{fillColor:pc, halign:'center'}},
+                    {content:`${pv}%`, styles:{fillColor:prc, textColor:tc, halign:'center'}},
+                    t.dueDate?new Date(t.dueDate).toLocaleDateString('id-ID'):'-',
+                    {content:formatRupiah(t.rabTotal||0), styles:{halign:'right'}}
+                ];
+            });
+            const totalRAB=active.reduce((s,t)=>s+(t.rabTotal||0),0);
+            bodyActive.push([
+                {content:'', styles:{halign:'left'}},
+                {content:'', styles:{halign:'center'}},
+                {content:'', styles:{halign:'center'}},
+                {content:'Total', styles:{fontStyle:'bold',halign:'center'}},
+                {content:formatRupiah(totalRAB), styles:{fontStyle:'bold',halign:'right'}}
+            ]);
+            doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.text('Aktif', margin, startY); startY+=5; doc.setFont('helvetica','normal');
+            startY=buildTable(headActive, bodyActive, startY, true);
+        } else {
+            doc.text('Aktif: tidak ada tugas', margin, startY); startY+=5;
+        }
+        if(completed.length>0){
+            const headCompleted=['Uraian','Prioritas','Tgl Selesai','LPJ'];
+            const bodyCompleted=completed.map(t=>{
+                const pl=getPriorityLabel(t.priority), pc=getPriorityColor(t.priority);
+                return [
+                    t.title||'',
+                    {content:pl, styles:{fillColor:pc, halign:'center'}},
+                    t.completedAt?formatDateShort(t.completedAt):'-',
+                    {content:formatRupiah(t.rabTotal||0), styles:{halign:'right'}}
+                ];
+            });
+            const totalLPJ=completed.reduce((s,t)=>s+(t.rabTotal||0),0);
+            bodyCompleted.push([
+                {content:'', styles:{halign:'left'}},
+                {content:'', styles:{halign:'center'}},
+                {content:'Total', styles:{fontStyle:'bold',halign:'center'}},
+                {content:formatRupiah(totalLPJ), styles:{fontStyle:'bold',halign:'right'}}
+            ]);
+            doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.text('Selesai', margin, startY); startY+=5; doc.setFont('helvetica','normal');
+            startY=buildTable(headCompleted, bodyCompleted, startY, false);
+        } else {
+            doc.text('Selesai: tidak ada tugas', margin, startY); startY+=5;
+        }
+        doc.save(`TaskAbr_${getTabDisplayName()}.pdf`);
+    }
+    exportPdfBtn.addEventListener('click', exportPDF);
 
-        loadTabs();
-        startGlobalTasksListener();
-    </script>
+    // ---------- Modal logic ----------
+    function updateMainProgressFromSubtasks(){
+        if(currentSubtasks.length>0){
+            const avg=computeAvgProgressFromSubtasks(currentSubtasks);
+            progressSlider.value=avg; progressPercent.innerText=`${avg}%`;
+            progressInfo.innerHTML=`<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${avg}%`;
+        }
+    }
+
+    async function openTaskModal(task){
+        activeTaskId=task.id; originalTabId=task.tabId;
+        currentSubtasks=task.subtasks?[...task.subtasks]:[];
+        currentRabItems=task.rabItems?[...task.rabItems]:[];
+        taskTitleInput.value=task.title||'';
+        taskNotesInput.value=task.notes||'';
+        taskDueDate.value=task.dueDate?task.dueDate.slice(0,16):'';
+        if(task.createdAt){ const d=task.createdAt.toDate?task.createdAt.toDate():new Date(task.createdAt); taskCreatedAtInput.value=toDatetimeLocal(d); } else { taskCreatedAtInput.value=toDatetimeLocal(new Date()); }
+        if(task.completed&&task.completedAt){ const d=task.completedAt.toDate?task.completedAt.toDate():new Date(task.completedAt); taskCompletedAtInput.value=toDatetimeLocal(d); completedInfo.style.display='block'; } else { taskCompletedAtInput.value=''; completedInfo.style.display='none'; }
+        taskPrioritySelect.value=task.priority||'medium';
+        await loadTabsForDropdown(task.tabId);
+        const hasSubtasks=currentSubtasks.length>0;
+        if(hasSubtasks){ progressGroup.style.display='none'; progressInfo.style.display='block'; const avg=computeAvgProgressFromSubtasks(currentSubtasks); progressSlider.value=avg; progressPercent.innerText=`${avg}%`; progressSlider.disabled=true; progressInfo.innerHTML=`<i class="fas fa-chart-line"></i> Progres otomatis dari sub-tugas: ${avg}%`; }
+        else { progressGroup.style.display='block'; progressInfo.style.display='none'; progressSlider.disabled=false; progressSlider.value=task.progress||0; progressPercent.innerText=`${task.progress||0}%`; }
+        renderSubtasksModal();
+        if(currentRabItems.length>0){ rabTableWrapper.style.display='block'; renderRabTable(); } else { rabTableWrapper.style.display='none'; }
+        renderModalButtons(task);
+        taskModal.style.display='flex';
+        // event tambah sub-tugas
+        addSubtaskBtn.onclick=()=>{
+            const text=newSubtaskInput.value.trim();
+            if(!text) return alert("Isi nama sub-tugas");
+            currentSubtasks.push({id:Date.now().toString(), text, progress:0});
+            newSubtaskInput.value='';
+            renderSubtasksModal();
+            progressGroup.style.display='none';
+            progressInfo.style.display='block';
+            progressSlider.disabled=true;
+            updateMainProgressFromSubtasks();
+        };
+        const sliderHandler=()=>{
+            if(currentSubtasks.length>0) return;
+            let val=parseInt(progressSlider.value);
+            const steps=[0,25,50,75,100];
+            const closest=steps.reduce((a,b)=>Math.abs(b-val)<Math.abs(a-val)?b:a);
+            progressSlider.value=closest;
+            progressPercent.innerText=`${closest}%`;
+        };
+        progressSlider.oninput=sliderHandler;
+        sliderHandler();
+    }
+
+    function renderModalButtons(task){
+        modalButtonsContainer.innerHTML='';
+        const deleteBtn=document.createElement('button'); deleteBtn.className='btn-danger'; deleteBtn.innerHTML='<i class="fas fa-trash-alt"></i> Hapus'; deleteBtn.onclick=async ()=>{ if(confirm("Hapus tugas permanen?")){ await deleteDoc(doc(db,"tasks",activeTaskId)); taskModal.style.display="none"; } }; modalButtonsContainer.appendChild(deleteBtn);
+        if(task.cancelled){
+            const reactBtn=document.createElement('button'); reactBtn.className='btn-success'; reactBtn.innerHTML='<i class="fas fa-undo-alt"></i> Kembalikan'; reactBtn.onclick=async ()=>{ await updateDoc(doc(db,"tasks",activeTaskId),{cancelled:false,completed:false,completedAt:null}); taskModal.style.display="none"; }; modalButtonsContainer.appendChild(reactBtn);
+        } else {
+            const cancelBtn=document.createElement('button'); cancelBtn.className='btn-warning'; cancelBtn.innerHTML='<i class="fas fa-ban"></i> Batal'; cancelBtn.onclick=async ()=>{ await updateDoc(doc(db,"tasks",activeTaskId),{cancelled:true,completed:false,completedAt:null}); taskModal.style.display="none"; }; modalButtonsContainer.appendChild(cancelBtn);
+        }
+        const saveBtn=document.createElement('button'); saveBtn.className='btn-primary'; saveBtn.innerHTML='<i class="fas fa-save"></i> Simpan'; saveBtn.onclick=async ()=>{
+            const title=taskTitleInput.value.trim(); if(!title) return alert("Judul tugas wajib diisi!");
+            let finalProgress, finalCompleted;
+            if(currentSubtasks.length>0){ finalProgress=computeAvgProgressFromSubtasks(currentSubtasks); finalCompleted=currentSubtasks.every(st=>st.progress===100); }
+            else { finalProgress=parseInt(progressSlider.value); finalCompleted=(finalProgress===100); }
+            const newTabId=moveTabSelect.value;
+            let completedAtValue=null;
+            if(taskCompletedAtInput.value){ const d=new Date(taskCompletedAtInput.value); if(!isNaN(d.getTime())) completedAtValue=Timestamp.fromDate(d); } else { completedAtValue=task.completedAt||null; }
+            if(finalCompleted&&!completedAtValue) completedAtValue=Timestamp.now();
+            else if(!finalCompleted) completedAtValue=null;
+            const rabTotalFinal=computeRabTotal(currentRabItems);
+            let createdAtTimestamp=task.createdAt;
+            if(taskCreatedAtInput.value){ const d=new Date(taskCreatedAtInput.value); if(!isNaN(d.getTime())) createdAtTimestamp=Timestamp.fromDate(d); } else { createdAtTimestamp=Timestamp.now(); }
+            const updateData={ title, notes:taskNotesInput.value, dueDate:taskDueDate.value||null, progress:finalProgress, completed:finalCompleted, subtasks:currentSubtasks, cancelled:false, completedAt:completedAtValue, priority:taskPrioritySelect.value, rabItems:currentRabItems, rabTotal:rabTotalFinal, createdAt:createdAtTimestamp };
+            if(newTabId&&newTabId!==originalTabId) updateData.tabId=newTabId;
+            await updateDoc(doc(db,"tasks",activeTaskId), updateData);
+            taskModal.style.display="none";
+        };
+        modalButtonsContainer.appendChild(saveBtn);
+    }
+
+    function renderSubtasksModal(){
+        subtasksContainer.innerHTML='';
+        if(!currentSubtasks.length){ subtasksContainer.innerHTML='<div class="empty-placeholder">Belum ada sub-tugas.</div>'; return; }
+        currentSubtasks.forEach((sub,idx)=>{
+            const div=document.createElement('div'); div.className='subtask-item';
+            const header=document.createElement('div'); header.className='subtask-header';
+            const nameInput=document.createElement('input'); nameInput.type='text'; nameInput.className='subtask-name-input'; nameInput.value=sub.text||''; nameInput.placeholder='Nama sub-tugas'; nameInput.addEventListener('change',e=>{currentSubtasks[idx].text=e.target.value.trim()||'Sub-tugas';}); nameInput.addEventListener('blur',e=>{if(!e.target.value.trim()){e.target.value='Sub-tugas'; currentSubtasks[idx].text='Sub-tugas';}});
+            const delIcon=document.createElement('i'); delIcon.className='fas fa-trash-alt delete-subtask'; delIcon.dataset.idx=idx; delIcon.addEventListener('click',()=>{currentSubtasks.splice(idx,1); renderSubtasksModal(); if(currentSubtasks.length===0){ progressGroup.style.display='block'; progressInfo.style.display='none'; progressSlider.disabled=false; const orig=allTasksGlobal.find(t=>t.id===activeTaskId)?.progress||0; progressSlider.value=orig; progressPercent.innerText=`${orig}%`; } else { updateMainProgressFromSubtasks(); }});
+            header.appendChild(nameInput); header.appendChild(delIcon);
+            const rangeDiv=document.createElement('div'); rangeDiv.className='subtask-range';
+            const rangeInput=document.createElement('input'); rangeInput.type='range'; rangeInput.min=0; rangeInput.max=100; rangeInput.step=1; rangeInput.value=sub.progress||0; rangeInput.dataset.idx=idx; rangeInput.style.accentColor=getProgressColor(sub.progress||0);
+            const percentSpan=document.createElement('span'); percentSpan.className='subtask-percent'; percentSpan.textContent=`${sub.progress||0}%`; percentSpan.style.color=getProgressColor(sub.progress||0);
+            rangeInput.addEventListener('input',e=>{ let val=parseInt(e.target.value); const steps=[0,25,50,75,100]; const closest=steps.reduce((a,b)=>Math.abs(b-val)<Math.abs(a-val)?b:a); e.target.value=closest; currentSubtasks[idx].progress=closest; percentSpan.textContent=`${closest}%`; const color=getProgressColor(closest); percentSpan.style.color=color; e.target.style.accentColor=color; updateMainProgressFromSubtasks(); });
+            rangeDiv.appendChild(rangeInput); rangeDiv.appendChild(percentSpan);
+            div.appendChild(header); div.appendChild(rangeDiv);
+            subtasksContainer.appendChild(div);
+        });
+    }
+
+    function getProgressColor(percent){ if(percent>=80) return '#22c55e'; if(percent>=50) return '#f59e0b'; if(percent>=20) return '#f97316'; return '#ef4444'; }
+
+    async function createNewTask(tabId){ if(!tabId) return alert("Pilih tab terlebih dahulu"); const now=Timestamp.now(); const newTask={tabId, title:"", notes:"", dueDate:null, progress:0, completed:false, cancelled:false, subtasks:[], createdAt:now, completedAt:null, priority:"medium", rabItems:[], rabTotal:0}; const docRef=await addDoc(tasksCol,newTask); openTaskModal({id:docRef.id,...newTask}); }
+    function openTabModal(id=null,name=''){ tabIdField.value=id||''; tabNameInput.value=name||''; deleteTabBtn.style.display=id?'flex':'none'; tabModal.style.display="flex"; }
+    function closeAllModals(){ taskModal.style.display="none"; tabModal.style.display="none"; }
+
+    addTabBtn.addEventListener('click',()=>openTabModal());
+    saveTabBtn.addEventListener('click',async ()=>{ const name=tabNameInput.value.trim(); if(!name) return alert("Nama tab tidak boleh kosong"); if(tabIdField.value) await updateTab(tabIdField.value,name); else await addNewTab(name); tabModal.style.display="none"; });
+    deleteTabBtn.addEventListener('click',async ()=>{ if(tabIdField.value&&confirm("Hapus tab dan semua tugas?")){ await deleteTabById(tabIdField.value); tabModal.style.display="none"; } });
+    addTaskBtn.addEventListener('click',()=>{
+        if(currentTabId===DUE_SOON_ID || currentTabId===HIGH_PRIORITY_ID){ alert("Tidak bisa menambah tugas di tab ini. Pilih tab biasa."); return; }
+        if(!currentTabId && allTabs.length>0) currentTabId=allTabs[0].id;
+        if(!currentTabId) alert("Buat tab terlebih dahulu");
+        else createNewTask(currentTabId);
+    });
+    closeModal.addEventListener('click',closeAllModals);
+    closeTabModal.addEventListener('click',closeAllModals);
+    window.onclick=(e)=>{ if(e.target===taskModal||e.target===tabModal) closeAllModals(); };
+    searchInput.addEventListener('input',applyFiltersAndRender);
+    filterStatusSelect.addEventListener('change',applyFiltersAndRender);
+    filterTabSelect.addEventListener('change',()=>{
+        if(filterTabSelect.value!=='all'){
+            currentTabId=filterTabSelect.value;
+            addTaskBtn.style.display='flex';
+        } else {
+            // jika pilih 'Semua Tab', default ke 'Segera'? lebih baik tetap di tab sebelumnya atau ke Segera? Saya set ke Segera.
+            currentTabId=DUE_SOON_ID;
+            addTaskBtn.style.display='none';
+        }
+        applyFiltersAndRender();
+        renderTabs(allTabs);
+    });
+    resetFilterBtn.addEventListener('click',()=>{
+        searchInput.value='';
+        filterStatusSelect.value='all';
+        // reset ke tab Segera
+        currentTabId=DUE_SOON_ID;
+        filterTabSelect.value='all';
+        addTaskBtn.style.display='none';
+        applyFiltersAndRender();
+        renderTabs(allTabs);
+    });
+
+    toggleRabBtn.addEventListener('click',()=>{
+        if(rabTableWrapper.style.display==='none'){ rabTableWrapper.style.display='block'; if(currentRabItems.length===0) addRabRow(); else renderRabTable(); }
+        else { rabTableWrapper.style.display='none'; }
+    });
+    addRabRowBtn.addEventListener('click',addRabRow);
+
+    if('serviceWorker' in navigator){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('/sw.js').then(reg=>console.log('SW registered:',reg)).catch(err=>console.log('SW error:',err)); }); }
+
+    loadTabs();
+    startGlobalTasksListener();
+</script>
 </body>
 </html>
