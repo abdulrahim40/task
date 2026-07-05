@@ -45,6 +45,8 @@
         .task-list-container.active-scroll { max-height: 400px; overflow-y: auto; }
         .task-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px 10px; border-radius: 16px; margin-bottom: 6px; border: 1px solid #f0f2f5; cursor: pointer; transition: 0.1s; }
         .task-card.cancelled { background: #fef2f2; border-color: #fecaca; }
+        /* background merah untuk task overdue di tab Segera */
+        .task-card.overdue { background: #fee2e2 !important; border-color: #dc2626 !important; }
         .task-left { display: flex; gap: 8px; align-items: center; flex: 1; }
         .task-bullet { cursor: pointer; font-size: 1.2rem; width: 24px; text-align: center; }
         .task-bullet-unchecked { color: #94a3b8; }
@@ -57,6 +59,9 @@
         .priority-medium { background: #fef3c7; color: #d97706; }
         .priority-low { background: #e0f2fe; color: #0284c7; }
         .task-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.65rem; color: #5b6e8c; }
+        /* deadline hari ini berkedip merah */
+        .deadline-today { color: #dc2626 !important; font-weight: 700; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         .rab-badge { background: #e6f0ff; color: #1e40af; border-radius: 20px; padding: 2px 6px; display: inline-flex; align-items: center; gap: 3px; font-weight: 600; font-size: 0.65rem; }
         .completed-date { background: #e6f7e6; padding: 2px 6px; border-radius: 30px; font-size: 0.65rem; color: #15803d; display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; }
         .task-progress-badge { padding: 2px 6px; border-radius: 30px; font-size: 0.65rem; font-weight: 600; display: inline-block; }
@@ -214,7 +219,7 @@
     const DUE_SOON_ID = 'due-soon-special';
     const HIGH_PRIORITY_ID = 'high-priority-special';
 
-    let currentTabId = DUE_SOON_ID; // default ke Segera
+    let currentTabId = DUE_SOON_ID;
     let tabsUnsub = null;
     let allTasksUnsub = null;
     let allTasksGlobal = [];
@@ -321,69 +326,18 @@
     function sortTasksByCancelledDate(tasks){ return sortTasksByCreatedDate(tasks); }
     function getProgressStyle(percent){ percent=Math.min(100,Math.max(0,percent)); let r,g,b; if(percent<=50){ r=255; g=Math.floor(255*(percent/50)); b=0; } else { r=Math.floor(255*(1-(percent-50)/50)); g=255; b=0; } const bg=`rgb(${r},${g},${b})`; const lum=(0.299*r+0.587*g+0.114*b)/255; return `background:${bg}; color:${lum>0.5?'#000000':'#ffffff'};`; }
     function getPriorityBadge(priority){ const p=priority||'medium'; const labels={high:'Tinggi',medium:'Sedang',low:'Rendah'}; const icons={high:'🔴',medium:'🟡',low:'🟢'}; const classes={high:'priority-high',medium:'priority-medium',low:'priority-low'}; return `<span class="priority-badge ${classes[p]}">${icons[p]} ${labels[p]}</span>`; }
-    function renderTaskCard(task){
-        const progressVal=task.progress||0;
-        const dueDateStr=task.dueDate?new Date(task.dueDate).toLocaleString('id-ID'):'Tidak ada deadline';
-        const createdDateStr=task.createdAt?formatDate(task.createdAt):'-';
-        let bullet, cardClass='';
-        if(task.cancelled){ bullet='<i class="fas fa-ban task-bullet-cancelled"></i>'; cardClass='cancelled'; }
-        else if(task.completed){ bullet='<i class="fas fa-check-circle task-bullet-checked"></i>'; }
-        else { bullet='<i class="far fa-circle task-bullet-unchecked"></i>'; }
-        let completedHtml='';
-        if(task.completed && task.completedAt) completedHtml=`<div class="completed-date"><i class="fas fa-calendar-check"></i> Selesai: ${formatDate(task.completedAt)}</div>`;
-        const tab=allTabs.find(t=>t.id===task.tabId);
-        const tabBadge=tab?`<span class="tab-badge">📁 ${escapeHtml(tab.name)}</span>`:'';
-        const priorityBadge=getPriorityBadge(task.priority);
-        const rabTotalVal=(task.rabTotal||0);
-        const rabHtml=rabTotalVal>0?`<span class="rab-badge"><i class="fas fa-coins"></i> ${formatRupiah(rabTotalVal)}</span>`:'';
-        const progressStyle=getProgressStyle(progressVal);
-        return `<div class="task-card ${cardClass}" data-id="${task.id}">
-            <div class="task-left"><div class="task-bullet" data-id="${task.id}">${bullet}</div>
-            <div class="task-info"><div class="task-title"><span>${escapeHtml(task.title)}</span>${priorityBadge}${tabBadge}<span class="created-date-badge"><i class="fas fa-calendar-alt"></i> ${createdDateStr}</span>${rabHtml}</div>
-            <div class="task-meta"><span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dueDateStr)}</span><span class="task-progress-badge" style="${progressStyle}">${progressVal}%</span></div>${completedHtml}</div></div>
-            <div class="task-actions"><i class="fas fa-edit task-edit-btn" data-id="${task.id}"></i><i class="fas fa-trash-alt task-delete-btn" data-id="${task.id}"></i></div>
-        </div>`;
-    }
-    function renderSection(title, iconClass, tasks, sectionType, colorHex=null){
-        const taskCount=tasks.length;
-        let html=`<div class="task-section" data-section-type="${sectionType}">`;
-        if(sectionType==='active'){
-            html+=`<div class="section-header"><div class="section-title" style="${colorHex?`color:${colorHex};`:''}"><i class="${iconClass}"></i> ${title} (${taskCount})</div></div><div class="task-list-container active-scroll">`;
-        } else {
-            const isOpen=(openSection===sectionType);
-            const toggleClass=isOpen?'fas fa-chevron-down':'fas fa-chevron-right';
-            html+=`<div class="section-header" data-toggle="${sectionType}"><div class="section-title" style="${colorHex?`color:${colorHex};`:''}"><i class="${iconClass}"></i> ${title} (${taskCount})</div><i class="${toggleClass} toggle-icon ${!isOpen?'collapsed':''}"></i></div><div class="task-list-container active-scroll" style="${isOpen?'display:block;':'display:none;'}">`;
-        }
-        if(taskCount===0) html+=`<div class="empty-placeholder">✨ Tidak ada tugas</div>`;
-        else tasks.forEach(task=>{html+=renderTaskCard(task);});
-        html+=`</div></div>`;
-        return html;
-    }
-    function bindSectionToggles(){ document.querySelectorAll('.section-header[data-toggle]').forEach(h=>{h.removeEventListener('click', toggleHandler); h.addEventListener('click', toggleHandler);}); }
-    function toggleHandler(e){ const header=e.currentTarget; const sectionType=header.dataset.toggle; const container=header.parentElement.querySelector('.task-list-container'); const icon=header.querySelector('.toggle-icon'); if(openSection===sectionType){ container.style.display='none'; icon.classList.add('collapsed'); icon.classList.remove('fa-chevron-down'); icon.classList.add('fa-chevron-right'); openSection=null; } else { if(openSection){ const prevContainer=document.querySelector(`.task-section[data-section-type="${openSection}"] .task-list-container`); const prevIcon=document.querySelector(`.section-header[data-toggle="${openSection}"] .toggle-icon`); if(prevContainer) prevContainer.style.display='none'; if(prevIcon){ prevIcon.classList.add('collapsed'); prevIcon.classList.remove('fa-chevron-down'); prevIcon.classList.add('fa-chevron-right'); } } container.style.display='block'; icon.classList.remove('collapsed'); icon.classList.remove('fa-chevron-right'); icon.classList.add('fa-chevron-down'); openSection=sectionType; } }
-    function attachTaskEvents(){
-        document.querySelectorAll('.task-bullet').forEach(el=>{el.removeEventListener('click',bulletClickHandler); el.addEventListener('click',bulletClickHandler);});
-        document.querySelectorAll('.task-card').forEach(card=>{card.removeEventListener('click',cardClickHandler); card.addEventListener('click',cardClickHandler);});
-        document.querySelectorAll('.task-edit-btn').forEach(btn=>{btn.removeEventListener('click',editClickHandler); btn.addEventListener('click',editClickHandler);});
-        document.querySelectorAll('.task-delete-btn').forEach(btn=>{btn.removeEventListener('click',deleteClickHandler); btn.addEventListener('click',deleteClickHandler);});
-    }
-    function bulletClickHandler(e){ e.stopPropagation(); const task=allTasksGlobal.find(t=>t.id===e.currentTarget.dataset.id); if(task) toggleTaskCompletion(task); }
-    function cardClickHandler(e){ if(e.target.closest('.task-bullet')||e.target.closest('.task-edit-btn')||e.target.closest('.task-delete-btn')) return; const task=allTasksGlobal.find(t=>t.id===e.currentTarget.dataset.id); if(task) openTaskModal(task); }
-    function editClickHandler(e){ e.stopPropagation(); const task=allTasksGlobal.find(t=>t.id===e.currentTarget.dataset.id); if(task) openTaskModal(task); }
-    async function deleteClickHandler(e){ e.stopPropagation(); if(confirm("Hapus tugas permanen?")) await deleteDoc(doc(db,"tasks",e.currentTarget.dataset.id)); }
 
-    function startGlobalTasksListener(){ if(allTasksUnsub) allTasksUnsub(); allTasksUnsub=onSnapshot(tasksCol, snapshot=>{ allTasksGlobal=[]; snapshot.forEach(docSnap=>{allTasksGlobal.push({id:docSnap.id,...docSnap.data()});}); applyFiltersAndRender(); }); }
-
-    // Fungsi untuk mengecek apakah tugas memiliki deadline dalam 3 hari ke depan (aktif & belum batal)
-    function isDueSoon(task){
-        if(!task.dueDate) return false;
-        if(task.completed || task.cancelled) return false;
-        const now=new Date();
-        now.setHours(0,0,0,0);
-        const due=new Date(task.dueDate);
-        due.setHours(0,0,0,0);
+    // Fungsi untuk mengecek status deadline: return { isDueSoon, isOverdue, isToday }
+    function getDeadlineStatus(task){
+        if(!task.dueDate) return { isDueSoon: false, isOverdue: false, isToday: false };
+        if(task.completed || task.cancelled) return { isDueSoon: false, isOverdue: false, isToday: false };
+        const now=new Date(); now.setHours(0,0,0,0);
+        const due=new Date(task.dueDate); due.setHours(0,0,0,0);
         const diffDays=Math.ceil((due-now)/(1000*60*60*24));
-        return diffDays>=0 && diffDays<=3;
+        const isOverdue = diffDays < 0;
+        const isToday = diffDays === 0;
+        const isDueSoon = (diffDays >=0 && diffDays <=3) || isOverdue; // termasuk overdue
+        return { isDueSoon, isOverdue, isToday };
     }
 
     function applyFiltersAndRender(){
@@ -391,9 +345,8 @@
         const statusFilter=filterStatusSelect.value;
         let filtered=[...allTasksGlobal];
 
-        // Filter berdasarkan tab
         if(currentTabId===DUE_SOON_ID){
-            filtered=filtered.filter(t=>isDueSoon(t));
+            filtered=filtered.filter(t=>getDeadlineStatus(t).isDueSoon);
         } else if(currentTabId===HIGH_PRIORITY_ID){
             filtered=filtered.filter(t=>t.priority==='high');
         } else if(currentTabId && currentTabId!=='all'){
@@ -428,11 +381,86 @@
         attachTaskEvents();
     }
 
+    // Override renderTaskCard untuk menambahkan kelas overdue dan efek kedip deadline hari ini
+    function renderTaskCard(task){
+        const progressVal=task.progress||0;
+        const dueDateStr=task.dueDate?new Date(task.dueDate).toLocaleString('id-ID'):'Tidak ada deadline';
+        const createdDateStr=task.createdAt?formatDate(task.createdAt):'-';
+        let bullet, cardClass='';
+        if(task.cancelled){ bullet='<i class="fas fa-ban task-bullet-cancelled"></i>'; cardClass='cancelled'; }
+        else if(task.completed){ bullet='<i class="fas fa-check-circle task-bullet-checked"></i>'; }
+        else { bullet='<i class="far fa-circle task-bullet-unchecked"></i>'; }
+
+        // Cek status deadline untuk tab Segera
+        const status = getDeadlineStatus(task);
+        let extraCardClass = '';
+        if(currentTabId === DUE_SOON_ID && status.isOverdue && !task.completed && !task.cancelled){
+            extraCardClass = 'overdue';
+        }
+
+        let completedHtml='';
+        if(task.completed && task.completedAt) completedHtml=`<div class="completed-date"><i class="fas fa-calendar-check"></i> Selesai: ${formatDate(task.completedAt)}</div>`;
+
+        const tab=allTabs.find(t=>t.id===task.tabId);
+        const tabBadge=tab?`<span class="tab-badge">📁 ${escapeHtml(tab.name)}</span>`:'';
+        const priorityBadge=getPriorityBadge(task.priority);
+        const rabTotalVal=(task.rabTotal||0);
+        const rabHtml=rabTotalVal>0?`<span class="rab-badge"><i class="fas fa-coins"></i> ${formatRupiah(rabTotalVal)}</span>`:'';
+        const progressStyle=getProgressStyle(progressVal);
+
+        // Deadline hari ini -> tambahkan kelas kedip dan warna merah
+        let dueDateDisplay = escapeHtml(dueDateStr);
+        if(currentTabId === DUE_SOON_ID && status.isToday && !task.completed && !task.cancelled){
+            dueDateDisplay = `<span class="deadline-today">${dueDateDisplay}</span>`;
+        }
+
+        return `<div class="task-card ${cardClass} ${extraCardClass}" data-id="${task.id}">
+            <div class="task-left"><div class="task-bullet" data-id="${task.id}">${bullet}</div>
+            <div class="task-info"><div class="task-title"><span>${escapeHtml(task.title)}</span>${priorityBadge}${tabBadge}<span class="created-date-badge"><i class="fas fa-calendar-alt"></i> ${createdDateStr}</span>${rabHtml}</div>
+            <div class="task-meta"><span><i class="fas fa-calendar-alt"></i> ${dueDateDisplay}</span><span class="task-progress-badge" style="${progressStyle}">${progressVal}%</span></div>${completedHtml}</div></div>
+            <div class="task-actions"><i class="fas fa-edit task-edit-btn" data-id="${task.id}"></i><i class="fas fa-trash-alt task-delete-btn" data-id="${task.id}"></i></div>
+        </div>`;
+    }
+
+    // Sisanya sama (renderSection, bindSectionToggles, toggleHandler, attachTaskEvents, dll.) tetap seperti sebelumnya.
+    // Karena renderTaskCard sudah di-override, kita tetap menggunakan fungsi-fungsi yang sama.
+    // Saya akan menyalin ulang fungsi-fungsi yang tidak berubah agar kode tetap lengkap.
+
+    // --- Fungsi yang sama seperti sebelumnya (tidak diubah) ---
+    function renderSection(title, iconClass, tasks, sectionType, colorHex=null){
+        const taskCount=tasks.length;
+        let html=`<div class="task-section" data-section-type="${sectionType}">`;
+        if(sectionType==='active'){
+            html+=`<div class="section-header"><div class="section-title" style="${colorHex?`color:${colorHex};`:''}"><i class="${iconClass}"></i> ${title} (${taskCount})</div></div><div class="task-list-container active-scroll">`;
+        } else {
+            const isOpen=(openSection===sectionType);
+            const toggleClass=isOpen?'fas fa-chevron-down':'fas fa-chevron-right';
+            html+=`<div class="section-header" data-toggle="${sectionType}"><div class="section-title" style="${colorHex?`color:${colorHex};`:''}"><i class="${iconClass}"></i> ${title} (${taskCount})</div><i class="${toggleClass} toggle-icon ${!isOpen?'collapsed':''}"></i></div><div class="task-list-container active-scroll" style="${isOpen?'display:block;':'display:none;'}">`;
+        }
+        if(taskCount===0) html+=`<div class="empty-placeholder">✨ Tidak ada tugas</div>`;
+        else tasks.forEach(task=>{html+=renderTaskCard(task);});
+        html+=`</div></div>`;
+        return html;
+    }
+
+    function bindSectionToggles(){ document.querySelectorAll('.section-header[data-toggle]').forEach(h=>{h.removeEventListener('click', toggleHandler); h.addEventListener('click', toggleHandler);}); }
+    function toggleHandler(e){ const header=e.currentTarget; const sectionType=header.dataset.toggle; const container=header.parentElement.querySelector('.task-list-container'); const icon=header.querySelector('.toggle-icon'); if(openSection===sectionType){ container.style.display='none'; icon.classList.add('collapsed'); icon.classList.remove('fa-chevron-down'); icon.classList.add('fa-chevron-right'); openSection=null; } else { if(openSection){ const prevContainer=document.querySelector(`.task-section[data-section-type="${openSection}"] .task-list-container`); const prevIcon=document.querySelector(`.section-header[data-toggle="${openSection}"] .toggle-icon`); if(prevContainer) prevContainer.style.display='none'; if(prevIcon){ prevIcon.classList.add('collapsed'); prevIcon.classList.remove('fa-chevron-down'); prevIcon.classList.add('fa-chevron-right'); } } container.style.display='block'; icon.classList.remove('collapsed'); icon.classList.remove('fa-chevron-right'); icon.classList.add('fa-chevron-down'); openSection=sectionType; } }
+    function attachTaskEvents(){
+        document.querySelectorAll('.task-bullet').forEach(el=>{el.removeEventListener('click',bulletClickHandler); el.addEventListener('click',bulletClickHandler);});
+        document.querySelectorAll('.task-card').forEach(card=>{card.removeEventListener('click',cardClickHandler); card.addEventListener('click',cardClickHandler);});
+        document.querySelectorAll('.task-edit-btn').forEach(btn=>{btn.removeEventListener('click',editClickHandler); btn.addEventListener('click',editClickHandler);});
+        document.querySelectorAll('.task-delete-btn').forEach(btn=>{btn.removeEventListener('click',deleteClickHandler); btn.addEventListener('click',deleteClickHandler);});
+    }
+    function bulletClickHandler(e){ e.stopPropagation(); const task=allTasksGlobal.find(t=>t.id===e.currentTarget.dataset.id); if(task) toggleTaskCompletion(task); }
+    function cardClickHandler(e){ if(e.target.closest('.task-bullet')||e.target.closest('.task-edit-btn')||e.target.closest('.task-delete-btn')) return; const task=allTasksGlobal.find(t=>t.id===e.currentTarget.dataset.id); if(task) openTaskModal(task); }
+    function editClickHandler(e){ e.stopPropagation(); const task=allTasksGlobal.find(t=>t.id===e.currentTarget.dataset.id); if(task) openTaskModal(task); }
+    async function deleteClickHandler(e){ e.stopPropagation(); if(confirm("Hapus tugas permanen?")) await deleteDoc(doc(db,"tasks",e.currentTarget.dataset.id)); }
+
+    function startGlobalTasksListener(){ if(allTasksUnsub) allTasksUnsub(); allTasksUnsub=onSnapshot(tasksCol, snapshot=>{ allTasksGlobal=[]; snapshot.forEach(docSnap=>{allTasksGlobal.push({id:docSnap.id,...docSnap.data()});}); applyFiltersAndRender(); }); }
+
     function renderTabs(tabs){
         tabsContainer.innerHTML='';
-        // Tab "Segera" selalu di posisi pertama
         const dueSoonTab={id:DUE_SOON_ID, name:'⏳ Segera', isSpecial:true, cls:'tab-due-soon'};
-        // Tab "Penting" di posisi kedua (warna merah)
         const highPriorityTab={id:HIGH_PRIORITY_ID, name:'🔴 Penting', isSpecial:true, cls:'tab-penting'};
         const normalTabs=[...tabs];
         const allTabsForRender=[dueSoonTab, highPriorityTab, ...normalTabs];
@@ -479,7 +507,6 @@
             allTabs=tabs;
             renderTabs(tabs);
             populateFilterTabSelect();
-            // Pastikan tombol tambah sesuai tab aktif
             if(currentTabId===DUE_SOON_ID || currentTabId===HIGH_PRIORITY_ID){
                 addTaskBtn.style.display='none';
             } else {
@@ -502,7 +529,7 @@
     function exportPDF(){
         let tasks=[];
         if(currentTabId===DUE_SOON_ID){
-            tasks=allTasksGlobal.filter(t=>isDueSoon(t));
+            tasks=allTasksGlobal.filter(t=>getDeadlineStatus(t).isDueSoon);
         } else if(currentTabId===HIGH_PRIORITY_ID){
             tasks=allTasksGlobal.filter(t=>t.priority==='high'&&!t.cancelled);
         } else {
@@ -587,7 +614,7 @@
     }
     exportPdfBtn.addEventListener('click', exportPDF);
 
-    // ---------- Modal logic ----------
+    // ---------- Modal logic (tidak berubah) ----------
     function updateMainProgressFromSubtasks(){
         if(currentSubtasks.length>0){
             const avg=computeAvgProgressFromSubtasks(currentSubtasks);
@@ -614,7 +641,6 @@
         if(currentRabItems.length>0){ rabTableWrapper.style.display='block'; renderRabTable(); } else { rabTableWrapper.style.display='none'; }
         renderModalButtons(task);
         taskModal.style.display='flex';
-        // event tambah sub-tugas
         addSubtaskBtn.onclick=()=>{
             const text=newSubtaskInput.value.trim();
             if(!text) return alert("Isi nama sub-tugas");
