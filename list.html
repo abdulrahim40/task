@@ -78,9 +78,8 @@
         .modal-content .close-modal { position: absolute; top: 12px; right: 16px; font-size: 1.8rem; cursor: pointer; color: #94a3b8; transition: 0.15s; line-height: 1; }
         .modal-content .close-modal:hover { color: var(--text-dark); }
         .modal-content h2 { font-size: 1.2rem; margin-bottom: 14px; padding-right: 32px; }
-        input[type="text"], textarea, select { width: 100%; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.85rem; background: white; transition: 0.2s; outline: none; }
-        input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
-        textarea { resize: vertical; min-height: 80px; }
+        input[type="text"], select { width: 100%; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.85rem; background: white; transition: 0.2s; outline: none; }
+        input[type="text"]:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
         label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); display: block; margin: 10px 0 4px; text-transform: uppercase; letter-spacing: 0.3px; }
         .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0 8px; }
         .choice-card { background: var(--primary-bg); border: 2px solid transparent; border-radius: var(--radius); padding: 24px 16px; text-align: center; cursor: pointer; transition: 0.2s; }
@@ -140,10 +139,21 @@
         .label-tags-display .label-tag .remove-label:hover { color: #dc2626; }
         .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 8px 20px; border-radius: 40px; font-size: 0.8rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 2000; opacity: 0; transition: 0.3s; pointer-events: none; white-space: nowrap; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        /* history modal */
         .history-list { font-size: 0.8rem; max-height: 300px; overflow-y: auto; }
         .history-item { padding: 6px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; color: var(--text-muted); }
         .history-item .h-time { font-weight: 500; color: var(--text-dark); }
+
+        /* Rich text editor toolbar */
+        .text-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 0 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; }
+        .text-toolbar button { background: #f1f5f9; border: none; padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; cursor: pointer; font-weight: 500; color: var(--text-dark); transition: 0.15s; display: flex; align-items: center; gap: 4px; }
+        .text-toolbar button:hover { background: var(--primary-bg); }
+        .text-toolbar button.active { background: var(--primary); color: white; }
+        .text-toolbar .sep { width: 1px; background: #e2e8f0; margin: 0 4px; }
+        #textContent { min-height: 150px; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 10px; outline: none; background: white; font-family: inherit; font-size: 0.85rem; line-height: 1.6; overflow-y: auto; }
+        #textContent:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
+        #textContent ul, #textContent ol { padding-left: 24px; margin: 6px 0; }
+        #textContent li { margin-bottom: 2px; }
+
         @media (max-width: 480px) {
             .cards-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
             .card-item { min-height: 110px; padding: 12px 10px; }
@@ -161,11 +171,12 @@
             .filters-panel { padding: 8px 10px; }
             .filter-btn { padding: 4px 8px; font-size: 0.6rem; }
             .filter-select { min-width: 90px; }
+            #textContent { min-height: 120px; }
         }
         @media (max-width: 380px) { .cards-grid { grid-template-columns: 1fr; } }
-        .list-items-container::-webkit-scrollbar, .modal-content::-webkit-scrollbar { width: 4px; }
-        .list-items-container::-webkit-scrollbar-track, .modal-content::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-        .list-items-container::-webkit-scrollbar-thumb, .modal-content::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius: 10px; }
+        .list-items-container::-webkit-scrollbar, .modal-content::-webkit-scrollbar, #textContent::-webkit-scrollbar { width: 4px; }
+        .list-items-container::-webkit-scrollbar-track, .modal-content::-webkit-scrollbar-track, #textContent::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .list-items-container::-webkit-scrollbar-thumb, .modal-content::-webkit-scrollbar-thumb, #textContent::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -240,7 +251,17 @@
             <input type="text" id="cardTitle" placeholder="Judul (opsional)" />
             <div id="textEditor">
                 <label>Isi Catatan</label>
-                <textarea id="textContent" rows="6" placeholder="Tulis catatanmu di sini..."></textarea>
+                <div class="text-toolbar" id="textToolbar">
+                    <button id="boldBtn" title="Bold (Ctrl+B)"><i class="fas fa-bold"></i></button>
+                    <button id="italicBtn" title="Italic (Ctrl+I)"><i class="fas fa-italic"></i></button>
+                    <span class="sep"></span>
+                    <button id="bulletBtn" title="Bullet list"><i class="fas fa-list-ul"></i></button>
+                    <button id="numberBtn" title="Numbered list"><i class="fas fa-list-ol"></i></button>
+                    <span class="sep"></span>
+                    <button id="indentBtn" title="Indent (Tab)"><i class="fas fa-indent"></i></button>
+                    <button id="outdentBtn" title="Outdent (Shift+Tab)"><i class="fas fa-outdent"></i></button>
+                </div>
+                <div id="textContent" contenteditable="true" role="textbox" aria-multiline="true"></div>
             </div>
             <div id="listEditor" style="display:none;">
                 <div class="list-items-container" id="listItemsContainer"></div>
@@ -368,6 +389,14 @@
     const closeHistoryBtn = document.getElementById('closeHistoryBtn');
     const historyList = document.getElementById('historyList');
 
+    // Toolbar buttons
+    const boldBtn = document.getElementById('boldBtn');
+    const italicBtn = document.getElementById('italicBtn');
+    const bulletBtn = document.getElementById('bulletBtn');
+    const numberBtn = document.getElementById('numberBtn');
+    const indentBtn = document.getElementById('indentBtn');
+    const outdentBtn = document.getElementById('outdentBtn');
+
     // ==================== UTILITY ====================
     function escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
     function toastMsg(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000); }
@@ -449,7 +478,6 @@
         const historyEntry = { action, timestamp: now };
         if (cardData.id) {
             const ref = doc(db, 'notes', cardData.id);
-            // Get existing history
             const existing = allNotes.find(n => n.id === cardData.id);
             const history = existing?.history || [];
             history.push(historyEntry);
@@ -611,6 +639,40 @@
     closeHistoryBtn.addEventListener('click', () => historyModal.style.display = 'none');
     historyModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) historyModal.style.display = 'none'; });
 
+    // ==================== RICH TEXT EDITOR ====================
+    function execCommand(cmd, value = null) {
+        document.execCommand(cmd, false, value);
+        textContent.focus();
+    }
+
+    function toggleBold() { execCommand('bold'); }
+    function toggleItalic() { execCommand('italic'); }
+    function insertBulletList() { execCommand('insertUnorderedList'); }
+    function insertNumberList() { execCommand('insertOrderedList'); }
+    function indentList() { execCommand('indent'); }
+    function outdentList() { execCommand('outdent'); }
+
+    // Keyboard shortcuts
+    textContent.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'b') { e.preventDefault(); toggleBold(); }
+        else if (e.ctrlKey && e.key === 'i') { e.preventDefault(); toggleItalic(); }
+        else if (e.key === 'Tab' && !e.shiftKey) {
+            e.preventDefault();
+            indentList();
+        } else if (e.key === 'Tab' && e.shiftKey) {
+            e.preventDefault();
+            outdentList();
+        }
+    });
+
+    // Toolbar events
+    boldBtn.addEventListener('click', toggleBold);
+    italicBtn.addEventListener('click', toggleItalic);
+    bulletBtn.addEventListener('click', insertBulletList);
+    numberBtn.addEventListener('click', insertNumberList);
+    indentBtn.addEventListener('click', indentList);
+    outdentBtn.addEventListener('click', outdentList);
+
     // ==================== EDITOR ====================
     function openEditor(id = null) {
         currentEditId = id;
@@ -630,7 +692,7 @@
             if (currentType === 'text') {
                 textEditor.style.display = 'block';
                 listEditor.style.display = 'none';
-                textContent.value = card.content || '';
+                textContent.innerHTML = card.content || '';
             } else {
                 textEditor.style.display = 'none';
                 listEditor.style.display = 'block';
@@ -639,13 +701,15 @@
             renderLabels();
             updateModalButtons(card);
             editorModal.style.display = 'flex';
+            // focus
+            if (currentType === 'text') textContent.focus();
         } else {
             choiceSection.style.display = 'block';
             editorFields.style.display = 'none';
             editorTitle.textContent = 'Catatan Baru';
             editId.value = '';
             cardTitle.value = '';
-            textContent.value = '';
+            textContent.innerHTML = '';
             currentType = 'text';
             selectedColor = '#f59e0b';
             labels = [];
@@ -847,7 +911,7 @@
         const id = editId.value;
         const title = cardTitle.value.trim();
         const isNew = !id;
-        if (isNew && !title && currentType === 'text' && !textContent.value.trim()) {
+        if (isNew && !title && currentType === 'text' && !textContent.innerHTML.trim()) {
             toastMsg('Isi catatan atau judul');
             return;
         }
@@ -863,7 +927,7 @@
                 labels: [...labels],
             };
             if (currentType === 'text') {
-                cardData.content = textContent.value || '';
+                cardData.content = textContent.innerHTML || '';
                 cardData.listItems = [];
             } else {
                 cardData.content = '';
@@ -929,6 +993,7 @@
                 deleteCardBtn.style.display = 'none';
                 archiveCardBtn.style.display = 'none';
                 unarchiveCardBtn.style.display = 'none';
+                if (currentType === 'text') setTimeout(() => textContent.focus(), 100);
             });
         });
 
