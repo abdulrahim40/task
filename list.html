@@ -13,18 +13,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400,500,600,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --primary: #f59e0b;
             --primary-light: #fbbf24;
             --primary-dark: #d97706;
             --primary-bg: #fffbeb;
-            --primary-hover: #fcd34d;
             --text-dark: #1e293b;
             --text-muted: #64748b;
             --bg-body: #fefce8;
@@ -32,916 +26,180 @@
             --radius: 20px;
             --radius-sm: 12px;
         }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-body);
-            padding: 16px 12px 32px;
-            color: var(--text-dark);
-            min-height: 100vh;
-        }
-        .app-container {
-            max-width: 720px;
-            margin: 0 auto;
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .back-btn {
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 8px 14px;
-            border-radius: 40px;
-            font-weight: 500;
-            font-size: 0.8rem;
-            color: var(--primary-dark);
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .back-btn:hover {
-            background: var(--primary-bg);
-        }
-        h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .header-actions {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-        .header-btn {
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 6px 14px;
-            border-radius: 40px;
-            font-weight: 500;
-            font-size: 0.8rem;
-            color: var(--primary-dark);
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .header-btn:hover {
-            background: var(--primary-bg);
-        }
-        .header-btn.primary {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        .header-btn.primary:hover {
-            background: var(--primary-dark);
-        }
-
-        /* Search & Filter */
-        .filters-panel {
-            background: white;
-            border-radius: var(--radius);
-            padding: 10px 14px;
-            margin-bottom: 16px;
-            box-shadow: var(--card-shadow);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-        .search-box {
-            flex: 2;
-            position: relative;
-            min-width: 140px;
-        }
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 0.8rem;
-        }
-        .search-box input {
-            width: 100%;
-            padding: 8px 10px 8px 32px;
-            border-radius: 40px;
-            border: 1px solid #e2e8f0;
-            font-family: inherit;
-            font-size: 0.8rem;
-            background: #f8fafc;
-            outline: none;
-            transition: 0.2s;
-        }
-        .search-box input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
-        }
-        .filter-btn-group {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-        .filter-btn {
-            background: #f1f5f9;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .filter-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-        .filter-btn:hover {
-            background: var(--primary-light);
-        }
-        .filter-btn.active:hover {
-            background: var(--primary-dark);
-        }
-
-        /* Grid Cards */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 14px;
-            margin-bottom: 80px;
-        }
-
-        .card-item {
-            background: white;
-            border-radius: var(--radius);
-            padding: 16px 14px 14px;
-            box-shadow: var(--card-shadow);
-            cursor: pointer;
-            transition: 0.25s ease;
-            border-left: 5px solid var(--primary);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            min-height: 130px;
-        }
-        .card-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.18);
-        }
-        .card-item .card-color-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            border-radius: var(--radius) var(--radius) 0 0;
-            background: var(--primary);
-        }
-        .card-item .card-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin: 6px 0 4px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            word-break: break-word;
-        }
-        .card-item .card-preview {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            flex: 1;
-            word-break: break-word;
-            line-height: 1.4;
-        }
-        .card-item .card-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-        .card-item .card-labels {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 6px;
-        }
-        .card-item .label-tag {
-            background: var(--primary-bg);
-            color: var(--primary-dark);
-            padding: 2px 8px;
-            border-radius: 30px;
-            font-size: 0.6rem;
-            font-weight: 600;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-        }
-        .card-item .card-actions-top {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            display: flex;
-            gap: 4px;
-            opacity: 0;
-            transition: 0.2s;
-        }
-        .card-item:hover .card-actions-top {
-            opacity: 1;
-        }
-        .card-item .card-actions-top button {
-            background: rgba(255, 255, 255, 0.85);
-            border: 1px solid #e2e8f0;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            font-size: 0.6rem;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: 0.15s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .card-item .card-actions-top button:hover {
-            background: white;
-            color: var(--text-dark);
-        }
-        .card-item .card-actions-top .del-btn:hover {
-            color: #dc2626;
-            border-color: #fca5a5;
-        }
-        .card-item .card-badge-archived {
-            background: #e2e8f0;
-            color: var(--text-muted);
-            font-size: 0.55rem;
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 30px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        .card-item .item-count-badge {
-            background: var(--primary-bg);
-            color: var(--primary-dark);
-            padding: 0 8px;
-            border-radius: 30px;
-            font-size: 0.6rem;
-            font-weight: 600;
-        }
-        .card-empty {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--card-shadow);
-        }
-        .card-empty i {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 10px;
-            color: var(--primary-light);
-        }
-
-        /* FAB */
-        .fab {
-            position: fixed;
-            bottom: 24px;
-            right: 16px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 56px;
-            height: 56px;
-            border-radius: 28px;
-            font-size: 1.6rem;
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            transition: 0.2s;
-        }
-        .fab:hover {
-            background: var(--primary-dark);
-            transform: scale(1.05);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.45);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 16px;
-            backdrop-filter: blur(4px);
-        }
-        .modal-content {
-            background: white;
-            border-radius: 28px;
-            max-width: 640px;
-            width: 100%;
-            max-height: 92vh;
-            overflow-y: auto;
-            padding: 20px 18px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-        .modal-content .close-modal {
-            position: absolute;
-            top: 12px;
-            right: 16px;
-            font-size: 1.8rem;
-            cursor: pointer;
-            color: #94a3b8;
-            transition: 0.15s;
-            line-height: 1;
-        }
-        .modal-content .close-modal:hover {
-            color: var(--text-dark);
-        }
-        .modal-content h2 {
-            font-size: 1.2rem;
-            margin-bottom: 14px;
-            padding-right: 32px;
-        }
-
-        /* Form elements */
-        input[type="text"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            border: 1px solid #e2e8f0;
-            font-family: inherit;
-            font-size: 0.85rem;
-            background: white;
-            transition: 0.2s;
-            outline: none;
-        }
-        input[type="text"]:focus,
-        textarea:focus,
-        select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
-        }
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-        label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            display: block;
-            margin: 10px 0 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        /* Choice modal */
-        .choice-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin: 16px 0 8px;
-        }
-        .choice-card {
-            background: var(--primary-bg);
-            border: 2px solid transparent;
-            border-radius: var(--radius);
-            padding: 24px 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .choice-card:hover {
-            border-color: var(--primary);
-            background: #fef3c7;
-        }
-        .choice-card i {
-            font-size: 2.2rem;
-            color: var(--primary);
-            display: block;
-            margin-bottom: 8px;
-        }
-        .choice-card span {
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: block;
-        }
-        .choice-card small {
-            color: var(--text-muted);
-            font-size: 0.7rem;
-        }
-
-        /* List Editor */
-        .list-editor {
-            margin-top: 8px;
-        }
-        .list-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            padding: 6px 0 10px;
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 10px;
-        }
-        .list-toolbar button {
-            background: #f1f5f9;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            font-weight: 500;
-            color: var(--text-dark);
-            transition: 0.15s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .list-toolbar button:hover {
-            background: var(--primary-bg);
-        }
-        .list-toolbar button.active {
-            background: var(--primary);
-            color: white;
-        }
-        .list-toolbar .sep {
-            width: 1px;
-            background: #e2e8f0;
-            margin: 0 4px;
-        }
-
-        .list-items-container {
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-        .list-item-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 8px;
-            border-radius: var(--radius-sm);
-            background: #fafafa;
-            margin-bottom: 4px;
-            border: 1px solid transparent;
-            transition: 0.15s;
-            cursor: grab;
-            position: relative;
-        }
-        .list-item-row:hover {
-            background: #f1f5f9;
-            border-color: #e2e8f0;
-        }
-        .list-item-row.dragging {
-            opacity: 0.4;
-            border-color: var(--primary);
-        }
-        .list-item-row .drag-handle {
-            color: #94a3b8;
-            font-size: 0.8rem;
-            cursor: grab;
-            padding: 0 2px;
-            user-select: none;
-            flex-shrink: 0;
-        }
-        .list-item-row .item-check {
-            width: 18px;
-            height: 18px;
-            border-radius: 4px;
-            border: 2px solid #94a3b8;
-            cursor: pointer;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.15s;
-            background: white;
-        }
-        .list-item-row .item-check.checked {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-        .list-item-row .item-check.checked::after {
-            content: "✓";
-            font-size: 0.7rem;
-            font-weight: 700;
-        }
-        .list-item-row .item-text {
-            flex: 1;
-            font-size: 0.85rem;
-            outline: none;
-            padding: 2px 4px;
-            border-radius: 4px;
-            word-break: break-word;
-            min-height: 28px;
-            line-height: 1.5;
-        }
-        .list-item-row .item-text:focus {
-            background: white;
-            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
-        }
-        .list-item-row .item-text.bold {
-            font-weight: 700;
-        }
-        .list-item-row .item-text.italic {
-            font-style: italic;
-        }
-        .list-item-row .item-indent {
-            display: flex;
-            gap: 2px;
-            flex-shrink: 0;
-        }
-        .list-item-row .item-indent button {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            font-size: 0.7rem;
-            padding: 2px 4px;
-            border-radius: 4px;
-            transition: 0.15s;
-        }
-        .list-item-row .item-indent button:hover {
-            background: #e2e8f0;
-            color: var(--text-dark);
-        }
-        .list-item-row .item-del {
-            color: #94a3b8;
-            cursor: pointer;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            transition: 0.15s;
-            flex-shrink: 0;
-        }
-        .list-item-row .item-del:hover {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        .list-item-row.indent-1 {
-            padding-left: 32px;
-        }
-        .list-item-row.indent-2 {
-            padding-left: 56px;
-        }
-        .list-item-row.checked-item {
-            opacity: 0.6;
-            background: #f1f5f9;
-        }
-        .list-item-row.checked-item .item-text {
-            text-decoration: line-through;
-            color: var(--text-muted);
-        }
-
-        .add-item-row {
-            display: flex;
-            gap: 8px;
-            padding: 8px 4px;
-            margin-top: 8px;
-            border-top: 1px dashed #e2e8f0;
-        }
-        .add-item-row input {
-            flex: 1;
-            padding: 8px 12px;
-            border-radius: var(--radius-sm);
-            border: 1px solid #e2e8f0;
-            font-family: inherit;
-            font-size: 0.8rem;
-            outline: none;
-        }
-        .add-item-row input:focus {
-            border-color: var(--primary);
-        }
-        .add-item-row button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: 0.15s;
-            white-space: nowrap;
-        }
-        .add-item-row button:hover {
-            background: var(--primary-dark);
-        }
-
-        /* Modal bottom actions */
-        .modal-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 16px;
-            padding-top: 14px;
-            border-top: 1px solid #e2e8f0;
-        }
-        .modal-actions .btn {
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            border: none;
-            cursor: pointer;
-            transition: 0.15s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .modal-actions .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .modal-actions .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-        .modal-actions .btn-danger {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        .modal-actions .btn-danger:hover {
-            background: #fecaca;
-        }
-        .modal-actions .btn-warning {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        .modal-actions .btn-warning:hover {
-            background: #fde68a;
-        }
-        .modal-actions .btn-outline {
-            background: transparent;
-            border: 1px solid #e2e8f0;
-            color: var(--text-muted);
-        }
-        .modal-actions .btn-outline:hover {
-            background: #f1f5f9;
-        }
-        .modal-actions .btn-success {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-        .modal-actions .btn-success:hover {
-            background: #bbf7d0;
-        }
-
-        /* Color picker */
-        .color-picker {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin: 4px 0 8px;
-        }
-        .color-picker .color-option {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-        .color-picker .color-option:hover {
-            transform: scale(1.1);
-        }
-        .color-picker .color-option.active {
-            border-color: var(--text-dark);
-            box-shadow: 0 0 0 2px white;
-        }
-
-        /* Label input */
-        .label-input-group {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .label-input-group input {
-            flex: 1;
-            min-width: 80px;
-            padding: 6px 10px;
-            font-size: 0.75rem;
-            border-radius: 30px;
-            border: 1px solid #e2e8f0;
-            outline: none;
-            font-family: inherit;
-        }
-        .label-input-group input:focus {
-            border-color: var(--primary);
-        }
-        .label-input-group .add-label-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .label-input-group .add-label-btn:hover {
-            background: var(--primary-dark);
-        }
-        .label-tags-display {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 6px;
-        }
-        .label-tags-display .label-tag {
-            background: var(--primary-bg);
-            color: var(--primary-dark);
-            padding: 2px 10px 2px 8px;
-            border-radius: 30px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-        }
-        .label-tags-display .label-tag .remove-label {
-            cursor: pointer;
-            color: #94a3b8;
-            font-size: 0.6rem;
-        }
-        .label-tags-display .label-tag .remove-label:hover {
-            color: #dc2626;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 90px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            z-index: 2000;
-            opacity: 0;
-            transition: 0.3s;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* Responsive */
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); padding: 16px 12px 32px; color: var(--text-dark); min-height: 100vh; }
+        .app-container { max-width: 720px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .back-btn { background: white; border: 1px solid #e2e8f0; padding: 8px 14px; border-radius: 40px; font-weight: 500; font-size: 0.8rem; color: var(--primary-dark); cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+        .back-btn:hover { background: var(--primary-bg); }
+        h1 { font-size: 1.6rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .header-actions { display: flex; gap: 6px; align-items: center; }
+        .header-btn { background: white; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 40px; font-weight: 500; font-size: 0.8rem; color: var(--primary-dark); cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 4px; }
+        .header-btn:hover { background: var(--primary-bg); }
+        .header-btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .header-btn.primary:hover { background: var(--primary-dark); }
+        .filters-panel { background: white; border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; box-shadow: var(--card-shadow); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .search-box { flex: 2; position: relative; min-width: 140px; }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.8rem; }
+        .search-box input { width: 100%; padding: 8px 10px 8px 32px; border-radius: 40px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.8rem; background: #f8fafc; outline: none; transition: 0.2s; }
+        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .filter-select { min-width: 120px; }
+        .filter-select select { width: 100%; padding: 6px 10px; border-radius: 40px; border: 1px solid #e2e8f0; background: #f8fafc; font-family: inherit; font-size: 0.75rem; cursor: pointer; outline: none; }
+        .filter-select select:focus { border-color: var(--primary); }
+        .filter-btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
+        .filter-btn { background: #f1f5f9; border: none; padding: 6px 12px; border-radius: 40px; font-size: 0.7rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 4px; }
+        .filter-btn.active { background: var(--primary); color: white; }
+        .filter-btn:hover { background: var(--primary-light); }
+        .filter-btn.active:hover { background: var(--primary-dark); }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 80px; }
+        .card-item { background: white; border-radius: var(--radius); padding: 16px 14px 14px; box-shadow: var(--card-shadow); cursor: pointer; transition: 0.25s ease; border-left: 5px solid var(--primary); position: relative; display: flex; flex-direction: column; min-height: 130px; }
+        .card-item:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(245, 158, 11, 0.18); }
+        .card-item .card-color-bar { position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: var(--radius) var(--radius) 0 0; background: var(--primary); }
+        .card-item .card-title { font-weight: 600; font-size: 0.95rem; margin: 6px 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+        .card-item .card-preview { font-size: 0.75rem; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex: 1; word-break: break-word; line-height: 1.4; }
+        .card-item .card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.65rem; color: var(--text-muted); flex-wrap: wrap; gap: 4px; }
+        .card-item .card-labels { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+        .card-item .label-tag { background: var(--primary-bg); color: var(--primary-dark); padding: 2px 8px; border-radius: 30px; font-size: 0.6rem; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .card-item .card-actions-top { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; opacity: 0; transition: 0.2s; }
+        .card-item:hover .card-actions-top { opacity: 1; }
+        .card-item .card-actions-top button { background: rgba(255,255,255,0.85); border: 1px solid #e2e8f0; width: 26px; height: 26px; border-radius: 50%; font-size: 0.6rem; cursor: pointer; color: var(--text-muted); transition: 0.15s; display: flex; align-items: center; justify-content: center; }
+        .card-item .card-actions-top button:hover { background: white; color: var(--text-dark); }
+        .card-item .card-actions-top .del-btn:hover { color: #dc2626; border-color: #fca5a5; }
+        .card-item .card-actions-top .history-btn { font-size: 0.65rem; }
+        .card-item .card-badge-archived { background: #e2e8f0; color: var(--text-muted); font-size: 0.55rem; font-weight: 600; padding: 2px 8px; border-radius: 30px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .card-item .item-count-badge { background: var(--primary-bg); color: var(--primary-dark); padding: 0 8px; border-radius: 30px; font-size: 0.6rem; font-weight: 600; }
+        .card-empty { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.9rem; background: white; border-radius: var(--radius); box-shadow: var(--card-shadow); }
+        .card-empty i { font-size: 2rem; display: block; margin-bottom: 10px; color: var(--primary-light); }
+        .fab { position: fixed; bottom: 24px; right: 16px; background: var(--primary); color: white; border: none; width: 56px; height: 56px; border-radius: 28px; font-size: 1.6rem; box-shadow: 0 4px 14px rgba(245,158,11,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: 0.2s; }
+        .fab:hover { background: var(--primary-dark); transform: scale(1.05); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(4px); }
+        .modal-content { background: white; border-radius: 28px; max-width: 640px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 20px 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); position: relative; }
+        .modal-content .close-modal { position: absolute; top: 12px; right: 16px; font-size: 1.8rem; cursor: pointer; color: #94a3b8; transition: 0.15s; line-height: 1; }
+        .modal-content .close-modal:hover { color: var(--text-dark); }
+        .modal-content h2 { font-size: 1.2rem; margin-bottom: 14px; padding-right: 32px; }
+        input[type="text"], textarea, select { width: 100%; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.85rem; background: white; transition: 0.2s; outline: none; }
+        input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
+        textarea { resize: vertical; min-height: 80px; }
+        label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); display: block; margin: 10px 0 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0 8px; }
+        .choice-card { background: var(--primary-bg); border: 2px solid transparent; border-radius: var(--radius); padding: 24px 16px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .choice-card:hover { border-color: var(--primary); background: #fef3c7; }
+        .choice-card i { font-size: 2.2rem; color: var(--primary); display: block; margin-bottom: 8px; }
+        .choice-card span { font-weight: 600; font-size: 0.9rem; display: block; }
+        .choice-card small { color: var(--text-muted); font-size: 0.7rem; }
+        .list-editor { margin-top: 8px; }
+        .list-items-container { max-height: 400px; overflow-y: auto; padding-right: 4px; }
+        .list-item-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); background: #fafafa; margin-bottom: 4px; border: 1px solid transparent; transition: 0.15s; cursor: grab; position: relative; }
+        .list-item-row:hover { background: #f1f5f9; border-color: #e2e8f0; }
+        .list-item-row.dragging { opacity: 0.4; border-color: var(--primary); }
+        .list-item-row .drag-handle { color: #94a3b8; font-size: 0.8rem; cursor: grab; padding: 0 2px; user-select: none; flex-shrink: 0; }
+        .list-item-row .item-check { width: 18px; height: 18px; border-radius: 4px; border: 2px solid #94a3b8; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: 0.15s; background: white; }
+        .list-item-row .item-check.checked { background: var(--primary); border-color: var(--primary); color: white; }
+        .list-item-row .item-check.checked::after { content: "✓"; font-size: 0.7rem; font-weight: 700; }
+        .list-item-row .item-text { flex: 1; font-size: 0.85rem; outline: none; padding: 2px 4px; border-radius: 4px; word-break: break-word; min-height: 28px; line-height: 1.5; }
+        .list-item-row .item-text:focus { background: white; box-shadow: 0 0 0 2px rgba(245,158,11,0.15); }
+        .list-item-row .item-indent { display: flex; gap: 2px; flex-shrink: 0; }
+        .list-item-row .item-indent button { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.7rem; padding: 2px 4px; border-radius: 4px; transition: 0.15s; }
+        .list-item-row .item-indent button:hover { background: #e2e8f0; color: var(--text-dark); }
+        .list-item-row .item-del { color: #94a3b8; cursor: pointer; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; transition: 0.15s; flex-shrink: 0; }
+        .list-item-row .item-del:hover { background: #fee2e2; color: #dc2626; }
+        .list-item-row.indent-1 { padding-left: 32px; }
+        .list-item-row.indent-2 { padding-left: 56px; }
+        .list-item-row.checked-item { opacity: 0.6; background: #f1f5f9; }
+        .list-item-row.checked-item .item-text { text-decoration: line-through; color: var(--text-muted); }
+        .add-item-row { display: flex; gap: 8px; padding: 8px 4px; margin-top: 8px; border-top: 1px dashed #e2e8f0; }
+        .add-item-row input { flex: 1; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.8rem; outline: none; }
+        .add-item-row input:focus { border-color: var(--primary); }
+        .add-item-row button { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 0.8rem; transition: 0.15s; white-space: nowrap; }
+        .add-item-row button:hover { background: var(--primary-dark); }
+        .modal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
+        .modal-actions .btn { padding: 8px 18px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; border: none; cursor: pointer; transition: 0.15s; display: flex; align-items: center; gap: 6px; }
+        .modal-actions .btn-primary { background: var(--primary); color: white; }
+        .modal-actions .btn-primary:hover { background: var(--primary-dark); }
+        .modal-actions .btn-danger { background: #fee2e2; color: #dc2626; }
+        .modal-actions .btn-danger:hover { background: #fecaca; }
+        .modal-actions .btn-warning { background: #fef3c7; color: #d97706; }
+        .modal-actions .btn-warning:hover { background: #fde68a; }
+        .modal-actions .btn-outline { background: transparent; border: 1px solid #e2e8f0; color: var(--text-muted); }
+        .modal-actions .btn-outline:hover { background: #f1f5f9; }
+        .modal-actions .btn-success { background: #dcfce7; color: #16a34a; }
+        .modal-actions .btn-success:hover { background: #bbf7d0; }
+        .color-picker { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 8px; }
+        .color-picker .color-option { width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: 0.15s; }
+        .color-picker .color-option:hover { transform: scale(1.1); }
+        .color-picker .color-option.active { border-color: var(--text-dark); box-shadow: 0 0 0 2px white; }
+        .label-input-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+        .label-input-group input { flex: 1; min-width: 80px; padding: 6px 10px; font-size: 0.75rem; border-radius: 30px; border: 1px solid #e2e8f0; outline: none; font-family: inherit; }
+        .label-input-group input:focus { border-color: var(--primary); }
+        .label-input-group .add-label-btn { background: var(--primary); color: white; border: none; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; cursor: pointer; }
+        .label-input-group .add-label-btn:hover { background: var(--primary-dark); }
+        .label-tags-display { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+        .label-tags-display .label-tag { background: var(--primary-bg); color: var(--primary-dark); padding: 2px 10px 2px 8px; border-radius: 30px; font-size: 0.65rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(245,158,11,0.2); }
+        .label-tags-display .label-tag .remove-label { cursor: pointer; color: #94a3b8; font-size: 0.6rem; }
+        .label-tags-display .label-tag .remove-label:hover { color: #dc2626; }
+        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 8px 20px; border-radius: 40px; font-size: 0.8rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 2000; opacity: 0; transition: 0.3s; pointer-events: none; white-space: nowrap; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        /* history modal */
+        .history-list { font-size: 0.8rem; max-height: 300px; overflow-y: auto; }
+        .history-item { padding: 6px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; color: var(--text-muted); }
+        .history-item .h-time { font-weight: 500; color: var(--text-dark); }
         @media (max-width: 480px) {
-            .cards-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-            .card-item {
-                min-height: 110px;
-                padding: 12px 10px;
-            }
-            .card-item .card-title {
-                font-size: 0.8rem;
-            }
-            .card-item .card-preview {
-                font-size: 0.65rem;
-                -webkit-line-clamp: 2;
-            }
-            .choice-grid {
-                grid-template-columns: 1fr;
-            }
-            .modal-content {
-                padding: 16px 14px;
-            }
-            .list-item-row {
-                padding: 4px 6px;
-                gap: 4px;
-            }
-            .list-item-row .item-text {
-                font-size: 0.8rem;
-            }
-            .list-item-row.indent-1 {
-                padding-left: 24px;
-            }
-            .list-item-row.indent-2 {
-                padding-left: 40px;
-            }
-            .header h1 {
-                font-size: 1.2rem;
-            }
-            .back-btn {
-                padding: 6px 10px;
-                font-size: 0.7rem;
-            }
-            .header-btn {
-                padding: 4px 10px;
-                font-size: 0.7rem;
-            }
-            .filters-panel {
-                padding: 8px 10px;
-            }
-            .filter-btn {
-                padding: 4px 8px;
-                font-size: 0.6rem;
-            }
+            .cards-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .card-item { min-height: 110px; padding: 12px 10px; }
+            .card-item .card-title { font-size: 0.8rem; }
+            .card-item .card-preview { font-size: 0.65rem; -webkit-line-clamp: 2; }
+            .choice-grid { grid-template-columns: 1fr; }
+            .modal-content { padding: 16px 14px; }
+            .list-item-row { padding: 4px 6px; gap: 4px; }
+            .list-item-row .item-text { font-size: 0.8rem; }
+            .list-item-row.indent-1 { padding-left: 24px; }
+            .list-item-row.indent-2 { padding-left: 40px; }
+            .header h1 { font-size: 1.2rem; }
+            .back-btn { padding: 6px 10px; font-size: 0.7rem; }
+            .header-btn { padding: 4px 10px; font-size: 0.7rem; }
+            .filters-panel { padding: 8px 10px; }
+            .filter-btn { padding: 4px 8px; font-size: 0.6rem; }
+            .filter-select { min-width: 90px; }
         }
-        @media (max-width: 380px) {
-            .cards-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Scrollbar */
-        .list-items-container::-webkit-scrollbar {
-            width: 4px;
-        }
-        .list-items-container::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 10px;
-        }
-        .list-items-container::-webkit-scrollbar-thumb {
-            background: var(--primary-light);
-            border-radius: 10px;
-        }
-        .modal-content::-webkit-scrollbar {
-            width: 4px;
-        }
-        .modal-content::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 10px;
-        }
-        .modal-content::-webkit-scrollbar-thumb {
-            background: var(--primary-light);
-            border-radius: 10px;
-        }
+        @media (max-width: 380px) { .cards-grid { grid-template-columns: 1fr; } }
+        .list-items-container::-webkit-scrollbar, .modal-content::-webkit-scrollbar { width: 4px; }
+        .list-items-container::-webkit-scrollbar-track, .modal-content::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .list-items-container::-webkit-scrollbar-thumb, .modal-content::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-left">
-                <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> Kembali</button>
-                <h1>📋 ListAbr</h1>
-            </div>
-            <div class="header-actions">
-                <button class="header-btn" id="viewArchivedBtn"><i class="fas fa-archive"></i> Arsip</button>
-                <button class="header-btn primary" id="addCardBtn"><i class="fas fa-plus"></i> Baru</button>
-            </div>
+<div class="app-container">
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> Kembali</button>
+            <h1>📋 ListAbr</h1>
         </div>
+        <div class="header-actions">
+            <button class="header-btn" id="viewArchivedBtn"><i class="fas fa-archive"></i> Arsip</button>
+            <button class="header-btn primary" id="addCardBtn"><i class="fas fa-plus"></i> Baru</button>
+        </div>
+    </div>
 
-        <!-- Filters -->
-        <div class="filters-panel">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Cari catatan..." />
+    <div class="filters-panel">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Cari catatan..." />
+        </div>
+        <div class="filter-group">
+            <div class="filter-select">
+                <select id="filterLabelSelect">
+                    <option value="all">Semua Label</option>
+                </select>
+            </div>
+            <div class="filter-select">
+                <select id="filterDateSelect">
+                    <option value="all">Semua Waktu</option>
+                    <option value="today">Hari Ini</option>
+                    <option value="week">Minggu Ini</option>
+                    <option value="month">Bulan Ini</option>
+                </select>
             </div>
             <div class="filter-btn-group">
                 <button class="filter-btn active" data-filter="all"><i class="fas fa-th"></i> Semua</button>
@@ -949,983 +207,787 @@
                 <button class="filter-btn" data-filter="list"><i class="fas fa-list"></i> Daftar</button>
             </div>
         </div>
-
-        <!-- Cards Grid -->
-        <div class="cards-grid" id="cardsGrid"></div>
-
-        <!-- FAB -->
-        <button class="fab" id="fabAdd"><i class="fas fa-plus"></i></button>
     </div>
 
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
+    <div class="cards-grid" id="cardsGrid"></div>
+    <button class="fab" id="fabAdd"><i class="fas fa-plus"></i></button>
+</div>
 
-    <!-- Modal: Create/Edit -->
-    <div id="editorModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" id="closeEditor">&times;</span>
-            <h2 id="editorTitle">Catatan Baru</h2>
-            <input type="hidden" id="editId" />
+<div class="toast" id="toast"></div>
 
-            <!-- Choice (only for new) -->
-            <div id="choiceSection">
-                <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:6px;">Pilih jenis:</p>
-                <div class="choice-grid">
-                    <div class="choice-card" data-type="text">
-                        <i class="fas fa-file-alt"></i>
-                        <span>Teks</span>
-                        <small>Catatan biasa</small>
-                    </div>
-                    <div class="choice-card" data-type="list">
-                        <i class="fas fa-list-ul"></i>
-                        <span>Daftar</span>
-                        <small>List dengan centang</small>
-                    </div>
+<!-- Modal Editor -->
+<div id="editorModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeEditor">&times;</span>
+        <h2 id="editorTitle">Catatan Baru</h2>
+        <input type="hidden" id="editId" />
+        <div id="choiceSection">
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:6px;">Pilih jenis:</p>
+            <div class="choice-grid">
+                <div class="choice-card" data-type="text">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Teks</span>
+                    <small>Catatan biasa</small>
                 </div>
-            </div>
-
-            <!-- Editor fields -->
-            <div id="editorFields" style="display:none;">
-                <input type="text" id="cardTitle" placeholder="Judul (opsional)" />
-
-                <!-- Text area -->
-                <div id="textEditor">
-                    <label>Isi Catatan</label>
-                    <textarea id="textContent" rows="6" placeholder="Tulis catatanmu di sini..."></textarea>
-                </div>
-
-                <!-- List editor -->
-                <div id="listEditor" style="display:none;">
-                    <div class="list-toolbar">
-                        <button id="listTypeBullet" class="active" title="Bullet"><i class="fas fa-list-ul"></i></button>
-                        <button id="listTypeNumber" title="Numbered"><i class="fas fa-list-ol"></i></button>
-                        <span class="sep"></span>
-                        <button id="toggleBold" title="Bold"><i class="fas fa-bold"></i></button>
-                        <button id="toggleItalic" title="Italic"><i class="fas fa-italic"></i></button>
-                    </div>
-                    <div class="list-items-container" id="listItemsContainer"></div>
-                    <div class="add-item-row">
-                        <input type="text" id="newItemInput" placeholder="Tambah item..." />
-                        <button id="addItemBtn"><i class="fas fa-plus"></i> Tambah</button>
-                    </div>
-                </div>
-
-                <!-- Labels -->
-                <label><i class="fas fa-tags"></i> Label</label>
-                <div class="label-input-group">
-                    <input type="text" id="labelInput" placeholder="Tambah label..." />
-                    <button class="add-label-btn" id="addLabelBtn">+</button>
-                </div>
-                <div class="label-tags-display" id="labelTagsDisplay"></div>
-
-                <!-- Color -->
-                <label><i class="fas fa-palette"></i> Warna</label>
-                <div class="color-picker" id="colorPicker">
-                    <div class="color-option active" style="background:#f59e0b;" data-color="#f59e0b"></div>
-                    <div class="color-option" style="background:#ef4444;" data-color="#ef4444"></div>
-                    <div class="color-option" style="background:#22c55e;" data-color="#22c55e"></div>
-                    <div class="color-option" style="background:#3b82f6;" data-color="#3b82f6"></div>
-                    <div class="color-option" style="background:#8b5cf6;" data-color="#8b5cf6"></div>
-                    <div class="color-option" style="background:#ec4899;" data-color="#ec4899"></div>
-                    <div class="color-option" style="background:#14b8a6;" data-color="#14b8a6"></div>
-                    <div class="color-option" style="background:#f97316;" data-color="#f97316"></div>
-                </div>
-
-                <!-- Actions -->
-                <div class="modal-actions">
-                    <button class="btn btn-primary" id="saveCardBtn"><i class="fas fa-save"></i> Simpan</button>
-                    <button class="btn btn-danger" id="deleteCardBtn" style="display:none;"><i class="fas fa-trash"></i> Hapus</button>
-                    <button class="btn btn-warning" id="archiveCardBtn" style="display:none;"><i class="fas fa-archive"></i> Arsip</button>
-                    <button class="btn btn-success" id="unarchiveCardBtn" style="display:none;"><i class="fas fa-undo"></i> Pulihkan</button>
-                    <button class="btn btn-outline" id="closeEditorBtn">Tutup</button>
+                <div class="choice-card" data-type="list">
+                    <i class="fas fa-list-ul"></i>
+                    <span>Daftar</span>
+                    <small>List dengan centang</small>
                 </div>
             </div>
         </div>
+        <div id="editorFields" style="display:none;">
+            <input type="text" id="cardTitle" placeholder="Judul (opsional)" />
+            <div id="textEditor">
+                <label>Isi Catatan</label>
+                <textarea id="textContent" rows="6" placeholder="Tulis catatanmu di sini..."></textarea>
+            </div>
+            <div id="listEditor" style="display:none;">
+                <div class="list-items-container" id="listItemsContainer"></div>
+                <div class="add-item-row">
+                    <input type="text" id="newItemInput" placeholder="Tambah item..." />
+                    <button id="addItemBtn"><i class="fas fa-plus"></i> Tambah</button>
+                </div>
+            </div>
+            <label><i class="fas fa-tags"></i> Label</label>
+            <div class="label-input-group">
+                <input type="text" id="labelInput" placeholder="Tambah label..." />
+                <button class="add-label-btn" id="addLabelBtn">+</button>
+            </div>
+            <div class="label-tags-display" id="labelTagsDisplay"></div>
+            <label><i class="fas fa-palette"></i> Warna</label>
+            <div class="color-picker" id="colorPicker">
+                <div class="color-option active" style="background:#f59e0b;" data-color="#f59e0b"></div>
+                <div class="color-option" style="background:#ef4444;" data-color="#ef4444"></div>
+                <div class="color-option" style="background:#22c55e;" data-color="#22c55e"></div>
+                <div class="color-option" style="background:#3b82f6;" data-color="#3b82f6"></div>
+                <div class="color-option" style="background:#8b5cf6;" data-color="#8b5cf6"></div>
+                <div class="color-option" style="background:#ec4899;" data-color="#ec4899"></div>
+                <div class="color-option" style="background:#14b8a6;" data-color="#14b8a6"></div>
+                <div class="color-option" style="background:#f97316;" data-color="#f97316"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="saveCardBtn"><i class="fas fa-save"></i> Simpan</button>
+                <button class="btn btn-danger" id="deleteCardBtn" style="display:none;"><i class="fas fa-trash"></i> Hapus</button>
+                <button class="btn btn-warning" id="archiveCardBtn" style="display:none;"><i class="fas fa-archive"></i> Arsip</button>
+                <button class="btn btn-success" id="unarchiveCardBtn" style="display:none;"><i class="fas fa-undo"></i> Pulihkan</button>
+                <button class="btn btn-outline" id="closeEditorBtn">Tutup</button>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script type="module">
-        // ============================================================
-        //  FIREBASE INIT (same as index.html)
-        // ============================================================
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import {
-            getFirestore,
-            collection,
-            doc,
-            addDoc,
-            updateDoc,
-            deleteDoc,
-            onSnapshot,
-            Timestamp,
-            query,
-            where,
-            orderBy
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<!-- Modal History -->
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeHistory">&times;</span>
+        <h2><i class="fas fa-history"></i> Riwayat Perubahan</h2>
+        <div id="historyList" class="history-list"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" id="closeHistoryBtn">Tutup</button>
+        </div>
+    </div>
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDtryifWRdYyU8oMbB-l5bMhgnms0Y4K2w",
-            authDomain: "task-bb3db.firebaseapp.com",
-            projectId: "task-bb3db",
-            storageBucket: "task-bb3db.firebasestorage.app",
-            messagingSenderId: "227588110683",
-            appId: "1:227588110683:web:be696631b12d00ab56027e"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const notesCol = collection(db, "notes");
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+        getFirestore,
+        collection,
+        doc,
+        addDoc,
+        updateDoc,
+        deleteDoc,
+        onSnapshot,
+        Timestamp,
+        query,
+        orderBy
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ============================================================
-        //  STATE
-        // ============================================================
-        let allNotes = [];
-        let currentEditId = null;
-        let currentType = 'text';
-        let listType = 'bullet';
-        let selectedColor = '#f59e0b';
-        let labels = [];
-        let isArchivedView = false;
-        let filterType = 'all';
-        let searchQuery = '';
-        let unsubscribeNotes = null;
+    const firebaseConfig = {
+        apiKey: "AIzaSyDtryifWRdYyU8oMbB-l5bMhgnms0Y4K2w",
+        authDomain: "task-bb3db.firebaseapp.com",
+        projectId: "task-bb3db",
+        storageBucket: "task-bb3db.firebasestorage.app",
+        messagingSenderId: "227588110683",
+        appId: "1:227588110683:web:be696631b12d00ab56027e"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const notesCol = collection(db, "notes");
 
-        // drag state
-        let dragItem = null;
-        let dragOverItem = null;
+    let allNotes = [];
+    let currentEditId = null;
+    let currentType = 'text';
+    let selectedColor = '#f59e0b';
+    let labels = [];
+    let isArchivedView = false;
+    let filterType = 'all';
+    let searchQuery = '';
+    let filterLabel = 'all';
+    let filterDate = 'all';
+    let unsubscribeNotes = null;
+    let dragItem = null;
+    let dragOverItem = null;
 
-        // ============================================================
-        //  DOM REFS
-        // ============================================================
-        const cardsGrid = document.getElementById('cardsGrid');
-        const searchInput = document.getElementById('searchInput');
-        const fabAdd = document.getElementById('fabAdd');
-        const addCardBtn = document.getElementById('addCardBtn');
-        const backBtn = document.getElementById('backBtn');
-        const viewArchivedBtn = document.getElementById('viewArchivedBtn');
+    const cardsGrid = document.getElementById('cardsGrid');
+    const searchInput = document.getElementById('searchInput');
+    const fabAdd = document.getElementById('fabAdd');
+    const addCardBtn = document.getElementById('addCardBtn');
+    const backBtn = document.getElementById('backBtn');
+    const viewArchivedBtn = document.getElementById('viewArchivedBtn');
+    const filterLabelSelect = document.getElementById('filterLabelSelect');
+    const filterDateSelect = document.getElementById('filterDateSelect');
 
-        // Editor modal
-        const editorModal = document.getElementById('editorModal');
-        const closeEditor = document.getElementById('closeEditor');
-        const closeEditorBtn = document.getElementById('closeEditorBtn');
-        const editorTitle = document.getElementById('editorTitle');
-        const editId = document.getElementById('editId');
-        const choiceSection = document.getElementById('choiceSection');
-        const editorFields = document.getElementById('editorFields');
-        const cardTitle = document.getElementById('cardTitle');
-        const textContent = document.getElementById('textContent');
-        const textEditor = document.getElementById('textEditor');
-        const listEditor = document.getElementById('listEditor');
-        const listItemsContainer = document.getElementById('listItemsContainer');
-        const newItemInput = document.getElementById('newItemInput');
-        const addItemBtn = document.getElementById('addItemBtn');
-        const listTypeBullet = document.getElementById('listTypeBullet');
-        const listTypeNumber = document.getElementById('listTypeNumber');
-        const toggleBold = document.getElementById('toggleBold');
-        const toggleItalic = document.getElementById('toggleItalic');
-        const labelInput = document.getElementById('labelInput');
-        const addLabelBtn = document.getElementById('addLabelBtn');
-        const labelTagsDisplay = document.getElementById('labelTagsDisplay');
-        const colorPicker = document.getElementById('colorPicker');
-        const saveCardBtn = document.getElementById('saveCardBtn');
-        const deleteCardBtn = document.getElementById('deleteCardBtn');
-        const archiveCardBtn = document.getElementById('archiveCardBtn');
-        const unarchiveCardBtn = document.getElementById('unarchiveCardBtn');
-        const toast = document.getElementById('toast');
+    const editorModal = document.getElementById('editorModal');
+    const closeEditor = document.getElementById('closeEditor');
+    const closeEditorBtn = document.getElementById('closeEditorBtn');
+    const editorTitle = document.getElementById('editorTitle');
+    const editId = document.getElementById('editId');
+    const choiceSection = document.getElementById('choiceSection');
+    const editorFields = document.getElementById('editorFields');
+    const cardTitle = document.getElementById('cardTitle');
+    const textContent = document.getElementById('textContent');
+    const textEditor = document.getElementById('textEditor');
+    const listEditor = document.getElementById('listEditor');
+    const listItemsContainer = document.getElementById('listItemsContainer');
+    const newItemInput = document.getElementById('newItemInput');
+    const addItemBtn = document.getElementById('addItemBtn');
+    const labelInput = document.getElementById('labelInput');
+    const addLabelBtn = document.getElementById('addLabelBtn');
+    const labelTagsDisplay = document.getElementById('labelTagsDisplay');
+    const colorPicker = document.getElementById('colorPicker');
+    const saveCardBtn = document.getElementById('saveCardBtn');
+    const deleteCardBtn = document.getElementById('deleteCardBtn');
+    const archiveCardBtn = document.getElementById('archiveCardBtn');
+    const unarchiveCardBtn = document.getElementById('unarchiveCardBtn');
+    const toast = document.getElementById('toast');
 
-        // ============================================================
-        //  UTILITY
-        // ============================================================
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+    const historyModal = document.getElementById('historyModal');
+    const closeHistory = document.getElementById('closeHistory');
+    const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+    const historyList = document.getElementById('historyList');
 
-        function toastMsg(msg) {
-            toast.textContent = msg;
-            toast.classList.add('show');
-            clearTimeout(window.toastTimeout);
-            window.toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000);
-        }
+    // ==================== UTILITY ====================
+    function escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
+    function toastMsg(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000); }
+    function formatDate(ts) { if (!ts) return '-'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+    function formatDateShort(ts) { if (!ts) return '-'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); }
 
-        function formatDate(ts) {
-            if (!ts) return '-';
-            const d = ts.toDate ? ts.toDate() : new Date(ts);
-            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-        }
-
-        function getCardPreview(c) {
-            if (c.type === 'text') {
-                const raw = c.content || '';
-                const stripped = raw.replace(/<[^>]*>/g, '');
-                return stripped.slice(0, 80) + (stripped.length > 80 ? '...' : '');
-            } else {
-                const items = c.listItems || [];
-                if (items.length === 0) return 'Daftar kosong';
-                const shown = items.filter(it => !it.checked).slice(0, 3);
-                const parts = shown.map(it => {
-                    const indent = '  '.repeat(it.indent || 0);
-                    return `${indent}• ${it.text}`;
-                });
-                let preview = parts.join('  ');
-                const checkedCount = items.filter(it => it.checked).length;
-                if (checkedCount > 0) preview += `  (+${checkedCount} selesai)`;
-                if (items.length > 3) preview += '  …';
-                return preview;
-            }
-        }
-
-        function getCurrentListItems() {
-            const rows = listItemsContainer.querySelectorAll('.list-item-row');
-            const items = [];
-            rows.forEach(row => {
-                const id = parseInt(row.dataset.realId) || Date.now() + Math.random();
-                const textEl = row.querySelector('.item-text');
-                const text = textEl ? textEl.textContent || '' : '';
-                const checked = row.querySelector('.item-check')?.classList.contains('checked') || false;
-                const indent = parseInt(row.dataset.indent) || 0;
-                const bold = textEl?.classList.contains('bold') || false;
-                const italic = textEl?.classList.contains('italic') || false;
-                items.push({ id, text, checked, indent, bold, italic });
+    function getCardPreview(c) {
+        if (c.type === 'text') {
+            const raw = c.content || '';
+            const stripped = raw.replace(/<[^>]*>/g, '');
+            return stripped.slice(0, 80) + (stripped.length > 80 ? '...' : '');
+        } else {
+            const items = c.listItems || [];
+            if (items.length === 0) return 'Daftar kosong';
+            const shown = items.filter(it => !it.checked).slice(0, 3);
+            const parts = shown.map(it => {
+                const indent = '  '.repeat(it.indent || 0);
+                return `${indent}• ${it.text}`;
             });
-            return items;
+            let preview = parts.join('  ');
+            const checkedCount = items.filter(it => it.checked).length;
+            if (checkedCount > 0) preview += `  (+${checkedCount} selesai)`;
+            if (items.length > 3) preview += '  …';
+            return preview;
         }
+    }
 
-        // ============================================================
-        //  FIREBASE CRUD
-        // ============================================================
-        function startNotesListener() {
-            if (unsubscribeNotes) unsubscribeNotes();
-            // Listen to all notes, sort by updatedAt descending
-            const q = query(notesCol, orderBy('updatedAt', 'desc'));
-            unsubscribeNotes = onSnapshot(q, (snapshot) => {
-                allNotes = [];
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    allNotes.push({
-                        id: docSnap.id,
-                        ...data,
-                        // ensure timestamps are converted
-                        createdAt: data.createdAt || Timestamp.now(),
-                        updatedAt: data.updatedAt || Timestamp.now()
-                    });
+    function getCurrentListItems() {
+        const rows = listItemsContainer.querySelectorAll('.list-item-row');
+        const items = [];
+        rows.forEach(row => {
+            const id = parseInt(row.dataset.realId) || Date.now() + Math.random();
+            const textEl = row.querySelector('.item-text');
+            const text = textEl ? textEl.textContent || '' : '';
+            const checked = row.querySelector('.item-check')?.classList.contains('checked') || false;
+            const indent = parseInt(row.dataset.indent) || 0;
+            items.push({ id, text, checked, indent });
+        });
+        return items;
+    }
+
+    function getHistoryDisplay(history) {
+        if (!history || history.length === 0) return '<div style="color:var(--text-muted);">Belum ada riwayat</div>';
+        return history.slice().reverse().map(h => `
+            <div class="history-item">
+                <span>${h.action}</span>
+                <span class="h-time">${formatDate(h.timestamp)}</span>
+            </div>
+        `).join('');
+    }
+
+    // ==================== FIREBASE ====================
+    function startNotesListener() {
+        if (unsubscribeNotes) unsubscribeNotes();
+        const q = query(notesCol, orderBy('updatedAt', 'desc'));
+        unsubscribeNotes = onSnapshot(q, (snapshot) => {
+            allNotes = [];
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                allNotes.push({
+                    id: docSnap.id,
+                    ...data,
+                    createdAt: data.createdAt || Timestamp.now(),
+                    updatedAt: data.updatedAt || Timestamp.now(),
+                    history: data.history || []
                 });
-                renderCards();
-            }, (error) => {
-                console.error('Firestore error:', error);
-                toastMsg('Gagal memuat data. Periksa koneksi.');
             });
-        }
+            updateLabelFilter();
+            renderCards();
+        }, (error) => {
+            console.error('Firestore error:', error);
+            toastMsg('Gagal memuat data.');
+        });
+    }
 
-        async function saveCardToFirebase(cardData) {
-            const now = Timestamp.now();
-            if (cardData.id) {
-                // Update existing
-                const ref = doc(db, 'notes', cardData.id);
-                await updateDoc(ref, {
-                    ...cardData,
-                    updatedAt: now
-                });
-                return cardData.id;
-            } else {
-                // Create new
-                const newDoc = {
-                    ...cardData,
-                    createdAt: now,
-                    updatedAt: now,
-                    archived: false
-                };
-                delete newDoc.id;
-                const ref = await addDoc(notesCol, newDoc);
-                return ref.id;
+    async function saveCardToFirebase(cardData) {
+        const now = Timestamp.now();
+        const action = cardData.id ? 'Diperbarui' : 'Dibuat';
+        const historyEntry = { action, timestamp: now };
+        if (cardData.id) {
+            const ref = doc(db, 'notes', cardData.id);
+            // Get existing history
+            const existing = allNotes.find(n => n.id === cardData.id);
+            const history = existing?.history || [];
+            history.push(historyEntry);
+            await updateDoc(ref, {
+                ...cardData,
+                updatedAt: now,
+                history: history
+            });
+            return cardData.id;
+        } else {
+            const newDoc = {
+                ...cardData,
+                createdAt: now,
+                updatedAt: now,
+                archived: false,
+                history: [historyEntry]
+            };
+            delete newDoc.id;
+            const ref = await addDoc(notesCol, newDoc);
+            return ref.id;
+        }
+    }
+
+    async function deleteNoteFromFirebase(id) { await deleteDoc(doc(db, 'notes', id)); }
+    async function archiveNote(id) { await updateDoc(doc(db, 'notes', id), { archived: true, updatedAt: Timestamp.now() }); }
+    async function unarchiveNote(id) { await updateDoc(doc(db, 'notes', id), { archived: false, updatedAt: Timestamp.now() }); }
+
+    // ==================== FILTERS ====================
+    function updateLabelFilter() {
+        const labelsSet = new Set();
+        allNotes.forEach(n => (n.labels || []).forEach(l => labelsSet.add(l)));
+        const current = filterLabelSelect.value;
+        filterLabelSelect.innerHTML = '<option value="all">Semua Label</option>';
+        [...labelsSet].sort().forEach(l => {
+            const opt = document.createElement('option');
+            opt.value = l;
+            opt.textContent = l;
+            filterLabelSelect.appendChild(opt);
+        });
+        if ([...labelsSet].includes(current)) filterLabelSelect.value = current;
+        else filterLabelSelect.value = 'all';
+    }
+
+    function getActiveCards() {
+        const pool = isArchivedView ? allNotes.filter(c => c.archived === true) : allNotes.filter(c => c.archived !== true);
+        let filtered = pool.filter(c => {
+            if (filterType !== 'all' && c.type !== filterType) return false;
+            if (searchQuery.trim()) {
+                const q = searchQuery.trim().toLowerCase();
+                const titleMatch = (c.title || '').toLowerCase().includes(q);
+                const contentMatch = (c.content || '').toLowerCase().includes(q);
+                const labelMatch = (c.labels || []).some(l => l.toLowerCase().includes(q));
+                const itemMatch = (c.listItems || []).some(it => it.text.toLowerCase().includes(q));
+                return titleMatch || contentMatch || labelMatch || itemMatch;
             }
-        }
-
-        async function deleteNoteFromFirebase(id) {
-            await deleteDoc(doc(db, 'notes', id));
-        }
-
-        async function archiveNote(id) {
-            const ref = doc(db, 'notes', id);
-            await updateDoc(ref, { archived: true, updatedAt: Timestamp.now() });
-        }
-
-        async function unarchiveNote(id) {
-            const ref = doc(db, 'notes', id);
-            await updateDoc(ref, { archived: false, updatedAt: Timestamp.now() });
-        }
-
-        // ============================================================
-        //  RENDER CARDS
-        // ============================================================
-        function getActiveCards() {
-            const pool = isArchivedView ? allNotes.filter(c => c.archived === true) : allNotes.filter(c => c.archived !==
-            true);
-            let filtered = pool.filter(c => {
-                if (filterType !== 'all' && c.type !== filterType) return false;
-                if (searchQuery.trim()) {
-                    const q = searchQuery.trim().toLowerCase();
-                    const titleMatch = (c.title || '').toLowerCase().includes(q);
-                    const contentMatch = (c.content || '').toLowerCase().includes(q);
-                    const labelMatch = (c.labels || []).some(l => l.toLowerCase().includes(q));
-                    const itemMatch = (c.listItems || []).some(it => it.text.toLowerCase().includes(q));
-                    return titleMatch || contentMatch || labelMatch || itemMatch;
+            if (filterLabel !== 'all' && !(c.labels || []).includes(filterLabel)) return false;
+            if (filterDate !== 'all') {
+                const now = new Date();
+                const d = c.updatedAt?.toDate?.() || new Date(c.updatedAt);
+                if (filterDate === 'today') {
+                    if (d.toDateString() !== now.toDateString()) return false;
+                } else if (filterDate === 'week') {
+                    const start = new Date(now); start.setDate(now.getDate() - now.getDay());
+                    const end = new Date(start); end.setDate(start.getDate() + 6);
+                    if (d < start || d > end) return false;
+                } else if (filterDate === 'month') {
+                    if (d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) return false;
                 }
-                return true;
-            });
-            return filtered.sort((a, b) => {
-                const da = a.updatedAt?.toDate?.()?.getTime() || 0;
-                const db2 = b.updatedAt?.toDate?.()?.getTime() || 0;
-                return db2 - da;
-            });
-        }
-
-        function renderCards() {
-            const cards = getActiveCards();
-
-            if (cards.length === 0) {
-                const msg = isArchivedView ? 'Tidak ada catatan diarsipkan.' : 'Belum ada catatan. Klik + untuk membuat!';
-                cardsGrid.innerHTML =
-                    `<div class="card-empty"><i class="fas ${isArchivedView ? 'fa-archive' : 'fa-pen'}"></i>${msg}</div>`;
-                return;
             }
+            return true;
+        });
+        return filtered.sort((a, b) => {
+            const da = a.updatedAt?.toDate?.()?.getTime() || 0;
+            const db2 = b.updatedAt?.toDate?.()?.getTime() || 0;
+            return db2 - da;
+        });
+    }
 
-            cardsGrid.innerHTML = cards.map(c => {
-                const preview = getCardPreview(c);
-                const labelHtml = (c.labels || []).map(l =>
-                    `<span class="label-tag">${escapeHtml(l)}</span>`
-                ).join('');
-                const isArchived = c.archived === true;
-                const itemCount = c.type === 'list' ? (c.listItems || []).length : 0;
-                const checkedCount = c.type === 'list' ? (c.listItems || []).filter(it => it.checked).length : 0;
-                const color = c.color || '#f59e0b';
-
-                return `
-                        <div class="card-item" data-id="${c.id}" style="border-left-color:${color};">
-                            <div class="card-color-bar" style="background:${color};"></div>
-                            <div class="card-actions-top">
-                                ${isArchived ? `<button class="unarchive-btn" data-id="${c.id}" title="Pulihkan"><i class="fas fa-undo"></i></button>` : ''}
-                                <button class="del-btn" data-id="${c.id}" title="Hapus"><i class="fas fa-trash-alt"></i></button>
-                            </div>
-                            <div class="card-title">${escapeHtml(c.title || 'Tanpa judul')}</div>
-                            <div class="card-preview">${preview}</div>
-                            <div class="card-labels">${labelHtml}</div>
-                            <div class="card-meta">
-                                <span>
-                                    ${c.type === 'list' ? `<span class="item-count-badge"><i class="fas fa-list"></i> ${itemCount} item${checkedCount > 0 ? ` (${checkedCount} ✓)` : ''}</span>` : ''}
-                                    ${isArchived ? `<span class="card-badge-archived"><i class="fas fa-archive"></i> Arsip</span>` : ''}
-                                </span>
-                                <span style="font-size:0.6rem;">${formatDate(c.updatedAt)}</span>
-                            </div>
-                        </div>
-                    `;
-            }).join('');
-
-            // Events
-            cardsGrid.querySelectorAll('.card-item').forEach(el => {
-                const id = el.dataset.id;
-                el.addEventListener('click', (e) => {
-                    if (e.target.closest('.card-actions-top')) return;
-                    openEditor(id);
-                });
-            });
-
-            cardsGrid.querySelectorAll('.del-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const id = btn.dataset.id;
-                    if (confirm('Hapus catatan ini?')) {
-                        try {
-                            await deleteNoteFromFirebase(id);
-                            toastMsg('Catatan dihapus');
-                        } catch (err) {
-                            toastMsg('Gagal menghapus');
-                        }
-                    }
-                });
-            });
-
-            cardsGrid.querySelectorAll('.unarchive-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const id = btn.dataset.id;
-                    try {
-                        await unarchiveNote(id);
-                        toastMsg('Catatan dipulihkan');
-                    } catch (err) {
-                        toastMsg('Gagal memulihkan');
-                    }
-                });
-            });
+    // ==================== RENDER ====================
+    function renderCards() {
+        const cards = getActiveCards();
+        if (cards.length === 0) {
+            const msg = isArchivedView ? 'Tidak ada catatan diarsipkan.' : 'Belum ada catatan. Klik + untuk membuat!';
+            cardsGrid.innerHTML = `<div class="card-empty"><i class="fas ${isArchivedView ? 'fa-archive' : 'fa-pen'}"></i>${msg}</div>`;
+            return;
         }
+        cardsGrid.innerHTML = cards.map(c => {
+            const preview = getCardPreview(c);
+            const labelHtml = (c.labels || []).map(l => `<span class="label-tag">${escapeHtml(l)}</span>`).join('');
+            const isArchived = c.archived === true;
+            const itemCount = c.type === 'list' ? (c.listItems || []).length : 0;
+            const checkedCount = c.type === 'list' ? (c.listItems || []).filter(it => it.checked).length : 0;
+            const color = c.color || '#f59e0b';
+            return `
+                <div class="card-item" data-id="${c.id}" style="border-left-color:${color};">
+                    <div class="card-color-bar" style="background:${color};"></div>
+                    <div class="card-actions-top">
+                        ${isArchived ? `<button class="unarchive-btn" data-id="${c.id}" title="Pulihkan"><i class="fas fa-undo"></i></button>` : ''}
+                        <button class="history-btn" data-id="${c.id}" title="Riwayat"><i class="fas fa-history"></i></button>
+                        <button class="del-btn" data-id="${c.id}" title="Hapus"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                    <div class="card-title">${escapeHtml(c.title || 'Tanpa judul')}</div>
+                    <div class="card-preview">${preview}</div>
+                    <div class="card-labels">${labelHtml}</div>
+                    <div class="card-meta">
+                        <span>
+                            ${c.type === 'list' ? `<span class="item-count-badge"><i class="fas fa-list"></i> ${itemCount} item${checkedCount > 0 ? ` (${checkedCount} ✓)` : ''}</span>` : ''}
+                            ${isArchived ? `<span class="card-badge-archived"><i class="fas fa-archive"></i> Arsip</span>` : ''}
+                        </span>
+                        <span style="font-size:0.6rem;">${formatDateShort(c.updatedAt)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
 
-        // ============================================================
-        //  EDITOR
-        // ============================================================
-        function openEditor(id = null) {
-            currentEditId = id;
+        cardsGrid.querySelectorAll('.card-item').forEach(el => {
+            const id = el.dataset.id;
+            el.addEventListener('click', (e) => {
+                if (e.target.closest('.card-actions-top')) return;
+                openEditor(id);
+            });
+        });
+
+        cardsGrid.querySelectorAll('.del-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                if (confirm('Hapus catatan ini?')) {
+                    try { await deleteNoteFromFirebase(id); toastMsg('Catatan dihapus'); } catch (err) { toastMsg('Gagal menghapus'); }
+                }
+            });
+        });
+
+        cardsGrid.querySelectorAll('.unarchive-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                try { await unarchiveNote(id); toastMsg('Catatan dipulihkan'); } catch (err) { toastMsg('Gagal memulihkan'); }
+            });
+        });
+
+        cardsGrid.querySelectorAll('.history-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                const card = allNotes.find(n => n.id === id);
+                if (card) showHistory(card);
+            });
+        });
+    }
+
+    // ==================== HISTORY ====================
+    function showHistory(card) {
+        historyList.innerHTML = getHistoryDisplay(card.history || []);
+        historyModal.style.display = 'flex';
+    }
+
+    closeHistory.addEventListener('click', () => historyModal.style.display = 'none');
+    closeHistoryBtn.addEventListener('click', () => historyModal.style.display = 'none');
+    historyModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) historyModal.style.display = 'none'; });
+
+    // ==================== EDITOR ====================
+    function openEditor(id = null) {
+        currentEditId = id;
+        labels = [];
+        if (id !== null) {
+            const card = allNotes.find(c => c.id === id);
+            if (!card) return;
+            choiceSection.style.display = 'none';
+            editorFields.style.display = 'block';
+            editorTitle.textContent = 'Edit Catatan';
+            editId.value = id;
+            cardTitle.value = card.title || '';
+            selectedColor = card.color || '#f59e0b';
+            labels = [...(card.labels || [])];
+            currentType = card.type || 'text';
+            document.querySelectorAll('.color-option').forEach(el => el.classList.toggle('active', el.dataset.color === selectedColor));
+            if (currentType === 'text') {
+                textEditor.style.display = 'block';
+                listEditor.style.display = 'none';
+                textContent.value = card.content || '';
+            } else {
+                textEditor.style.display = 'none';
+                listEditor.style.display = 'block';
+                renderListItems(card.listItems || []);
+            }
+            renderLabels();
+            updateModalButtons(card);
+            editorModal.style.display = 'flex';
+        } else {
+            choiceSection.style.display = 'block';
+            editorFields.style.display = 'none';
+            editorTitle.textContent = 'Catatan Baru';
+            editId.value = '';
+            cardTitle.value = '';
+            textContent.value = '';
+            currentType = 'text';
+            selectedColor = '#f59e0b';
             labels = [];
+            document.querySelectorAll('.color-option').forEach(el => el.classList.toggle('active', el.dataset.color === selectedColor));
+            renderLabels();
+            deleteCardBtn.style.display = 'none';
+            archiveCardBtn.style.display = 'none';
+            unarchiveCardBtn.style.display = 'none';
+            editorModal.style.display = 'flex';
+        }
+    }
 
-            if (id !== null) {
-                // Edit existing
-                const card = allNotes.find(c => c.id === id);
-                if (!card) return;
+    function closeEditorModal() {
+        editorModal.style.display = 'none';
+        choiceSection.style.display = 'block';
+        editorFields.style.display = 'none';
+    }
 
+    function renderLabels() {
+        labelTagsDisplay.innerHTML = labels.map(l =>
+            `<span class="label-tag">${escapeHtml(l)} <span class="remove-label" data-label="${escapeHtml(l)}">&times;</span></span>`
+        ).join('');
+        labelTagsDisplay.querySelectorAll('.remove-label').forEach(el => {
+            el.addEventListener('click', () => {
+                labels = labels.filter(l => l !== el.dataset.label);
+                renderLabels();
+            });
+        });
+    }
+
+    function updateModalButtons(card) {
+        const isArchived = card.archived === true;
+        deleteCardBtn.style.display = 'inline-flex';
+        if (isArchived) {
+            archiveCardBtn.style.display = 'none';
+            unarchiveCardBtn.style.display = 'inline-flex';
+        } else {
+            archiveCardBtn.style.display = 'inline-flex';
+            unarchiveCardBtn.style.display = 'none';
+        }
+    }
+
+    function renderListItems(items) {
+        if (!items || items.length === 0) {
+            listItemsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.8rem;">Belum ada item.</div>`;
+            return;
+        }
+        const unchecked = items.filter(it => !it.checked);
+        const checked = items.filter(it => it.checked);
+        const sorted = [...unchecked, ...checked];
+        listItemsContainer.innerHTML = sorted.map((item, idx) => {
+            const indentClass = item.indent ? `indent-${item.indent}` : '';
+            const checkedClass = item.checked ? 'checked-item' : '';
+            const isChecked = item.checked ? 'checked' : '';
+            const displayText = escapeHtml(item.text) || ' ';
+            return `
+                <div class="list-item-row ${indentClass} ${checkedClass}" draggable="true" data-idx="${idx}" data-real-id="${item.id || idx}" data-indent="${item.indent || 0}">
+                    <span class="drag-handle"><i class="fas fa-grip-lines"></i></span>
+                    <div class="item-check ${isChecked}" data-idx="${idx}"></div>
+                    <div class="item-text" contenteditable="true" data-idx="${idx}">${displayText}</div>
+                    <div class="item-indent">
+                        <button class="indent-left" data-idx="${idx}" title="Kurangi indent"><i class="fas fa-outdent"></i></button>
+                        <button class="indent-right" data-idx="${idx}" title="Tambah indent"><i class="fas fa-indent"></i></button>
+                    </div>
+                    <span class="item-del" data-idx="${idx}"><i class="fas fa-times"></i></span>
+                </div>
+            `;
+        }).join('');
+
+        listItemsContainer.querySelectorAll('.item-check').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(el.dataset.idx);
+                toggleItemCheck(idx);
+            });
+        });
+        listItemsContainer.querySelectorAll('.item-del').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(el.dataset.idx);
+                deleteItem(idx);
+            });
+        });
+        listItemsContainer.querySelectorAll('.indent-left').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(el.dataset.idx);
+                changeIndent(idx, -1);
+            });
+        });
+        listItemsContainer.querySelectorAll('.indent-right').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(el.dataset.idx);
+                changeIndent(idx, 1);
+            });
+        });
+        listItemsContainer.querySelectorAll('.item-text').forEach(el => {
+            el.addEventListener('blur', () => {
+                const idx = parseInt(el.dataset.idx);
+                const newText = el.textContent || '';
+                updateItemText(idx, newText);
+            });
+        });
+        listItemsContainer.querySelectorAll('.list-item-row').forEach(row => {
+            row.addEventListener('dragstart', handleDragStart);
+            row.addEventListener('dragend', handleDragEnd);
+            row.addEventListener('dragover', handleDragOver);
+            row.addEventListener('dragenter', handleDragEnter);
+            row.addEventListener('dragleave', handleDragLeave);
+            row.addEventListener('drop', handleDrop);
+        });
+    }
+
+    function toggleItemCheck(idx) {
+        const rows = listItemsContainer.querySelectorAll('.list-item-row');
+        if (idx >= rows.length) return;
+        const row = rows[idx];
+        const check = row.querySelector('.item-check');
+        check.classList.toggle('checked');
+        row.classList.toggle('checked-item');
+        const items = getCurrentListItems();
+        renderListItems(items);
+    }
+
+    function deleteItem(idx) {
+        const items = getCurrentListItems();
+        items.splice(idx, 1);
+        renderListItems(items);
+    }
+
+    function changeIndent(idx, delta) {
+        const items = getCurrentListItems();
+        if (idx >= items.length) return;
+        const newIndent = Math.min(2, Math.max(0, (items[idx].indent || 0) + delta));
+        items[idx].indent = newIndent;
+        renderListItems(items);
+    }
+
+    function updateItemText(idx, newText) {
+        const items = getCurrentListItems();
+        if (idx >= items.length) return;
+        items[idx].text = newText;
+    }
+
+    function addNewItem() {
+        const text = newItemInput.value.trim();
+        if (!text) return;
+        const items = getCurrentListItems();
+        items.push({ id: Date.now() + Math.random(), text, checked: false, indent: 0 });
+        renderListItems(items);
+        newItemInput.value = '';
+    }
+
+    // ==================== DRAG & DROP ====================
+    function handleDragStart(e) {
+        const row = e.target.closest('.list-item-row');
+        if (!row) return;
+        dragItem = row;
+        row.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', row.innerHTML);
+    }
+    function handleDragEnd(e) {
+        const row = e.target.closest('.list-item-row');
+        if (row) row.classList.remove('dragging');
+        document.querySelectorAll('.list-item-row').forEach(r => r.style.borderTop = '');
+        dragItem = null;
+        dragOverItem = null;
+    }
+    function handleDragOver(e) { e.preventDefault();
+        e.dataTransfer.dropEffect = 'move'; }
+    function handleDragEnter(e) {
+        e.preventDefault();
+        const row = e.target.closest('.list-item-row');
+        if (row && row !== dragItem) { row.style.borderTop = '2px solid var(--primary)';
+            dragOverItem = row; }
+    }
+    function handleDragLeave(e) { const row = e.target.closest('.list-item-row'); if (row) row.style.borderTop = ''; }
+    function handleDrop(e) {
+        e.preventDefault();
+        const row = e.target.closest('.list-item-row');
+        if (row) row.style.borderTop = '';
+        if (!dragItem || !dragOverItem || dragItem === dragOverItem) return;
+        const rows = listItemsContainer.querySelectorAll('.list-item-row');
+        const fromIdx = Array.from(rows).indexOf(dragItem);
+        const toIdx = Array.from(rows).indexOf(dragOverItem);
+        if (fromIdx === -1 || toIdx === -1) return;
+        const items = getCurrentListItems();
+        const [moved] = items.splice(fromIdx, 1);
+        items.splice(toIdx, 0, moved);
+        renderListItems(items);
+        dragItem = null;
+        dragOverItem = null;
+    }
+
+    // ==================== SAVE / DELETE / ARCHIVE ====================
+    async function saveCard() {
+        const id = editId.value;
+        const title = cardTitle.value.trim();
+        const isNew = !id;
+        if (isNew && !title && currentType === 'text' && !textContent.value.trim()) {
+            toastMsg('Isi catatan atau judul');
+            return;
+        }
+        if (isNew && currentType === 'list' && getCurrentListItems().length === 0) {
+            toastMsg('Tambahkan minimal satu item');
+            return;
+        }
+        try {
+            let cardData = {
+                type: currentType,
+                title: title || 'Tanpa judul',
+                color: selectedColor,
+                labels: [...labels],
+            };
+            if (currentType === 'text') {
+                cardData.content = textContent.value || '';
+                cardData.listItems = [];
+            } else {
+                cardData.content = '';
+                cardData.listItems = getCurrentListItems();
+            }
+            if (!isNew) cardData.id = id;
+            await saveCardToFirebase(cardData);
+            toastMsg(isNew ? 'Catatan dibuat!' : 'Catatan diperbarui!');
+            closeEditorModal();
+        } catch (err) { console.error(err);
+            toastMsg('Gagal menyimpan'); }
+    }
+
+    async function deleteCard() {
+        const id = editId.value;
+        if (!id) return;
+        if (confirm('Hapus catatan ini?')) {
+            try { await deleteNoteFromFirebase(id);
+                toastMsg('Catatan dihapus');
+                closeEditorModal(); } catch (err) { toastMsg('Gagal menghapus'); }
+        }
+    }
+    async function archiveCard() {
+        const id = editId.value;
+        if (!id) return;
+        try { await archiveNote(id);
+            toastMsg('Catatan diarsipkan');
+            closeEditorModal(); } catch (err) { toastMsg('Gagal mengarsip'); }
+    }
+    async function unarchiveCard() {
+        const id = editId.value;
+        if (!id) return;
+        try { await unarchiveNote(id);
+            toastMsg('Catatan dipulihkan');
+            closeEditorModal(); } catch (err) { toastMsg('Gagal memulihkan'); }
+    }
+
+    // ==================== EVENT BINDING ====================
+    function init() {
+        startNotesListener();
+
+        backBtn.addEventListener('click', () => { window.location.href = 'index.html'; });
+        fabAdd.addEventListener('click', () => openEditor(null));
+        addCardBtn.addEventListener('click', () => openEditor(null));
+
+        closeEditor.addEventListener('click', closeEditorModal);
+        closeEditorBtn.addEventListener('click', closeEditorModal);
+        editorModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditorModal(); });
+
+        document.querySelectorAll('.choice-card').forEach(el => {
+            el.addEventListener('click', () => {
+                currentType = el.dataset.type;
                 choiceSection.style.display = 'none';
                 editorFields.style.display = 'block';
-                editorTitle.textContent = 'Edit Catatan';
-                editId.value = id;
-                cardTitle.value = card.title || '';
-                selectedColor = card.color || '#f59e0b';
-                labels = [...(card.labels || [])];
-                currentType = card.type || 'text';
-                listType = card.listType || 'bullet';
-
-                // Set color picker
-                document.querySelectorAll('.color-option').forEach(el => {
-                    el.classList.toggle('active', el.dataset.color === selectedColor);
-                });
-
-                if (currentType === 'text') {
-                    textEditor.style.display = 'block';
-                    listEditor.style.display = 'none';
-                    textContent.value = card.content || '';
-                } else {
-                    textEditor.style.display = 'none';
-                    listEditor.style.display = 'block';
-                    renderListItems(card.listItems || []);
-                    updateListTypeButtons();
-                }
-
-                renderLabels();
-                updateModalButtons(card);
-                editorModal.style.display = 'flex';
-
-            } else {
-                // New
-                choiceSection.style.display = 'block';
-                editorFields.style.display = 'none';
                 editorTitle.textContent = 'Catatan Baru';
-                editId.value = '';
-                cardTitle.value = '';
-                textContent.value = '';
-                currentType = 'text';
-                listType = 'bullet';
+                textEditor.style.display = currentType === 'text' ? 'block' : 'none';
+                listEditor.style.display = currentType === 'list' ? 'block' : 'none';
+                if (currentType === 'list') renderListItems([]);
                 selectedColor = '#f59e0b';
+                document.querySelectorAll('.color-option').forEach(el2 => el2.classList.toggle('active', el2.dataset.color === selectedColor));
                 labels = [];
-                document.querySelectorAll('.color-option').forEach(el => {
-                    el.classList.toggle('active', el.dataset.color === selectedColor);
-                });
                 renderLabels();
                 deleteCardBtn.style.display = 'none';
                 archiveCardBtn.style.display = 'none';
                 unarchiveCardBtn.style.display = 'none';
-                editorModal.style.display = 'flex';
-            }
-        }
-
-        function closeEditorModal() {
-            editorModal.style.display = 'none';
-            choiceSection.style.display = 'block';
-            editorFields.style.display = 'none';
-        }
-
-        function renderLabels() {
-            labelTagsDisplay.innerHTML = labels.map(l =>
-                `<span class="label-tag">${escapeHtml(l)} <span class="remove-label" data-label="${escapeHtml(l)}">&times;</span></span>`
-            ).join('');
-            labelTagsDisplay.querySelectorAll('.remove-label').forEach(el => {
-                el.addEventListener('click', () => {
-                    const label = el.dataset.label;
-                    labels = labels.filter(l => l !== label);
-                    renderLabels();
-                });
             });
-        }
+        });
 
-        function updateModalButtons(card) {
-            const isArchived = card.archived === true;
-            deleteCardBtn.style.display = 'inline-flex';
-            if (isArchived) {
-                archiveCardBtn.style.display = 'none';
-                unarchiveCardBtn.style.display = 'inline-flex';
-            } else {
-                archiveCardBtn.style.display = 'inline-flex';
-                unarchiveCardBtn.style.display = 'none';
-            }
-        }
+        saveCardBtn.addEventListener('click', saveCard);
+        deleteCardBtn.addEventListener('click', deleteCard);
+        archiveCardBtn.addEventListener('click', archiveCard);
+        unarchiveCardBtn.addEventListener('click', unarchiveCard);
 
-        function renderListItems(items) {
-            if (!items || items.length === 0) {
-                listItemsContainer.innerHTML =
-                    `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.8rem;">Belum ada item.</div>`;
-                return;
-            }
+        addItemBtn.addEventListener('click', addNewItem);
+        newItemInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault();
+                addNewItem(); } });
 
-            const unchecked = items.filter(it => !it.checked);
-            const checked = items.filter(it => it.checked);
-            const sorted = [...unchecked, ...checked];
-
-            listItemsContainer.innerHTML = sorted.map((item, idx) => {
-                const indentClass = item.indent ? `indent-${item.indent}` : '';
-                const checkedClass = item.checked ? 'checked-item' : '';
-                const boldClass = item.bold ? 'bold' : '';
-                const italicClass = item.italic ? 'italic' : '';
-                const isChecked = item.checked ? 'checked' : '';
-                const displayText = escapeHtml(item.text) || ' ';
-
-                return `
-                        <div class="list-item-row ${indentClass} ${checkedClass}" draggable="true" data-idx="${idx}" data-real-id="${item.id || idx}" data-indent="${item.indent || 0}">
-                            <span class="drag-handle"><i class="fas fa-grip-lines"></i></span>
-                            <div class="item-check ${isChecked}" data-idx="${idx}"></div>
-                            <div class="item-text ${boldClass} ${italicClass}" contenteditable="true" data-idx="${idx}">${displayText}</div>
-                            <div class="item-indent">
-                                <button class="indent-left" data-idx="${idx}" title="Kurangi indent"><i class="fas fa-outdent"></i></button>
-                                <button class="indent-right" data-idx="${idx}" title="Tambah indent"><i class="fas fa-indent"></i></button>
-                            </div>
-                            <span class="item-del" data-idx="${idx}"><i class="fas fa-times"></i></span>
-                        </div>
-                    `;
-            }).join('');
-
-            // Attach events
-            listItemsContainer.querySelectorAll('.item-check').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const idx = parseInt(el.dataset.idx);
-                    toggleItemCheck(idx);
-                });
+        document.querySelectorAll('.color-option').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.color-option').forEach(e => e.classList.remove('active'));
+                el.classList.add('active');
+                selectedColor = el.dataset.color;
             });
+        });
 
-            listItemsContainer.querySelectorAll('.item-del').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const idx = parseInt(el.dataset.idx);
-                    deleteItem(idx);
-                });
-            });
+        addLabelBtn.addEventListener('click', () => {
+            const val = labelInput.value.trim();
+            if (val && !labels.includes(val)) { labels.push(val);
+                renderLabels();
+                labelInput.value = ''; }
+        });
+        labelInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault();
+                addLabelBtn.click(); } });
 
-            listItemsContainer.querySelectorAll('.indent-left').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const idx = parseInt(el.dataset.idx);
-                    changeIndent(idx, -1);
-                });
-            });
+        searchInput.addEventListener('input', () => { searchQuery = searchInput.value;
+            renderCards(); });
 
-            listItemsContainer.querySelectorAll('.indent-right').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const idx = parseInt(el.dataset.idx);
-                    changeIndent(idx, 1);
-                });
-            });
-
-            listItemsContainer.querySelectorAll('.item-text').forEach(el => {
-                el.addEventListener('blur', () => {
-                    const idx = parseInt(el.dataset.idx);
-                    const newText = el.textContent || '';
-                    updateItemText(idx, newText);
-                });
-            });
-
-            // Drag & Drop
-            listItemsContainer.querySelectorAll('.list-item-row').forEach(row => {
-                row.addEventListener('dragstart', handleDragStart);
-                row.addEventListener('dragend', handleDragEnd);
-                row.addEventListener('dragover', handleDragOver);
-                row.addEventListener('dragenter', handleDragEnter);
-                row.addEventListener('dragleave', handleDragLeave);
-                row.addEventListener('drop', handleDrop);
-            });
-        }
-
-        function updateListTypeButtons() {
-            listTypeBullet.classList.toggle('active', listType === 'bullet');
-            listTypeNumber.classList.toggle('active', listType === 'number');
-        }
-
-        // ============================================================
-        //  LIST ITEM OPERATIONS
-        // ============================================================
-        function toggleItemCheck(idx) {
-            const rows = listItemsContainer.querySelectorAll('.list-item-row');
-            if (idx >= rows.length) return;
-            const row = rows[idx];
-            const check = row.querySelector('.item-check');
-            check.classList.toggle('checked');
-            row.classList.toggle('checked-item');
-            // Re-render to reorder
-            const items = getCurrentListItems();
-            renderListItems(items);
-        }
-
-        function deleteItem(idx) {
-            const items = getCurrentListItems();
-            items.splice(idx, 1);
-            renderListItems(items);
-        }
-
-        function changeIndent(idx, delta) {
-            const items = getCurrentListItems();
-            if (idx >= items.length) return;
-            const newIndent = Math.min(2, Math.max(0, (items[idx].indent || 0) + delta));
-            items[idx].indent = newIndent;
-            renderListItems(items);
-        }
-
-        function updateItemText(idx, newText) {
-            const items = getCurrentListItems();
-            if (idx >= items.length) return;
-            items[idx].text = newText;
-            // No re-render needed, just keep state
-        }
-
-        function addNewItem() {
-            const text = newItemInput.value.trim();
-            if (!text) return;
-            const items = getCurrentListItems();
-            items.push({ id: Date.now() + Math.random(), text, checked: false, indent: 0, bold: false, italic: false });
-            renderListItems(items);
-            newItemInput.value = '';
-        }
-
-        // ============================================================
-        //  DRAG & DROP
-        // ============================================================
-        function handleDragStart(e) {
-            const row = e.target.closest('.list-item-row');
-            if (!row) return;
-            dragItem = row;
-            row.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', row.innerHTML);
-        }
-
-        function handleDragEnd(e) {
-            const row = e.target.closest('.list-item-row');
-            if (row) row.classList.remove('dragging');
-            document.querySelectorAll('.list-item-row').forEach(r => r.style.borderTop = '');
-            dragItem = null;
-            dragOverItem = null;
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        }
-
-        function handleDragEnter(e) {
-            e.preventDefault();
-            const row = e.target.closest('.list-item-row');
-            if (row && row !== dragItem) {
-                row.style.borderTop = '2px solid var(--primary)';
-                dragOverItem = row;
-            }
-        }
-
-        function handleDragLeave(e) {
-            const row = e.target.closest('.list-item-row');
-            if (row) row.style.borderTop = '';
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            const row = e.target.closest('.list-item-row');
-            if (row) row.style.borderTop = '';
-            if (!dragItem || !dragOverItem || dragItem === dragOverItem) return;
-
-            const rows = listItemsContainer.querySelectorAll('.list-item-row');
-            const fromIdx = Array.from(rows).indexOf(dragItem);
-            const toIdx = Array.from(rows).indexOf(dragOverItem);
-            if (fromIdx === -1 || toIdx === -1) return;
-
-            const items = getCurrentListItems();
-            const [moved] = items.splice(fromIdx, 1);
-            items.splice(toIdx, 0, moved);
-            renderListItems(items);
-
-            dragItem = null;
-            dragOverItem = null;
-        }
-
-        // ============================================================
-        //  SAVE / DELETE / ARCHIVE
-        // ============================================================
-        async function saveCard() {
-            const id = editId.value;
-            const title = cardTitle.value.trim();
-            const isNew = !id;
-
-            if (isNew && !title && currentType === 'text' && !textContent.value.trim()) {
-                toastMsg('Isi catatan atau judul');
-                return;
-            }
-            if (isNew && currentType === 'list' && getCurrentListItems().length === 0) {
-                toastMsg('Tambahkan minimal satu item');
-                return;
-            }
-
-            try {
-                let cardData = {
-                    type: currentType,
-                    title: title || 'Tanpa judul',
-                    color: selectedColor,
-                    labels: [...labels],
-                    listType: listType,
-                };
-
-                if (currentType === 'text') {
-                    cardData.content = textContent.value || '';
-                    cardData.listItems = [];
-                } else {
-                    cardData.content = '';
-                    cardData.listItems = getCurrentListItems();
-                }
-
-                if (!isNew) {
-                    cardData.id = id;
-                }
-
-                const savedId = await saveCardToFirebase(cardData);
-                toastMsg(isNew ? 'Catatan dibuat!' : 'Catatan diperbarui!');
-                closeEditorModal();
-            } catch (err) {
-                console.error(err);
-                toastMsg('Gagal menyimpan');
-            }
-        }
-
-        async function deleteCard() {
-            const id = editId.value;
-            if (!id) return;
-            if (confirm('Hapus catatan ini?')) {
-                try {
-                    await deleteNoteFromFirebase(id);
-                    toastMsg('Catatan dihapus');
-                    closeEditorModal();
-                } catch (err) {
-                    toastMsg('Gagal menghapus');
-                }
-            }
-        }
-
-        async function archiveCard() {
-            const id = editId.value;
-            if (!id) return;
-            try {
-                await archiveNote(id);
-                toastMsg('Catatan diarsipkan');
-                closeEditorModal();
-            } catch (err) {
-                toastMsg('Gagal mengarsip');
-            }
-        }
-
-        async function unarchiveCard() {
-            const id = editId.value;
-            if (!id) return;
-            try {
-                await unarchiveNote(id);
-                toastMsg('Catatan dipulihkan');
-                closeEditorModal();
-            } catch (err) {
-                toastMsg('Gagal memulihkan');
-            }
-        }
-
-        // ============================================================
-        //  TOGGLE BOLD / ITALIC
-        // ============================================================
-        function toggleBoldAction() {
-            const sel = window.getSelection();
-            if (sel.rangeCount > 0) {
-                const range = sel.getRangeAt(0);
-                const node = range.startContainer;
-                const row = node.closest ? node.closest('.list-item-row') : null;
-                if (row) {
-                    const textEl = row.querySelector('.item-text');
-                    if (textEl) {
-                        textEl.classList.toggle('bold');
-                        // Update state
-                        const idx = parseInt(textEl.dataset.idx);
-                        const items = getCurrentListItems();
-                        if (idx < items.length) {
-                            items[idx].bold = textEl.classList.contains('bold');
-                        }
-                    }
-                }
-            } else {
-                // If no selection, toggle first item or show hint
-                toastMsg('Pilih teks terlebih dahulu');
-            }
-        }
-
-        function toggleItalicAction() {
-            const sel = window.getSelection();
-            if (sel.rangeCount > 0) {
-                const range = sel.getRangeAt(0);
-                const node = range.startContainer;
-                const row = node.closest ? node.closest('.list-item-row') : null;
-                if (row) {
-                    const textEl = row.querySelector('.item-text');
-                    if (textEl) {
-                        textEl.classList.toggle('italic');
-                        const idx = parseInt(textEl.dataset.idx);
-                        const items = getCurrentListItems();
-                        if (idx < items.length) {
-                            items[idx].italic = textEl.classList.contains('italic');
-                        }
-                    }
-                }
-            } else {
-                toastMsg('Pilih teks terlebih dahulu');
-            }
-        }
-
-        // ============================================================
-        //  EVENT BINDING
-        // ============================================================
-        function init() {
-            // Start Firebase listener
-            startNotesListener();
-
-            // Back button
-            backBtn.addEventListener('click', () => {
-                window.location.href = 'index.html';
-            });
-
-            // FAB & Add button
-            fabAdd.addEventListener('click', () => openEditor(null));
-            addCardBtn.addEventListener('click', () => openEditor(null));
-
-            // Close modal
-            closeEditor.addEventListener('click', closeEditorModal);
-            closeEditorBtn.addEventListener('click', closeEditorModal);
-            editorModal.addEventListener('click', (e) => {
-                if (e.target === e.currentTarget) closeEditorModal();
-            });
-
-            // Choice cards
-            document.querySelectorAll('.choice-card').forEach(el => {
-                el.addEventListener('click', () => {
-                    currentType = el.dataset.type;
-                    choiceSection.style.display = 'none';
-                    editorFields.style.display = 'block';
-                    editorTitle.textContent = 'Catatan Baru';
-                    textEditor.style.display = currentType === 'text' ? 'block' : 'none';
-                    listEditor.style.display = currentType === 'list' ? 'block' : 'none';
-                    if (currentType === 'list') {
-                        renderListItems([]);
-                        updateListTypeButtons();
-                    }
-                    selectedColor = '#f59e0b';
-                    document.querySelectorAll('.color-option').forEach(el2 => {
-                        el2.classList.toggle('active', el2.dataset.color === selectedColor);
-                    });
-                    labels = [];
-                    renderLabels();
-                    deleteCardBtn.style.display = 'none';
-                    archiveCardBtn.style.display = 'none';
-                    unarchiveCardBtn.style.display = 'none';
-                });
-            });
-
-            // Save
-            saveCardBtn.addEventListener('click', saveCard);
-
-            // Delete
-            deleteCardBtn.addEventListener('click', deleteCard);
-
-            // Archive
-            archiveCardBtn.addEventListener('click', archiveCard);
-
-            // Unarchive
-            unarchiveCardBtn.addEventListener('click', unarchiveCard);
-
-            // List type
-            listTypeBullet.addEventListener('click', () => {
-                listType = 'bullet';
-                updateListTypeButtons();
-            });
-            listTypeNumber.addEventListener('click', () => {
-                listType = 'number';
-                updateListTypeButtons();
-            });
-
-            // Bold / Italic
-            toggleBold.addEventListener('click', toggleBoldAction);
-            toggleItalic.addEventListener('click', toggleItalicAction);
-
-            // Add item
-            addItemBtn.addEventListener('click', addNewItem);
-            newItemInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') { e.preventDefault();
-                    addNewItem(); }
-            });
-
-            // Color picker
-            document.querySelectorAll('.color-option').forEach(el => {
-                el.addEventListener('click', () => {
-                    document.querySelectorAll('.color-option').forEach(e => e.classList.remove('active'));
-                    el.classList.add('active');
-                    selectedColor = el.dataset.color;
-                });
-            });
-
-            // Labels
-            addLabelBtn.addEventListener('click', () => {
-                const val = labelInput.value.trim();
-                if (val && !labels.includes(val)) {
-                    labels.push(val);
-                    renderLabels();
-                    labelInput.value = '';
-                }
-            });
-            labelInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addLabelBtn.click();
-                }
-            });
-
-            // Search
-            searchInput.addEventListener('input', () => {
-                searchQuery = searchInput.value;
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterType = btn.dataset.filter;
                 renderCards();
             });
+        });
 
-            // Filter buttons
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    filterType = btn.dataset.filter;
-                    renderCards();
-                });
-            });
+        filterLabelSelect.addEventListener('change', () => { filterLabel = filterLabelSelect.value;
+            renderCards(); });
+        filterDateSelect.addEventListener('change', () => { filterDate = filterDateSelect.value;
+            renderCards(); });
 
-            // View archived toggle
-            viewArchivedBtn.addEventListener('click', () => {
-                isArchivedView = !isArchivedView;
-                viewArchivedBtn.innerHTML = isArchivedView ?
-                    '<i class="fas fa-arrow-left"></i> Kembali' :
-                    '<i class="fas fa-archive"></i> Arsip';
-                viewArchivedBtn.classList.toggle('primary', isArchivedView);
-                renderCards();
-                if (isArchivedView) toastMsg('Menampilkan arsip');
-            });
+        viewArchivedBtn.addEventListener('click', () => {
+            isArchivedView = !isArchivedView;
+            viewArchivedBtn.innerHTML = isArchivedView ? '<i class="fas fa-arrow-left"></i> Kembali' :
+                '<i class="fas fa-archive"></i> Arsip';
+            viewArchivedBtn.classList.toggle('primary', isArchivedView);
+            renderCards();
+            if (isArchivedView) toastMsg('Menampilkan arsip');
+        });
 
-            // Keyboard: Escape
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') closeEditorModal();
-            });
-        }
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeEditorModal(); });
+    }
 
-        // ============================================================
-        //  START
-        // ============================================================
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+    document.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
