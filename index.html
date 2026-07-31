@@ -45,7 +45,6 @@
         .task-list-container.active-scroll { max-height: 400px; overflow-y: auto; }
         .task-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px 10px; border-radius: 16px; margin-bottom: 6px; border: 1px solid #f0f2f5; cursor: pointer; transition: 0.1s; }
         .task-card.cancelled { background: #fef2f2; border-color: #fecaca; }
-        /* background merah untuk task overdue di tab Segera */
         .task-card.overdue { background: #fee2e2 !important; border-color: #dc2626 !important; }
         .task-left { display: flex; gap: 8px; align-items: center; flex: 1; }
         .task-bullet { cursor: pointer; font-size: 1.2rem; width: 24px; text-align: center; }
@@ -59,7 +58,6 @@
         .priority-medium { background: #fef3c7; color: #d97706; }
         .priority-low { background: #e0f2fe; color: #0284c7; }
         .task-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.65rem; color: #5b6e8c; }
-        /* deadline hari ini berkedip merah */
         .deadline-today { color: #dc2626 !important; font-weight: 700; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         .rab-badge { background: #e6f0ff; color: #1e40af; border-radius: 20px; padding: 2px 6px; display: inline-flex; align-items: center; gap: 3px; font-weight: 600; font-size: 0.65rem; }
@@ -104,11 +102,9 @@
         .tab-badge { font-size: 0.6rem; background: #e2e8f0; padding: 2px 6px; border-radius: 20px; display: inline-block; }
         .created-date-badge { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 20px; display: inline-flex; align-items: center; gap: 3px; }
 
-        /* Tab "Segera" - Kuning */
         .tab-due-soon { background: #fef3c7 !important; border-color: #f59e0b !important; }
         .tab-due-soon.active { background: #f59e0b !important; color: white !important; border-color: #f59e0b !important; }
 
-        /* Tab "Penting" - Merah */
         .tab-penting { background: #fee2e2 !important; border-color: #dc2626 !important; }
         .tab-penting.active { background: #dc2626 !important; color: white !important; border-color: #dc2626 !important; }
     </style>
@@ -118,6 +114,7 @@
     <div class="header">
         <div class="header-left"><h1>📋 TaskAbr</h1></div>
         <div class="header-actions">
+            <button class="add-tab-btn" id="goToListBtn" title="Buka Daftar & Catatan"><i class="fas fa-list-ul"></i></button>
             <button class="add-tab-btn" id="exportPdfBtn" title="Export PDF"><i class="fas fa-file-pdf"></i></button>
             <button class="add-tab-btn" id="addTabBtn"><i class="fas fa-plus"></i> Tab</button>
         </div>
@@ -266,6 +263,7 @@
     const addRabRowBtn = document.getElementById("addRabRowBtn");
     const rabTotalDisplay = document.getElementById("rabTotalDisplay");
     const exportPdfBtn = document.getElementById("exportPdfBtn");
+    const goToListBtn = document.getElementById("goToListBtn");
 
     let activeTaskId = null;
     let currentSubtasks = [];
@@ -327,7 +325,6 @@
     function getProgressStyle(percent){ percent=Math.min(100,Math.max(0,percent)); let r,g,b; if(percent<=50){ r=255; g=Math.floor(255*(percent/50)); b=0; } else { r=Math.floor(255*(1-(percent-50)/50)); g=255; b=0; } const bg=`rgb(${r},${g},${b})`; const lum=(0.299*r+0.587*g+0.114*b)/255; return `background:${bg}; color:${lum>0.5?'#000000':'#ffffff'};`; }
     function getPriorityBadge(priority){ const p=priority||'medium'; const labels={high:'Tinggi',medium:'Sedang',low:'Rendah'}; const icons={high:'🔴',medium:'🟡',low:'🟢'}; const classes={high:'priority-high',medium:'priority-medium',low:'priority-low'}; return `<span class="priority-badge ${classes[p]}">${icons[p]} ${labels[p]}</span>`; }
 
-    // Fungsi untuk mengecek status deadline: return { isDueSoon, isOverdue, isToday }
     function getDeadlineStatus(task){
         if(!task.dueDate) return { isDueSoon: false, isOverdue: false, isToday: false };
         if(task.completed || task.cancelled) return { isDueSoon: false, isOverdue: false, isToday: false };
@@ -336,7 +333,7 @@
         const diffDays=Math.ceil((due-now)/(1000*60*60*24));
         const isOverdue = diffDays < 0;
         const isToday = diffDays === 0;
-        const isDueSoon = (diffDays >=0 && diffDays <=3) || isOverdue; // termasuk overdue
+        const isDueSoon = (diffDays >=0 && diffDays <=3) || isOverdue;
         return { isDueSoon, isOverdue, isToday };
     }
 
@@ -381,7 +378,6 @@
         attachTaskEvents();
     }
 
-    // Override renderTaskCard untuk menambahkan kelas overdue dan efek kedip deadline hari ini
     function renderTaskCard(task){
         const progressVal=task.progress||0;
         const dueDateStr=task.dueDate?new Date(task.dueDate).toLocaleString('id-ID'):'Tidak ada deadline';
@@ -391,7 +387,6 @@
         else if(task.completed){ bullet='<i class="fas fa-check-circle task-bullet-checked"></i>'; }
         else { bullet='<i class="far fa-circle task-bullet-unchecked"></i>'; }
 
-        // Cek status deadline untuk tab Segera
         const status = getDeadlineStatus(task);
         let extraCardClass = '';
         if(currentTabId === DUE_SOON_ID && status.isOverdue && !task.completed && !task.cancelled){
@@ -408,7 +403,6 @@
         const rabHtml=rabTotalVal>0?`<span class="rab-badge"><i class="fas fa-coins"></i> ${formatRupiah(rabTotalVal)}</span>`:'';
         const progressStyle=getProgressStyle(progressVal);
 
-        // Deadline hari ini -> tambahkan kelas kedip dan warna merah
         let dueDateDisplay = escapeHtml(dueDateStr);
         if(currentTabId === DUE_SOON_ID && status.isToday && !task.completed && !task.cancelled){
             dueDateDisplay = `<span class="deadline-today">${dueDateDisplay}</span>`;
@@ -422,11 +416,6 @@
         </div>`;
     }
 
-    // Sisanya sama (renderSection, bindSectionToggles, toggleHandler, attachTaskEvents, dll.) tetap seperti sebelumnya.
-    // Karena renderTaskCard sudah di-override, kita tetap menggunakan fungsi-fungsi yang sama.
-    // Saya akan menyalin ulang fungsi-fungsi yang tidak berubah agar kode tetap lengkap.
-
-    // --- Fungsi yang sama seperti sebelumnya (tidak diubah) ---
     function renderSection(title, iconClass, tasks, sectionType, colorHex=null){
         const taskCount=tasks.length;
         let html=`<div class="task-section" data-section-type="${sectionType}">`;
@@ -614,7 +603,12 @@
     }
     exportPdfBtn.addEventListener('click', exportPDF);
 
-    // ---------- Modal logic (tidak berubah) ----------
+    // ---------- Navigasi ke List ----------
+    goToListBtn.addEventListener('click', () => {
+        window.location.href = 'list.html';
+    });
+
+    // ---------- Modal logic ----------
     function updateMainProgressFromSubtasks(){
         if(currentSubtasks.length>0){
             const avg=computeAvgProgressFromSubtasks(currentSubtasks);
