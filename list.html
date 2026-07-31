@@ -128,20 +128,43 @@
         .color-picker .color-option { width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: 0.15s; }
         .color-picker .color-option:hover { transform: scale(1.1); }
         .color-picker .color-option.active { border-color: var(--text-dark); box-shadow: 0 0 0 2px white; }
+
+        /* Label input with autocomplete */
+        .label-input-wrapper { position: relative; flex: 1; min-width: 140px; }
+        .label-input-wrapper input { width: 100%; padding: 6px 10px; font-size: 0.75rem; border-radius: 30px; border: 1px solid #e2e8f0; outline: none; font-family: inherit; }
+        .label-input-wrapper input:focus { border-color: var(--primary); }
+        .label-autocomplete { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); max-height: 150px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .label-autocomplete .item { padding: 6px 12px; cursor: pointer; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+        .label-autocomplete .item:hover { background: var(--primary-bg); }
+        .label-autocomplete .item .count { color: var(--text-muted); font-size: 0.6rem; }
+
         .label-input-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-        .label-input-group input { flex: 1; min-width: 80px; padding: 6px 10px; font-size: 0.75rem; border-radius: 30px; border: 1px solid #e2e8f0; outline: none; font-family: inherit; }
-        .label-input-group input:focus { border-color: var(--primary); }
-        .label-input-group .add-label-btn { background: var(--primary); color: white; border: none; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; cursor: pointer; }
+        .label-input-group .add-label-btn { background: var(--primary); color: white; border: none; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; cursor: pointer; flex-shrink: 0; }
         .label-input-group .add-label-btn:hover { background: var(--primary-dark); }
+        .label-input-group .manage-label-btn { background: #f1f5f9; color: var(--text-muted); border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
+        .label-input-group .manage-label-btn:hover { background: #e2e8f0; }
+
         .label-tags-display { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
         .label-tags-display .label-tag { background: var(--primary-bg); color: var(--primary-dark); padding: 2px 10px 2px 8px; border-radius: 30px; font-size: 0.65rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(245,158,11,0.2); }
         .label-tags-display .label-tag .remove-label { cursor: pointer; color: #94a3b8; font-size: 0.6rem; }
         .label-tags-display .label-tag .remove-label:hover { color: #dc2626; }
+
         .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 8px 20px; border-radius: 40px; font-size: 0.8rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 2000; opacity: 0; transition: 0.3s; pointer-events: none; white-space: nowrap; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
         .history-list { font-size: 0.8rem; max-height: 300px; overflow-y: auto; }
         .history-item { padding: 6px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; color: var(--text-muted); }
         .history-item .h-time { font-weight: 500; color: var(--text-dark); }
+
+        /* Label management */
+        .label-manage-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        .label-manage-item .label-name { font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .label-manage-item .label-name .count { color: var(--text-muted); font-weight: 400; font-size: 0.7rem; }
+        .label-manage-item .label-actions { display: flex; gap: 4px; }
+        .label-manage-item .label-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px 6px; border-radius: 4px; font-size: 0.8rem; transition: 0.15s; }
+        .label-manage-item .label-actions button:hover { background: #f1f5f9; color: var(--text-dark); }
+        .label-manage-item .label-actions .edit-label-btn:hover { color: var(--primary-dark); }
+        .label-manage-item .label-actions .del-label-btn:hover { color: #dc2626; background: #fee2e2; }
 
         /* Rich text editor toolbar */
         .text-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 0 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; }
@@ -172,6 +195,8 @@
             .filter-btn { padding: 4px 8px; font-size: 0.6rem; }
             .filter-select { min-width: 90px; }
             #textContent { min-height: 120px; }
+            .label-input-group { flex-wrap: wrap; }
+            .label-input-wrapper { min-width: 100%; }
         }
         @media (max-width: 380px) { .cards-grid { grid-template-columns: 1fr; } }
         .list-items-container::-webkit-scrollbar, .modal-content::-webkit-scrollbar, #textContent::-webkit-scrollbar { width: 4px; }
@@ -272,8 +297,12 @@
             </div>
             <label><i class="fas fa-tags"></i> Label</label>
             <div class="label-input-group">
-                <input type="text" id="labelInput" placeholder="Tambah label..." />
+                <div class="label-input-wrapper">
+                    <input type="text" id="labelInput" placeholder="Cari atau tambah label..." autocomplete="off" />
+                    <div class="label-autocomplete" id="labelAutocomplete"></div>
+                </div>
                 <button class="add-label-btn" id="addLabelBtn">+</button>
+                <button class="manage-label-btn" id="manageLabelBtn"><i class="fas fa-cog"></i> Kelola</button>
             </div>
             <div class="label-tags-display" id="labelTagsDisplay"></div>
             <label><i class="fas fa-palette"></i> Warna</label>
@@ -310,6 +339,18 @@
     </div>
 </div>
 
+<!-- Modal Label Management -->
+<div id="labelManageModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeLabelManage">&times;</span>
+        <h2><i class="fas fa-tags"></i> Kelola Label</h2>
+        <div id="labelManageList" style="margin-top:12px;"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" id="closeLabelManageBtn">Tutup</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import {
@@ -322,7 +363,9 @@
         onSnapshot,
         Timestamp,
         query,
-        orderBy
+        orderBy,
+        where,
+        getDocs
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -350,6 +393,7 @@
     let unsubscribeNotes = null;
     let dragItem = null;
     let dragOverItem = null;
+    let allLabelNames = [];
 
     const cardsGrid = document.getElementById('cardsGrid');
     const searchInput = document.getElementById('searchInput');
@@ -376,7 +420,9 @@
     const addItemBtn = document.getElementById('addItemBtn');
     const labelInput = document.getElementById('labelInput');
     const addLabelBtn = document.getElementById('addLabelBtn');
+    const manageLabelBtn = document.getElementById('manageLabelBtn');
     const labelTagsDisplay = document.getElementById('labelTagsDisplay');
+    const labelAutocomplete = document.getElementById('labelAutocomplete');
     const colorPicker = document.getElementById('colorPicker');
     const saveCardBtn = document.getElementById('saveCardBtn');
     const deleteCardBtn = document.getElementById('deleteCardBtn');
@@ -388,6 +434,11 @@
     const closeHistory = document.getElementById('closeHistory');
     const closeHistoryBtn = document.getElementById('closeHistoryBtn');
     const historyList = document.getElementById('historyList');
+
+    const labelManageModal = document.getElementById('labelManageModal');
+    const closeLabelManage = document.getElementById('closeLabelManage');
+    const closeLabelManageBtn = document.getElementById('closeLabelManageBtn');
+    const labelManageList = document.getElementById('labelManageList');
 
     // Toolbar buttons
     const boldBtn = document.getElementById('boldBtn');
@@ -402,6 +453,16 @@
     function toastMsg(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000); }
     function formatDate(ts) { if (!ts) return '-'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
     function formatDateShort(ts) { if (!ts) return '-'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); }
+
+    function getAllLabels() {
+        const set = new Set();
+        allNotes.forEach(n => (n.labels || []).forEach(l => set.add(l)));
+        return [...set].sort();
+    }
+
+    function getLabelCount(label) {
+        return allNotes.filter(n => (n.labels || []).includes(label)).length;
+    }
 
     function getCardPreview(c) {
         if (c.type === 'text') {
@@ -464,6 +525,7 @@
                     history: data.history || []
                 });
             });
+            allLabelNames = getAllLabels();
             updateLabelFilter();
             renderCards();
         }, (error) => {
@@ -505,22 +567,130 @@
     async function archiveNote(id) { await updateDoc(doc(db, 'notes', id), { archived: true, updatedAt: Timestamp.now() }); }
     async function unarchiveNote(id) { await updateDoc(doc(db, 'notes', id), { archived: false, updatedAt: Timestamp.now() }); }
 
-    // ==================== FILTERS ====================
+    // ==================== LABEL MANAGEMENT ====================
     function updateLabelFilter() {
-        const labelsSet = new Set();
-        allNotes.forEach(n => (n.labels || []).forEach(l => labelsSet.add(l)));
+        const labels = getAllLabels();
         const current = filterLabelSelect.value;
         filterLabelSelect.innerHTML = '<option value="all">Semua Label</option>';
-        [...labelsSet].sort().forEach(l => {
+        labels.forEach(l => {
             const opt = document.createElement('option');
             opt.value = l;
             opt.textContent = l;
             filterLabelSelect.appendChild(opt);
         });
-        if ([...labelsSet].includes(current)) filterLabelSelect.value = current;
+        if (labels.includes(current)) filterLabelSelect.value = current;
         else filterLabelSelect.value = 'all';
     }
 
+    function renderLabelAutocomplete(query) {
+        const q = query.toLowerCase().trim();
+        const matches = allLabelNames.filter(l => l.toLowerCase().includes(q) && !labels.includes(l));
+        if (!q || matches.length === 0) {
+            labelAutocomplete.style.display = 'none';
+            return;
+        }
+        labelAutocomplete.innerHTML = matches.map(l => `
+            <div class="item" data-label="${escapeHtml(l)}">
+                <span>${escapeHtml(l)}</span>
+                <span class="count">${getLabelCount(l)} catatan</span>
+            </div>
+        `).join('');
+        labelAutocomplete.style.display = 'block';
+        labelAutocomplete.querySelectorAll('.item').forEach(el => {
+            el.addEventListener('click', () => {
+                const label = el.dataset.label;
+                if (!labels.includes(label)) {
+                    labels.push(label);
+                    renderLabels();
+                    labelInput.value = '';
+                    labelAutocomplete.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    function openLabelManage() {
+        const labels = getAllLabels();
+        if (labels.length === 0) {
+            labelManageList.innerHTML = '<div style="color:var(--text-muted);padding:12px 0;">Belum ada label. Buat label dengan menambahkannya ke catatan.</div>';
+        } else {
+            labelManageList.innerHTML = labels.map(l => `
+                <div class="label-manage-item" data-label="${escapeHtml(l)}">
+                    <div class="label-name">
+                        <span>${escapeHtml(l)}</span>
+                        <span class="count">${getLabelCount(l)} catatan</span>
+                    </div>
+                    <div class="label-actions">
+                        <button class="edit-label-btn" data-label="${escapeHtml(l)}" title="Ubah nama"><i class="fas fa-edit"></i></button>
+                        <button class="del-label-btn" data-label="${escapeHtml(l)}" title="Hapus label"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            labelManageList.querySelectorAll('.edit-label-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const oldLabel = btn.dataset.label;
+                    const newLabel = prompt('Ubah nama label:', oldLabel);
+                    if (newLabel && newLabel.trim() !== oldLabel) {
+                        renameLabel(oldLabel, newLabel.trim());
+                    }
+                });
+            });
+            labelManageList.querySelectorAll('.del-label-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const label = btn.dataset.label;
+                    if (confirm(`Hapus label "${label}" dari semua catatan?`)) {
+                        deleteLabel(label);
+                    }
+                });
+            });
+        }
+        labelManageModal.style.display = 'flex';
+    }
+
+    async function renameLabel(oldLabel, newLabel) {
+        if (!newLabel || newLabel === oldLabel) return;
+        if (allLabelNames.includes(newLabel) && newLabel !== oldLabel) {
+            toastMsg('Label sudah ada!');
+            return;
+        }
+        try {
+            const batch = [];
+            allNotes.forEach(n => {
+                if ((n.labels || []).includes(oldLabel)) {
+                    const newLabels = n.labels.map(l => l === oldLabel ? newLabel : l);
+                    batch.push({ id: n.id, labels: newLabels });
+                }
+            });
+            for (const item of batch) {
+                await updateDoc(doc(db, 'notes', item.id), { labels: item.labels, updatedAt: Timestamp.now() });
+            }
+            toastMsg(`Label "${oldLabel}" diubah menjadi "${newLabel}"`);
+            labelManageModal.style.display = 'none';
+        } catch (err) {
+            toastMsg('Gagal mengubah label');
+        }
+    }
+
+    async function deleteLabel(label) {
+        try {
+            const batch = [];
+            allNotes.forEach(n => {
+                if ((n.labels || []).includes(label)) {
+                    const newLabels = n.labels.filter(l => l !== label);
+                    batch.push({ id: n.id, labels: newLabels });
+                }
+            });
+            for (const item of batch) {
+                await updateDoc(doc(db, 'notes', item.id), { labels: item.labels, updatedAt: Timestamp.now() });
+            }
+            toastMsg(`Label "${label}" dihapus`);
+            labelManageModal.style.display = 'none';
+        } catch (err) {
+            toastMsg('Gagal menghapus label');
+        }
+    }
+
+    // ==================== FILTERS ====================
     function getActiveCards() {
         const pool = isArchivedView ? allNotes.filter(c => c.archived === true) : allNotes.filter(c => c.archived !== true);
         let filtered = pool.filter(c => {
@@ -652,26 +822,56 @@
     function indentList() { execCommand('indent'); }
     function outdentList() { execCommand('outdent'); }
 
-    // Keyboard shortcuts
     textContent.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key === 'b') { e.preventDefault(); toggleBold(); }
         else if (e.ctrlKey && e.key === 'i') { e.preventDefault(); toggleItalic(); }
-        else if (e.key === 'Tab' && !e.shiftKey) {
-            e.preventDefault();
-            indentList();
-        } else if (e.key === 'Tab' && e.shiftKey) {
-            e.preventDefault();
-            outdentList();
-        }
+        else if (e.key === 'Tab' && !e.shiftKey) { e.preventDefault(); indentList(); }
+        else if (e.key === 'Tab' && e.shiftKey) { e.preventDefault(); outdentList(); }
     });
 
-    // Toolbar events
     boldBtn.addEventListener('click', toggleBold);
     italicBtn.addEventListener('click', toggleItalic);
     bulletBtn.addEventListener('click', insertBulletList);
     numberBtn.addEventListener('click', insertNumberList);
     indentBtn.addEventListener('click', indentList);
     outdentBtn.addEventListener('click', outdentList);
+
+    // ==================== LABEL AUTOCOMPLETE ====================
+    labelInput.addEventListener('input', () => {
+        renderLabelAutocomplete(labelInput.value);
+    });
+
+    labelInput.addEventListener('focus', () => {
+        if (labelInput.value.trim()) renderLabelAutocomplete(labelInput.value);
+        else {
+            labelAutocomplete.innerHTML = allLabelNames.filter(l => !labels.includes(l)).map(l => `
+                <div class="item" data-label="${escapeHtml(l)}">
+                    <span>${escapeHtml(l)}</span>
+                    <span class="count">${getLabelCount(l)} catatan</span>
+                </div>
+            `).join('');
+            if (allLabelNames.filter(l => !labels.includes(l)).length > 0) labelAutocomplete.style.display = 'block';
+            else labelAutocomplete.style.display = 'none';
+        }
+    });
+
+    labelInput.addEventListener('blur', () => {
+        setTimeout(() => { labelAutocomplete.style.display = 'none'; }, 200);
+    });
+
+    labelInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const val = labelInput.value.trim();
+            if (val && !labels.includes(val)) {
+                labels.push(val);
+                renderLabels();
+                labelInput.value = '';
+                labelAutocomplete.style.display = 'none';
+            }
+        }
+        if (e.key === 'Escape') labelAutocomplete.style.display = 'none';
+    });
 
     // ==================== EDITOR ====================
     function openEditor(id = null) {
@@ -701,7 +901,6 @@
             renderLabels();
             updateModalButtons(card);
             editorModal.style.display = 'flex';
-            // focus
             if (currentType === 'text') textContent.focus();
         } else {
             choiceSection.style.display = 'block';
@@ -726,6 +925,7 @@
         editorModal.style.display = 'none';
         choiceSection.style.display = 'block';
         editorFields.style.display = 'none';
+        labelAutocomplete.style.display = 'none';
     }
 
     function renderLabels() {
@@ -977,6 +1177,12 @@
         closeEditorBtn.addEventListener('click', closeEditorModal);
         editorModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditorModal(); });
 
+        // Label management
+        manageLabelBtn.addEventListener('click', openLabelManage);
+        closeLabelManage.addEventListener('click', () => labelManageModal.style.display = 'none');
+        closeLabelManageBtn.addEventListener('click', () => labelManageModal.style.display = 'none');
+        labelManageModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) labelManageModal.style.display = 'none'; });
+
         document.querySelectorAll('.choice-card').forEach(el => {
             el.addEventListener('click', () => {
                 currentType = el.dataset.type;
@@ -1006,6 +1212,17 @@
         newItemInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault();
                 addNewItem(); } });
 
+        // Add label manually
+        addLabelBtn.addEventListener('click', () => {
+            const val = labelInput.value.trim();
+            if (val && !labels.includes(val)) {
+                labels.push(val);
+                renderLabels();
+                labelInput.value = '';
+                labelAutocomplete.style.display = 'none';
+            }
+        });
+
         document.querySelectorAll('.color-option').forEach(el => {
             el.addEventListener('click', () => {
                 document.querySelectorAll('.color-option').forEach(e => e.classList.remove('active'));
@@ -1013,15 +1230,6 @@
                 selectedColor = el.dataset.color;
             });
         });
-
-        addLabelBtn.addEventListener('click', () => {
-            const val = labelInput.value.trim();
-            if (val && !labels.includes(val)) { labels.push(val);
-                renderLabels();
-                labelInput.value = ''; }
-        });
-        labelInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault();
-                addLabelBtn.click(); } });
 
         searchInput.addEventListener('input', () => { searchQuery = searchInput.value;
             renderCards(); });
