@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400,500,600,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
+        /* Semua gaya sebelumnya tetap sama */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --primary: #f59e0b;
@@ -129,7 +130,6 @@
         .color-picker .color-option:hover { transform: scale(1.1); }
         .color-picker .color-option.active { border-color: var(--text-dark); box-shadow: 0 0 0 2px white; }
 
-        /* Label input with autocomplete */
         .label-input-wrapper { position: relative; flex: 1; min-width: 140px; }
         .label-input-wrapper input { width: 100%; padding: 6px 10px; font-size: 0.75rem; border-radius: 30px; border: 1px solid #e2e8f0; outline: none; font-family: inherit; }
         .label-input-wrapper input:focus { border-color: var(--primary); }
@@ -156,7 +156,6 @@
         .history-item { padding: 6px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; color: var(--text-muted); }
         .history-item .h-time { font-weight: 500; color: var(--text-dark); }
 
-        /* Label management */
         .label-manage-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
         .label-manage-item .label-name { font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
         .label-manage-item .label-name .count { color: var(--text-muted); font-weight: 400; font-size: 0.7rem; }
@@ -166,7 +165,6 @@
         .label-manage-item .label-actions .edit-label-btn:hover { color: var(--primary-dark); }
         .label-manage-item .label-actions .del-label-btn:hover { color: #dc2626; background: #fee2e2; }
 
-        /* Rich text editor toolbar */
         .text-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 0 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; }
         .text-toolbar button { background: #f1f5f9; border: none; padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; cursor: pointer; font-weight: 500; color: var(--text-dark); transition: 0.15s; display: flex; align-items: center; gap: 4px; }
         .text-toolbar button:hover { background: var(--primary-bg); }
@@ -176,6 +174,22 @@
         #textContent:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
         #textContent ul, #textContent ol { padding-left: 24px; margin: 6px 0; }
         #textContent li { margin-bottom: 2px; }
+
+        /* Gaya untuk modal tampilan teks read-only */
+        .text-view-content { padding: 8px 0; }
+        .text-view-content .tv-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 12px; word-break: break-word; }
+        .text-view-content .tv-body { font-size: 1rem; line-height: 1.7; color: var(--text-dark); }
+        .text-view-content .tv-body ul, .text-view-content .tv-body ol { padding-left: 24px; margin: 8px 0; }
+        .text-view-content .tv-body li { margin-bottom: 4px; }
+        .text-view-content .tv-labels { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+        .text-view-content .tv-labels .label-tag { background: var(--primary-bg); color: var(--primary-dark); padding: 2px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(245,158,11,0.2); }
+        .text-view-controls { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+        .text-view-controls .font-control { display: flex; align-items: center; gap: 8px; background: #f1f5f9; padding: 4px 10px; border-radius: 40px; }
+        .text-view-controls .font-control button { background: none; border: none; font-size: 1rem; cursor: pointer; padding: 4px 8px; border-radius: 30px; font-weight: 600; color: var(--text-dark); transition: 0.15s; }
+        .text-view-controls .font-control button:hover { background: var(--primary-bg); }
+        .text-view-controls .font-control .font-size-display { min-width: 32px; text-align: center; font-weight: 600; font-size: 0.8rem; }
+        .text-view-controls .edit-btn { background: var(--primary); color: white; border: none; padding: 6px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s; margin-left: auto; }
+        .text-view-controls .edit-btn:hover { background: var(--primary-dark); }
 
         @media (max-width: 480px) {
             .cards-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -197,6 +211,8 @@
             #textContent { min-height: 120px; }
             .label-input-group { flex-wrap: wrap; }
             .label-input-wrapper { min-width: 100%; }
+            .text-view-controls { flex-wrap: wrap; }
+            .text-view-controls .edit-btn { margin-left: 0; width: 100%; justify-content: center; }
         }
         @media (max-width: 380px) { .cards-grid { grid-template-columns: 1fr; } }
         .list-items-container::-webkit-scrollbar, .modal-content::-webkit-scrollbar, #textContent::-webkit-scrollbar { width: 4px; }
@@ -327,6 +343,30 @@
     </div>
 </div>
 
+<!-- Modal Tampilan Teks Read-Only -->
+<div id="textViewModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTextView">&times;</span>
+        <h2 id="textViewTitle">Catatan</h2>
+        <div class="text-view-controls">
+            <div class="font-control">
+                <button id="fontDecrease" title="Perkecil font">A-</button>
+                <span class="font-size-display" id="fontSizeDisplay">16</span>
+                <button id="fontIncrease" title="Perbesar font">A+</button>
+            </div>
+            <button class="edit-btn" id="textViewEditBtn"><i class="fas fa-pen"></i> Edit</button>
+        </div>
+        <div class="text-view-content" id="textViewContent">
+            <div class="tv-title" id="textViewCardTitle">Judul</div>
+            <div class="tv-body" id="textViewCardBody" style="font-size:16px;"></div>
+            <div class="tv-labels" id="textViewLabels"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" id="closeTextViewBtn">Tutup</button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal History -->
 <div id="historyModal" class="modal">
     <div class="modal-content">
@@ -395,6 +435,10 @@
     let dragOverItem = null;
     let allLabelNames = [];
 
+    // Untuk tampilan teks read-only
+    let currentTextViewId = null;
+    let currentFontSize = 16;
+
     const cardsGrid = document.getElementById('cardsGrid');
     const searchInput = document.getElementById('searchInput');
     const fabAdd = document.getElementById('fabAdd');
@@ -430,6 +474,18 @@
     const unarchiveCardBtn = document.getElementById('unarchiveCardBtn');
     const toast = document.getElementById('toast');
 
+    // TextView elements
+    const textViewModal = document.getElementById('textViewModal');
+    const closeTextView = document.getElementById('closeTextView');
+    const closeTextViewBtn = document.getElementById('closeTextViewBtn');
+    const textViewCardTitle = document.getElementById('textViewCardTitle');
+    const textViewCardBody = document.getElementById('textViewCardBody');
+    const textViewLabels = document.getElementById('textViewLabels');
+    const textViewEditBtn = document.getElementById('textViewEditBtn');
+    const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+    const fontDecrease = document.getElementById('fontDecrease');
+    const fontIncrease = document.getElementById('fontIncrease');
+
     const historyModal = document.getElementById('historyModal');
     const closeHistory = document.getElementById('closeHistory');
     const closeHistoryBtn = document.getElementById('closeHistoryBtn');
@@ -440,7 +496,6 @@
     const closeLabelManageBtn = document.getElementById('closeLabelManageBtn');
     const labelManageList = document.getElementById('labelManageList');
 
-    // Toolbar buttons
     const boldBtn = document.getElementById('boldBtn');
     const italicBtn = document.getElementById('italicBtn');
     const bulletBtn = document.getElementById('bulletBtn');
@@ -763,11 +818,19 @@
             `;
         }).join('');
 
+        // Event listener untuk membuka tampilan yang sesuai
         cardsGrid.querySelectorAll('.card-item').forEach(el => {
             const id = el.dataset.id;
             el.addEventListener('click', (e) => {
                 if (e.target.closest('.card-actions-top')) return;
-                openEditor(id);
+                const card = allNotes.find(n => n.id === id);
+                if (card) {
+                    if (card.type === 'text') {
+                        openTextView(id);
+                    } else {
+                        openEditor(id);
+                    }
+                }
             });
         });
 
@@ -798,6 +861,55 @@
             });
         });
     }
+
+    // ==================== TEXT VIEW (READ-ONLY) ====================
+    function openTextView(id) {
+        const card = allNotes.find(n => n.id === id);
+        if (!card || card.type !== 'text') return;
+        currentTextViewId = id;
+        currentFontSize = parseInt(localStorage.getItem(`fontSize_${id}`)) || 16;
+        textViewCardTitle.textContent = card.title || 'Tanpa judul';
+        textViewCardBody.innerHTML = card.content || '';
+        textViewCardBody.style.fontSize = currentFontSize + 'px';
+        fontSizeDisplay.textContent = currentFontSize;
+
+        // Labels
+        const labels = card.labels || [];
+        textViewLabels.innerHTML = labels.map(l => `<span class="label-tag">${escapeHtml(l)}</span>`).join('');
+
+        textViewModal.style.display = 'flex';
+        // Set judul modal
+        document.querySelector('#textViewModal h2').textContent = card.title || 'Catatan';
+    }
+
+    function closeTextViewModal() {
+        textViewModal.style.display = 'none';
+        currentTextViewId = null;
+    }
+
+    function adjustFontSize(delta) {
+        currentFontSize = Math.min(28, Math.max(12, currentFontSize + delta));
+        textViewCardBody.style.fontSize = currentFontSize + 'px';
+        fontSizeDisplay.textContent = currentFontSize;
+        if (currentTextViewId) {
+            localStorage.setItem(`fontSize_${currentTextViewId}`, currentFontSize);
+        }
+    }
+
+    // Event untuk text view
+    closeTextView.addEventListener('click', closeTextViewModal);
+    closeTextViewBtn.addEventListener('click', closeTextViewModal);
+    textViewModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeTextViewModal(); });
+
+    textViewEditBtn.addEventListener('click', () => {
+        if (currentTextViewId) {
+            closeTextViewModal();
+            openEditor(currentTextViewId);
+        }
+    });
+
+    fontDecrease.addEventListener('click', () => adjustFontSize(-2));
+    fontIncrease.addEventListener('click', () => adjustFontSize(2));
 
     // ==================== HISTORY ====================
     function showHistory(card) {
@@ -1177,7 +1289,6 @@
         closeEditorBtn.addEventListener('click', closeEditorModal);
         editorModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditorModal(); });
 
-        // Label management
         manageLabelBtn.addEventListener('click', openLabelManage);
         closeLabelManage.addEventListener('click', () => labelManageModal.style.display = 'none');
         closeLabelManageBtn.addEventListener('click', () => labelManageModal.style.display = 'none');
@@ -1212,7 +1323,6 @@
         newItemInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault();
                 addNewItem(); } });
 
-        // Add label manually
         addLabelBtn.addEventListener('click', () => {
             const val = labelInput.value.trim();
             if (val && !labels.includes(val)) {
@@ -1257,7 +1367,10 @@
             if (isArchivedView) toastMsg('Menampilkan arsip');
         });
 
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeEditorModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') {
+                closeEditorModal();
+                closeTextViewModal();
+            } });
     }
 
     document.addEventListener('DOMContentLoaded', init);
