@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400,500,600,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        /* Semua gaya sebelumnya tetap sama */
+        /* Semua gaya sebelumnya tetap sama, ditambah gaya untuk tombol share */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --primary: #f59e0b;
@@ -175,7 +175,6 @@
         #textContent ul, #textContent ol { padding-left: 24px; margin: 6px 0; }
         #textContent li { margin-bottom: 2px; }
 
-        /* Gaya untuk modal tampilan teks read-only */
         .text-view-content { padding: 8px 0; }
         .text-view-content .tv-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 12px; word-break: break-word; }
         .text-view-content .tv-body { font-size: 1rem; line-height: 1.7; color: var(--text-dark); }
@@ -190,6 +189,8 @@
         .text-view-controls .font-control .font-size-display { min-width: 32px; text-align: center; font-weight: 600; font-size: 0.8rem; }
         .text-view-controls .edit-btn { background: var(--primary); color: white; border: none; padding: 6px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s; margin-left: auto; }
         .text-view-controls .edit-btn:hover { background: var(--primary-dark); }
+        .text-view-controls .share-btn { background: #e2e8f0; color: var(--text-dark); border: none; padding: 6px 14px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s; }
+        .text-view-controls .share-btn:hover { background: #cbd5e1; }
 
         @media (max-width: 480px) {
             .cards-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -212,7 +213,7 @@
             .label-input-group { flex-wrap: wrap; }
             .label-input-wrapper { min-width: 100%; }
             .text-view-controls { flex-wrap: wrap; }
-            .text-view-controls .edit-btn { margin-left: 0; width: 100%; justify-content: center; }
+            .text-view-controls .edit-btn, .text-view-controls .share-btn { margin-left: 0; width: 100%; justify-content: center; }
         }
         @media (max-width: 380px) { .cards-grid { grid-template-columns: 1fr; } }
         .list-items-container::-webkit-scrollbar, .modal-content::-webkit-scrollbar, #textContent::-webkit-scrollbar { width: 4px; }
@@ -355,6 +356,7 @@
                 <button id="fontIncrease" title="Perbesar font">A+</button>
             </div>
             <button class="edit-btn" id="textViewEditBtn"><i class="fas fa-pen"></i> Edit</button>
+            <button class="share-btn" id="textViewShareBtn"><i class="fas fa-share-alt"></i> Bagikan</button>
         </div>
         <div class="text-view-content" id="textViewContent">
             <div class="tv-title" id="textViewCardTitle">Judul</div>
@@ -482,6 +484,7 @@
     const textViewCardBody = document.getElementById('textViewCardBody');
     const textViewLabels = document.getElementById('textViewLabels');
     const textViewEditBtn = document.getElementById('textViewEditBtn');
+    const textViewShareBtn = document.getElementById('textViewShareBtn');
     const fontSizeDisplay = document.getElementById('fontSizeDisplay');
     const fontDecrease = document.getElementById('fontDecrease');
     const fontIncrease = document.getElementById('fontIncrease');
@@ -562,6 +565,64 @@
                 <span class="h-time">${formatDate(h.timestamp)}</span>
             </div>
         `).join('');
+    }
+
+    // ==================== SHARE FUNCTION ====================
+    function getShareText(card) {
+        const title = card.title || 'Tanpa judul';
+        let content = '';
+        if (card.type === 'text') {
+            // Ambil teks polos dari HTML
+            const temp = document.createElement('div');
+            temp.innerHTML = card.content || '';
+            content = temp.textContent || temp.innerText || '';
+        } else { // list
+            const items = card.listItems || [];
+            if (items.length === 0) {
+                content = '(Daftar kosong)';
+            } else {
+                content = items.map(item => {
+                    const check = item.checked ? '[x]' : '[ ]';
+                    const indent = '  '.repeat(item.indent || 0);
+                    return `${indent}${check} ${item.text}`;
+                }).join('\n');
+            }
+        }
+        return `${title}\n\n${content}`;
+    }
+
+    async function handleShare(id) {
+        const card = allNotes.find(n => n.id === id);
+        if (!card) return;
+        const shareText = getShareText(card);
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: card.title || 'Catatan',
+                    text: shareText,
+                });
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Share error:', err);
+                    toastMsg('Gagal membagikan');
+                }
+            }
+        } else {
+            // Fallback: salin ke clipboard
+            try {
+                await navigator.clipboard.writeText(shareText);
+                toastMsg('Teks catatan disalin ke clipboard!');
+            } catch (err) {
+                // Fallback lama
+                const textarea = document.createElement('textarea');
+                textarea.value = shareText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                toastMsg('Teks catatan disalin ke clipboard!');
+            }
+        }
     }
 
     // ==================== FIREBASE ====================
@@ -801,6 +862,7 @@
                     <div class="card-color-bar" style="background:${color};"></div>
                     <div class="card-actions-top">
                         ${isArchived ? `<button class="unarchive-btn" data-id="${c.id}" title="Pulihkan"><i class="fas fa-undo"></i></button>` : ''}
+                        <button class="share-btn" data-id="${c.id}" title="Bagikan"><i class="fas fa-share-alt"></i></button>
                         <button class="history-btn" data-id="${c.id}" title="Riwayat"><i class="fas fa-history"></i></button>
                         <button class="del-btn" data-id="${c.id}" title="Hapus"><i class="fas fa-trash-alt"></i></button>
                     </div>
@@ -831,6 +893,15 @@
                         openEditor(id);
                     }
                 }
+            });
+        });
+
+        // Tombol bagikan
+        cardsGrid.querySelectorAll('.share-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                await handleShare(id);
             });
         });
 
@@ -878,7 +949,6 @@
         textViewLabels.innerHTML = labels.map(l => `<span class="label-tag">${escapeHtml(l)}</span>`).join('');
 
         textViewModal.style.display = 'flex';
-        // Set judul modal
         document.querySelector('#textViewModal h2').textContent = card.title || 'Catatan';
     }
 
@@ -901,12 +971,18 @@
     closeTextViewBtn.addEventListener('click', closeTextViewModal);
     textViewModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeTextViewModal(); });
 
-    // ===== PERBAIKAN: Tombol Edit sekarang membawa ID yang benar =====
     textViewEditBtn.addEventListener('click', () => {
-        const id = currentTextViewId; // simpan id sebelum modal ditutup
+        const id = currentTextViewId;
         if (id) {
-            closeTextViewModal(); // tutup tampilan baca
-            openEditor(id);       // buka editor dengan id yang sama
+            closeTextViewModal();
+            openEditor(id);
+        }
+    });
+
+    // Tombol share di text view
+    textViewShareBtn.addEventListener('click', async () => {
+        if (currentTextViewId) {
+            await handleShare(currentTextViewId);
         }
     });
 
