@@ -901,10 +901,12 @@
     closeTextViewBtn.addEventListener('click', closeTextViewModal);
     textViewModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeTextViewModal(); });
 
+    // ===== PERBAIKAN: Tombol Edit sekarang membawa ID yang benar =====
     textViewEditBtn.addEventListener('click', () => {
-        if (currentTextViewId) {
-            closeTextViewModal();
-            openEditor(currentTextViewId);
+        const id = currentTextViewId; // simpan id sebelum modal ditutup
+        if (id) {
+            closeTextViewModal(); // tutup tampilan baca
+            openEditor(id);       // buka editor dengan id yang sama
         }
     });
 
