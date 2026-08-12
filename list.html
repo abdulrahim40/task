@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400,500,600,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        /* Semua gaya sebelumnya tetap sama, ditambah gaya untuk tombol share */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --primary: #f59e0b;
@@ -26,6 +25,7 @@
             --card-shadow: 0 4px 16px rgba(245, 158, 11, 0.12);
             --radius: 20px;
             --radius-sm: 12px;
+            --pinned-bg: #fffbeb;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg-body); padding: 16px 12px 32px; color: var(--text-dark); min-height: 100vh; }
         .app-container { max-width: 720px; margin: 0 auto; }
@@ -55,6 +55,8 @@
         .filter-btn.active:hover { background: var(--primary-dark); }
         .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 80px; }
         .card-item { background: white; border-radius: var(--radius); padding: 16px 14px 14px; box-shadow: var(--card-shadow); cursor: pointer; transition: 0.25s ease; border-left: 5px solid var(--primary); position: relative; display: flex; flex-direction: column; min-height: 130px; }
+        .card-item.pinned { background: var(--pinned-bg); border-left-color: var(--primary-dark); }
+        .card-item.pinned .card-color-bar { background: var(--primary-dark) !important; }
         .card-item:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(245, 158, 11, 0.18); }
         .card-item .card-color-bar { position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: var(--radius) var(--radius) 0 0; background: var(--primary); }
         .card-item .card-title { font-weight: 600; font-size: 0.95rem; margin: 6px 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
@@ -66,6 +68,7 @@
         .card-item:hover .card-actions-top { opacity: 1; }
         .card-item .card-actions-top button { background: rgba(255,255,255,0.85); border: 1px solid #e2e8f0; width: 26px; height: 26px; border-radius: 50%; font-size: 0.6rem; cursor: pointer; color: var(--text-muted); transition: 0.15s; display: flex; align-items: center; justify-content: center; }
         .card-item .card-actions-top button:hover { background: white; color: var(--text-dark); }
+        .card-item .card-actions-top .pin-btn.pinned { color: var(--primary-dark); background: var(--primary-bg); border-color: var(--primary-light); }
         .card-item .card-actions-top .del-btn:hover { color: #dc2626; border-color: #fca5a5; }
         .card-item .card-actions-top .history-btn { font-size: 0.65rem; }
         .card-item .card-badge-archived { background: #e2e8f0; color: var(--text-muted); font-size: 0.55rem; font-weight: 600; padding: 2px 8px; border-radius: 30px; text-transform: uppercase; letter-spacing: 0.3px; }
@@ -187,10 +190,13 @@
         .text-view-controls .font-control button { background: none; border: none; font-size: 1rem; cursor: pointer; padding: 4px 8px; border-radius: 30px; font-weight: 600; color: var(--text-dark); transition: 0.15s; }
         .text-view-controls .font-control button:hover { background: var(--primary-bg); }
         .text-view-controls .font-control .font-size-display { min-width: 32px; text-align: center; font-weight: 600; font-size: 0.8rem; }
-        .text-view-controls .edit-btn { background: var(--primary); color: white; border: none; padding: 6px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s; margin-left: auto; }
+        .text-view-controls .edit-btn { background: var(--primary); color: white; border: none; padding: 6px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s; }
         .text-view-controls .edit-btn:hover { background: var(--primary-dark); }
         .text-view-controls .share-btn { background: #e2e8f0; color: var(--text-dark); border: none; padding: 6px 14px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s; }
         .text-view-controls .share-btn:hover { background: #cbd5e1; }
+        .text-view-controls .pin-btn { background: #e2e8f0; color: var(--text-dark); border: none; padding: 6px 14px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s; }
+        .text-view-controls .pin-btn.pinned { background: var(--primary-bg); color: var(--primary-dark); border: 1px solid var(--primary-light); }
+        .text-view-controls .pin-btn:hover { background: #cbd5e1; }
 
         @media (max-width: 480px) {
             .cards-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -213,7 +219,7 @@
             .label-input-group { flex-wrap: wrap; }
             .label-input-wrapper { min-width: 100%; }
             .text-view-controls { flex-wrap: wrap; }
-            .text-view-controls .edit-btn, .text-view-controls .share-btn { margin-left: 0; width: 100%; justify-content: center; }
+            .text-view-controls .edit-btn, .text-view-controls .share-btn, .text-view-controls .pin-btn { margin-left: 0; width: 100%; justify-content: center; }
         }
         @media (max-width: 380px) { .cards-grid { grid-template-columns: 1fr; } }
         .list-items-container::-webkit-scrollbar, .modal-content::-webkit-scrollbar, #textContent::-webkit-scrollbar { width: 4px; }
@@ -357,6 +363,7 @@
             </div>
             <button class="edit-btn" id="textViewEditBtn"><i class="fas fa-pen"></i> Edit</button>
             <button class="share-btn" id="textViewShareBtn"><i class="fas fa-share-alt"></i> Bagikan</button>
+            <button class="pin-btn" id="textViewPinBtn"><i class="fas fa-thumbtack"></i> Pin</button>
         </div>
         <div class="text-view-content" id="textViewContent">
             <div class="tv-title" id="textViewCardTitle">Judul</div>
@@ -485,6 +492,7 @@
     const textViewLabels = document.getElementById('textViewLabels');
     const textViewEditBtn = document.getElementById('textViewEditBtn');
     const textViewShareBtn = document.getElementById('textViewShareBtn');
+    const textViewPinBtn = document.getElementById('textViewPinBtn');
     const fontSizeDisplay = document.getElementById('fontSizeDisplay');
     const fontDecrease = document.getElementById('fontDecrease');
     const fontIncrease = document.getElementById('fontIncrease');
@@ -572,11 +580,10 @@
         const title = card.title || 'Tanpa judul';
         let content = '';
         if (card.type === 'text') {
-            // Ambil teks polos dari HTML
             const temp = document.createElement('div');
             temp.innerHTML = card.content || '';
             content = temp.textContent || temp.innerText || '';
-        } else { // list
+        } else {
             const items = card.listItems || [];
             if (items.length === 0) {
                 content = '(Daftar kosong)';
@@ -608,12 +615,10 @@
                 }
             }
         } else {
-            // Fallback: salin ke clipboard
             try {
                 await navigator.clipboard.writeText(shareText);
                 toastMsg('Teks catatan disalin ke clipboard!');
             } catch (err) {
-                // Fallback lama
                 const textarea = document.createElement('textarea');
                 textarea.value = shareText;
                 document.body.appendChild(textarea);
@@ -622,6 +627,19 @@
                 document.body.removeChild(textarea);
                 toastMsg('Teks catatan disalin ke clipboard!');
             }
+        }
+    }
+
+    // ==================== PIN FUNCTION ====================
+    async function handleTogglePin(id) {
+        const card = allNotes.find(n => n.id === id);
+        if (!card) return;
+        const newPinned = !card.pinned;
+        try {
+            await updateDoc(doc(db, 'notes', id), { pinned: newPinned, updatedAt: Timestamp.now() });
+            toastMsg(newPinned ? 'Catatan dipin' : 'Pin dilepas');
+        } catch (err) {
+            toastMsg('Gagal mengubah pin');
         }
     }
 
@@ -636,6 +654,7 @@
                 allNotes.push({
                     id: docSnap.id,
                     ...data,
+                    pinned: data.pinned || false,
                     createdAt: data.createdAt || Timestamp.now(),
                     updatedAt: data.updatedAt || Timestamp.now(),
                     history: data.history || []
@@ -668,6 +687,7 @@
         } else {
             const newDoc = {
                 ...cardData,
+                pinned: false,
                 createdAt: now,
                 updatedAt: now,
                 archived: false,
@@ -806,7 +826,7 @@
         }
     }
 
-    // ==================== FILTERS ====================
+    // ==================== FILTERS & SORT ====================
     function getActiveCards() {
         const pool = isArchivedView ? allNotes.filter(c => c.archived === true) : allNotes.filter(c => c.archived !== true);
         let filtered = pool.filter(c => {
@@ -835,7 +855,10 @@
             }
             return true;
         });
+        // Urutkan: pinned di atas, lalu berdasarkan updatedAt descending
         return filtered.sort((a, b) => {
+            if (a.pinned && !b.pinned) return -1;
+            if (!a.pinned && b.pinned) return 1;
             const da = a.updatedAt?.toDate?.()?.getTime() || 0;
             const db2 = b.updatedAt?.toDate?.()?.getTime() || 0;
             return db2 - da;
@@ -857,11 +880,15 @@
             const itemCount = c.type === 'list' ? (c.listItems || []).length : 0;
             const checkedCount = c.type === 'list' ? (c.listItems || []).filter(it => it.checked).length : 0;
             const color = c.color || '#f59e0b';
+            const pinnedClass = c.pinned ? 'pinned' : '';
+            const pinIcon = c.pinned ? 'fas fa-thumbtack' : 'far fa-thumbtack';
+            const pinTitle = c.pinned ? 'Lepas pin' : 'Pin';
             return `
-                <div class="card-item" data-id="${c.id}" style="border-left-color:${color};">
+                <div class="card-item ${pinnedClass}" data-id="${c.id}" style="border-left-color:${color};">
                     <div class="card-color-bar" style="background:${color};"></div>
                     <div class="card-actions-top">
                         ${isArchived ? `<button class="unarchive-btn" data-id="${c.id}" title="Pulihkan"><i class="fas fa-undo"></i></button>` : ''}
+                        <button class="pin-btn ${c.pinned ? 'pinned' : ''}" data-id="${c.id}" title="${pinTitle}"><i class="${pinIcon}"></i></button>
                         <button class="share-btn" data-id="${c.id}" title="Bagikan"><i class="fas fa-share-alt"></i></button>
                         <button class="history-btn" data-id="${c.id}" title="Riwayat"><i class="fas fa-history"></i></button>
                         <button class="del-btn" data-id="${c.id}" title="Hapus"><i class="fas fa-trash-alt"></i></button>
@@ -873,6 +900,7 @@
                         <span>
                             ${c.type === 'list' ? `<span class="item-count-badge"><i class="fas fa-list"></i> ${itemCount} item${checkedCount > 0 ? ` (${checkedCount} ✓)` : ''}</span>` : ''}
                             ${isArchived ? `<span class="card-badge-archived"><i class="fas fa-archive"></i> Arsip</span>` : ''}
+                            ${c.pinned ? `<span class="card-badge-archived" style="background:var(--primary-bg);color:var(--primary-dark);"><i class="fas fa-thumbtack"></i> Pin</span>` : ''}
                         </span>
                         <span style="font-size:0.6rem;">${formatDateShort(c.updatedAt)}</span>
                     </div>
@@ -893,6 +921,15 @@
                         openEditor(id);
                     }
                 }
+            });
+        });
+
+        // Tombol pin
+        cardsGrid.querySelectorAll('.pin-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                await handleTogglePin(id);
             });
         });
 
@@ -944,9 +981,13 @@
         textViewCardBody.style.fontSize = currentFontSize + 'px';
         fontSizeDisplay.textContent = currentFontSize;
 
-        // Labels
         const labels = card.labels || [];
         textViewLabels.innerHTML = labels.map(l => `<span class="label-tag">${escapeHtml(l)}</span>`).join('');
+
+        // Update tombol pin di modal
+        const isPinned = card.pinned || false;
+        textViewPinBtn.innerHTML = `<i class="${isPinned ? 'fas' : 'far'} fa-thumbtack"></i> ${isPinned ? 'Lepas Pin' : 'Pin'}`;
+        textViewPinBtn.classList.toggle('pinned', isPinned);
 
         textViewModal.style.display = 'flex';
         document.querySelector('#textViewModal h2').textContent = card.title || 'Catatan';
@@ -966,7 +1007,6 @@
         }
     }
 
-    // Event untuk text view
     closeTextView.addEventListener('click', closeTextViewModal);
     closeTextViewBtn.addEventListener('click', closeTextViewModal);
     textViewModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeTextViewModal(); });
@@ -979,10 +1019,20 @@
         }
     });
 
-    // Tombol share di text view
     textViewShareBtn.addEventListener('click', async () => {
+        if (currentTextViewId) await handleShare(currentTextViewId);
+    });
+
+    textViewPinBtn.addEventListener('click', async () => {
         if (currentTextViewId) {
-            await handleShare(currentTextViewId);
+            await handleTogglePin(currentTextViewId);
+            // Update tampilan pin di modal
+            const card = allNotes.find(n => n.id === currentTextViewId);
+            if (card) {
+                const isPinned = card.pinned || false;
+                textViewPinBtn.innerHTML = `<i class="${isPinned ? 'fas' : 'far'} fa-thumbtack"></i> ${isPinned ? 'Lepas Pin' : 'Pin'}`;
+                textViewPinBtn.classList.toggle('pinned', isPinned);
+            }
         }
     });
 
