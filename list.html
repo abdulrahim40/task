@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400,500,600,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        /* Gaya dasar tetap sama */
+        /* ===== GAYA DASAR ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --primary: #f59e0b;
@@ -30,16 +30,185 @@
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg-body); padding: 16px 12px 32px; color: var(--text-dark); min-height: 100vh; }
         .app-container { max-width: 720px; margin: 0 auto; }
-        /* Gaya untuk tampilan read-only link */
-        body.view-only .app-container .header,
-        body.view-only .app-container .filters-panel,
-        body.view-only .app-container .fab,
-        body.view-only .app-container #cardsGrid,
-        body.view-only .app-container .header-actions,
-        body.view-only .app-container .back-btn {
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .back-btn { background: white; border: 1px solid #e2e8f0; padding: 8px 14px; border-radius: 40px; font-weight: 500; font-size: 0.8rem; color: var(--primary-dark); cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+        .back-btn:hover { background: var(--primary-bg); }
+        h1 { font-size: 1.6rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .header-actions { display: flex; gap: 6px; align-items: center; }
+        .header-btn { background: white; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 40px; font-weight: 500; font-size: 0.8rem; color: var(--primary-dark); cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 4px; }
+        .header-btn:hover { background: var(--primary-bg); }
+        .header-btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .header-btn.primary:hover { background: var(--primary-dark); }
+        .filters-panel { background: white; border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; box-shadow: var(--card-shadow); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .search-box { flex: 2; position: relative; min-width: 140px; }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.8rem; }
+        .search-box input { width: 100%; padding: 8px 10px 8px 32px; border-radius: 40px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.8rem; background: #f8fafc; outline: none; transition: 0.2s; }
+        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .filter-select { min-width: 120px; }
+        .filter-select select { width: 100%; padding: 6px 10px; border-radius: 40px; border: 1px solid #e2e8f0; background: #f8fafc; font-family: inherit; font-size: 0.75rem; cursor: pointer; outline: none; }
+        .filter-select select:focus { border-color: var(--primary); }
+        .filter-btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
+        .filter-btn { background: #f1f5f9; border: none; padding: 6px 12px; border-radius: 40px; font-size: 0.7rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 4px; }
+        .filter-btn.active { background: var(--primary); color: white; }
+        .filter-btn:hover { background: var(--primary-light); }
+        .filter-btn.active:hover { background: var(--primary-dark); }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 80px; }
+        .card-item { background: white; border-radius: var(--radius); padding: 16px 14px 14px; box-shadow: var(--card-shadow); cursor: pointer; transition: 0.25s ease; border-left: 5px solid var(--primary); position: relative; display: flex; flex-direction: column; min-height: 130px; }
+        .card-item.pinned { background: var(--pinned-bg); border-left-color: var(--primary-dark); }
+        .card-item.pinned .card-color-bar { background: var(--primary-dark) !important; }
+        .card-item:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(245, 158, 11, 0.18); }
+        .card-item .card-color-bar { position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: var(--radius) var(--radius) 0 0; background: var(--primary); }
+        .card-item .card-title { font-weight: 600; font-size: 0.95rem; margin: 6px 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+        .card-item .card-preview { font-size: 0.75rem; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex: 1; word-break: break-word; line-height: 1.4; }
+        .card-item .card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.65rem; color: var(--text-muted); flex-wrap: wrap; gap: 4px; }
+        .card-item .card-labels { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+        .card-item .label-tag { background: var(--primary-bg); color: var(--primary-dark); padding: 2px 8px; border-radius: 30px; font-size: 0.6rem; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .card-item .card-actions-top { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; opacity: 0; transition: 0.2s; }
+        .card-item:hover .card-actions-top { opacity: 1; }
+        .card-item .card-actions-top button { background: rgba(255,255,255,0.85); border: 1px solid #e2e8f0; width: 26px; height: 26px; border-radius: 50%; font-size: 0.6rem; cursor: pointer; color: var(--text-muted); transition: 0.15s; display: flex; align-items: center; justify-content: center; }
+        .card-item .card-actions-top button:hover { background: white; color: var(--text-dark); }
+        .card-item .card-actions-top .pin-btn.pinned { color: var(--primary-dark); background: var(--primary-bg); border-color: var(--primary-light); }
+        .card-item .card-actions-top .del-btn:hover { color: #dc2626; border-color: #fca5a5; }
+        .card-item .card-actions-top .history-btn { font-size: 0.65rem; }
+        .card-item .card-badge-archived { background: #e2e8f0; color: var(--text-muted); font-size: 0.55rem; font-weight: 600; padding: 2px 8px; border-radius: 30px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .card-item .item-count-badge { background: var(--primary-bg); color: var(--primary-dark); padding: 0 8px; border-radius: 30px; font-size: 0.6rem; font-weight: 600; }
+        .card-empty { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.9rem; background: white; border-radius: var(--radius); box-shadow: var(--card-shadow); }
+        .card-empty i { font-size: 2rem; display: block; margin-bottom: 10px; color: var(--primary-light); }
+        .fab { position: fixed; bottom: 24px; right: 16px; background: var(--primary); color: white; border: none; width: 56px; height: 56px; border-radius: 28px; font-size: 1.6rem; box-shadow: 0 4px 14px rgba(245,158,11,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: 0.2s; }
+        .fab:hover { background: var(--primary-dark); transform: scale(1.05); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(4px); }
+        .modal-content { background: white; border-radius: 28px; max-width: 640px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 20px 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); position: relative; }
+        .modal-content .close-modal { position: absolute; top: 12px; right: 16px; font-size: 1.8rem; cursor: pointer; color: #94a3b8; transition: 0.15s; line-height: 1; }
+        .modal-content .close-modal:hover { color: var(--text-dark); }
+        .modal-content h2 { font-size: 1.2rem; margin-bottom: 14px; padding-right: 32px; }
+        input[type="text"], select { width: 100%; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.85rem; background: white; transition: 0.2s; outline: none; }
+        input[type="text"]:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
+        label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); display: block; margin: 10px 0 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0 8px; }
+        .choice-card { background: var(--primary-bg); border: 2px solid transparent; border-radius: var(--radius); padding: 24px 16px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .choice-card:hover { border-color: var(--primary); background: #fef3c7; }
+        .choice-card i { font-size: 2.2rem; color: var(--primary); display: block; margin-bottom: 8px; }
+        .choice-card span { font-weight: 600; font-size: 0.9rem; display: block; }
+        .choice-card small { color: var(--text-muted); font-size: 0.7rem; }
+        .list-editor { margin-top: 8px; }
+        .list-items-container { max-height: 400px; overflow-y: auto; padding-right: 4px; }
+        .list-item-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); background: #fafafa; margin-bottom: 4px; border: 1px solid transparent; transition: 0.15s; cursor: grab; position: relative; }
+        .list-item-row:hover { background: #f1f5f9; border-color: #e2e8f0; }
+        .list-item-row.dragging { opacity: 0.4; border-color: var(--primary); }
+        .list-item-row .drag-handle { color: #94a3b8; font-size: 0.8rem; cursor: grab; padding: 0 2px; user-select: none; flex-shrink: 0; }
+        .list-item-row .item-check { width: 18px; height: 18px; border-radius: 4px; border: 2px solid #94a3b8; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: 0.15s; background: white; }
+        .list-item-row .item-check.checked { background: var(--primary); border-color: var(--primary); color: white; }
+        .list-item-row .item-check.checked::after { content: "✓"; font-size: 0.7rem; font-weight: 700; }
+        .list-item-row .item-text { flex: 1; font-size: 0.85rem; outline: none; padding: 2px 4px; border-radius: 4px; word-break: break-word; min-height: 28px; line-height: 1.5; }
+        .list-item-row .item-text:focus { background: white; box-shadow: 0 0 0 2px rgba(245,158,11,0.15); }
+        .list-item-row .item-indent { display: flex; gap: 2px; flex-shrink: 0; }
+        .list-item-row .item-indent button { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.7rem; padding: 2px 4px; border-radius: 4px; transition: 0.15s; }
+        .list-item-row .item-indent button:hover { background: #e2e8f0; color: var(--text-dark); }
+        .list-item-row .item-del { color: #94a3b8; cursor: pointer; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; transition: 0.15s; flex-shrink: 0; }
+        .list-item-row .item-del:hover { background: #fee2e2; color: #dc2626; }
+        .list-item-row.indent-1 { padding-left: 32px; }
+        .list-item-row.indent-2 { padding-left: 56px; }
+        .list-item-row.checked-item { opacity: 0.6; background: #f1f5f9; }
+        .list-item-row.checked-item .item-text { text-decoration: line-through; color: var(--text-muted); }
+        .add-item-row { display: flex; gap: 8px; padding: 8px 4px; margin-top: 8px; border-top: 1px dashed #e2e8f0; }
+        .add-item-row input { flex: 1; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.8rem; outline: none; }
+        .add-item-row input:focus { border-color: var(--primary); }
+        .add-item-row button { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 0.8rem; transition: 0.15s; white-space: nowrap; }
+        .add-item-row button:hover { background: var(--primary-dark); }
+        .modal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
+        .modal-actions .btn { padding: 8px 18px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; border: none; cursor: pointer; transition: 0.15s; display: flex; align-items: center; gap: 6px; }
+        .modal-actions .btn-primary { background: var(--primary); color: white; }
+        .modal-actions .btn-primary:hover { background: var(--primary-dark); }
+        .modal-actions .btn-danger { background: #fee2e2; color: #dc2626; }
+        .modal-actions .btn-danger:hover { background: #fecaca; }
+        .modal-actions .btn-warning { background: #fef3c7; color: #d97706; }
+        .modal-actions .btn-warning:hover { background: #fde68a; }
+        .modal-actions .btn-outline { background: transparent; border: 1px solid #e2e8f0; color: var(--text-muted); }
+        .modal-actions .btn-outline:hover { background: #f1f5f9; }
+        .modal-actions .btn-success { background: #dcfce7; color: #16a34a; }
+        .modal-actions .btn-success:hover { background: #bbf7d0; }
+        .color-picker { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 8px; }
+        .color-picker .color-option { width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: 0.15s; }
+        .color-picker .color-option:hover { transform: scale(1.1); }
+        .color-picker .color-option.active { border-color: var(--text-dark); box-shadow: 0 0 0 2px white; }
+
+        .label-input-wrapper { position: relative; flex: 1; min-width: 140px; }
+        .label-input-wrapper input { width: 100%; padding: 6px 10px; font-size: 0.75rem; border-radius: 30px; border: 1px solid #e2e8f0; outline: none; font-family: inherit; }
+        .label-input-wrapper input:focus { border-color: var(--primary); }
+        .label-autocomplete { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); max-height: 150px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .label-autocomplete .item { padding: 6px 12px; cursor: pointer; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+        .label-autocomplete .item:hover { background: var(--primary-bg); }
+        .label-autocomplete .item .count { color: var(--text-muted); font-size: 0.6rem; }
+
+        .label-input-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+        .label-input-group .add-label-btn { background: var(--primary); color: white; border: none; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+        .label-input-group .add-label-btn:hover { background: var(--primary-dark); }
+        .label-input-group .manage-label-btn { background: #f1f5f9; color: var(--text-muted); border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
+        .label-input-group .manage-label-btn:hover { background: #e2e8f0; }
+
+        .label-tags-display { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+        .label-tags-display .label-tag { background: var(--primary-bg); color: var(--primary-dark); padding: 2px 10px 2px 8px; border-radius: 30px; font-size: 0.65rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(245,158,11,0.2); }
+        .label-tags-display .label-tag .remove-label { cursor: pointer; color: #94a3b8; font-size: 0.6rem; }
+        .label-tags-display .label-tag .remove-label:hover { color: #dc2626; }
+
+        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 8px 20px; border-radius: 40px; font-size: 0.8rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 2000; opacity: 0; transition: 0.3s; pointer-events: none; white-space: nowrap; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .history-list { font-size: 0.8rem; max-height: 300px; overflow-y: auto; }
+        .history-item { padding: 6px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; color: var(--text-muted); }
+        .history-item .h-time { font-weight: 500; color: var(--text-dark); }
+
+        .label-manage-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        .label-manage-item .label-name { font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .label-manage-item .label-name .count { color: var(--text-muted); font-weight: 400; font-size: 0.7rem; }
+        .label-manage-item .label-actions { display: flex; gap: 4px; }
+        .label-manage-item .label-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px 6px; border-radius: 4px; font-size: 0.8rem; transition: 0.15s; }
+        .label-manage-item .label-actions button:hover { background: #f1f5f9; color: var(--text-dark); }
+        .label-manage-item .label-actions .edit-label-btn:hover { color: var(--primary-dark); }
+        .label-manage-item .label-actions .del-label-btn:hover { color: #dc2626; background: #fee2e2; }
+
+        .text-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 0 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; }
+        .text-toolbar button { background: #f1f5f9; border: none; padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; cursor: pointer; font-weight: 500; color: var(--text-dark); transition: 0.15s; display: flex; align-items: center; gap: 4px; }
+        .text-toolbar button:hover { background: var(--primary-bg); }
+        .text-toolbar button.active { background: var(--primary); color: white; }
+        .text-toolbar .sep { width: 1px; background: #e2e8f0; margin: 0 4px; }
+        #textContent { min-height: 150px; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 10px; outline: none; background: white; font-family: inherit; font-size: 0.85rem; line-height: 1.6; overflow-y: auto; }
+        #textContent:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
+        #textContent ul, #textContent ol { padding-left: 24px; margin: 6px 0; }
+        #textContent li { margin-bottom: 2px; }
+
+        .text-view-content { padding: 8px 0; }
+        .text-view-content .tv-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 12px; word-break: break-word; }
+        .text-view-content .tv-body { font-size: 1rem; line-height: 1.7; color: var(--text-dark); }
+        .text-view-content .tv-body ul, .text-view-content .tv-body ol { padding-left: 24px; margin: 8px 0; }
+        .text-view-content .tv-body li { margin-bottom: 4px; }
+        .text-view-content .tv-labels { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+        .text-view-content .tv-labels .label-tag { background: var(--primary-bg); color: var(--primary-dark); padding: 2px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(245,158,11,0.2); }
+        .text-view-controls { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+        .text-view-controls .font-control { display: flex; align-items: center; gap: 8px; background: #f1f5f9; padding: 4px 10px; border-radius: 40px; }
+        .text-view-controls .font-control button { background: none; border: none; font-size: 1rem; cursor: pointer; padding: 4px 8px; border-radius: 30px; font-weight: 600; color: var(--text-dark); transition: 0.15s; }
+        .text-view-controls .font-control button:hover { background: var(--primary-bg); }
+        .text-view-controls .font-control .font-size-display { min-width: 32px; text-align: center; font-weight: 600; font-size: 0.8rem; }
+        .text-view-controls .edit-btn { background: var(--primary); color: white; border: none; padding: 6px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s; }
+        .text-view-controls .edit-btn:hover { background: var(--primary-dark); }
+        .text-view-controls .share-btn { background: #e2e8f0; color: var(--text-dark); border: none; padding: 6px 14px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s; }
+        .text-view-controls .share-btn:hover { background: #cbd5e1; }
+        .text-view-controls .pin-btn { background: #e2e8f0; color: var(--text-dark); border: none; padding: 6px 14px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.15s; }
+        .text-view-controls .pin-btn.pinned { background: var(--primary-bg); color: var(--primary-dark); border: 1px solid var(--primary-light); }
+        .text-view-controls .pin-btn:hover { background: #cbd5e1; }
+
+        /* ===== GAYA UNTUK VIEW-ONLY ===== */
+        body.view-only .header,
+        body.view-only .filters-panel,
+        body.view-only .fab,
+        body.view-only #cardsGrid,
+        body.view-only .header-actions,
+        body.view-only .back-btn {
             display: none !important;
         }
-        body.view-only .app-container .view-only-content {
+        body.view-only .view-only-content {
             display: block !important;
         }
         .view-only-content { display: none; padding: 20px 0; }
@@ -51,28 +220,52 @@
         .view-only-content .vo-labels .label-tag { background: var(--primary-bg); color: var(--primary-dark); padding: 2px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(245,158,11,0.2); }
         .view-only-content .vo-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 12px; }
         .view-only-content .vo-list-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
-        .view-only-content .vo-list-item .vo-check { width: 18px; text-align: center; font-size: 0.9rem; }
+        .view-only-content .vo-list-item .vo-check { width: 22px; text-align: center; font-size: 0.9rem; }
         .view-only-content .vo-list-item .vo-text { flex: 1; }
         .view-only-content .vo-list-item.checked .vo-text { text-decoration: line-through; color: var(--text-muted); }
         .view-only-content .vo-list-item.indent-1 { padding-left: 28px; }
         .view-only-content .vo-list-item.indent-2 { padding-left: 52px; }
 
-        /* Modal Share */
+        /* ===== GAYA UNTUK MODAL SHARE ===== */
         #shareModal .modal-content { max-width: 400px; text-align: center; }
         #shareModal .share-options { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
         #shareModal .share-options button { padding: 12px; border-radius: var(--radius-sm); border: 1px solid #e2e8f0; background: white; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         #shareModal .share-options button:hover { background: var(--primary-bg); border-color: var(--primary); }
         #shareModal .share-options button i { font-size: 1.2rem; color: var(--primary); }
 
-        /* Sisanya gaya dari kode sebelumnya (saya singkat agar tidak terlalu panjang, tapi tetap lengkap) */
-        /* ... (semua gaya yang sudah ada sebelumnya, saya akan sisipkan di sini) ... */
-        /* Karena panjang, saya akan tulis ulang secara lengkap di bawah */
+        @media (max-width: 480px) {
+            .cards-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .card-item { min-height: 110px; padding: 12px 10px; }
+            .card-item .card-title { font-size: 0.8rem; }
+            .card-item .card-preview { font-size: 0.65rem; -webkit-line-clamp: 2; }
+            .choice-grid { grid-template-columns: 1fr; }
+            .modal-content { padding: 16px 14px; }
+            .list-item-row { padding: 4px 6px; gap: 4px; }
+            .list-item-row .item-text { font-size: 0.8rem; }
+            .list-item-row.indent-1 { padding-left: 24px; }
+            .list-item-row.indent-2 { padding-left: 40px; }
+            .header h1 { font-size: 1.2rem; }
+            .back-btn { padding: 6px 10px; font-size: 0.7rem; }
+            .header-btn { padding: 4px 10px; font-size: 0.7rem; }
+            .filters-panel { padding: 8px 10px; }
+            .filter-btn { padding: 4px 8px; font-size: 0.6rem; }
+            .filter-select { min-width: 90px; }
+            #textContent { min-height: 120px; }
+            .label-input-group { flex-wrap: wrap; }
+            .label-input-wrapper { min-width: 100%; }
+            .text-view-controls { flex-wrap: wrap; }
+            .text-view-controls .edit-btn, .text-view-controls .share-btn, .text-view-controls .pin-btn { margin-left: 0; width: 100%; justify-content: center; }
+        }
+        @media (max-width: 380px) { .cards-grid { grid-template-columns: 1fr; } }
+        .list-items-container::-webkit-scrollbar, .modal-content::-webkit-scrollbar, #textContent::-webkit-scrollbar { width: 4px; }
+        .list-items-container::-webkit-scrollbar-track, .modal-content::-webkit-scrollbar-track, #textContent::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .list-items-container::-webkit-scrollbar-thumb, .modal-content::-webkit-scrollbar-thumb, #textContent::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- Header, filter, grid, fab, dsb. (sama seperti sebelumnya) -->
+    <!-- Header -->
     <div class="header">
         <div class="header-left">
             <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> Kembali</button>
@@ -84,6 +277,7 @@
         </div>
     </div>
 
+    <!-- Filter -->
     <div class="filters-panel">
         <div class="search-box">
             <i class="fas fa-search"></i>
@@ -91,9 +285,7 @@
         </div>
         <div class="filter-group">
             <div class="filter-select">
-                <select id="filterLabelSelect">
-                    <option value="all">Semua Label</option>
-                </select>
+                <select id="filterLabelSelect"><option value="all">Semua Label</option></select>
             </div>
             <div class="filter-select">
                 <select id="filterDateSelect">
@@ -111,10 +303,11 @@
         </div>
     </div>
 
+    <!-- Grid -->
     <div class="cards-grid" id="cardsGrid"></div>
     <button class="fab" id="fabAdd"><i class="fas fa-plus"></i></button>
 
-    <!-- Konten view-only (untuk link yang dibagikan) -->
+    <!-- View-Only Content (untuk link) -->
     <div class="view-only-content" id="viewOnlyContent">
         <div class="vo-title" id="voTitle"></div>
         <div class="vo-body" id="voBody"></div>
@@ -125,7 +318,7 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- Modal Editor (sama seperti sebelumnya) -->
+<!-- Modal Editor -->
 <div id="editorModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" id="closeEditor">&times;</span>
@@ -200,7 +393,7 @@
     </div>
 </div>
 
-<!-- Modal Tampilan Teks Read-Only (sama) -->
+<!-- Modal Tampilan Teks Read-Only -->
 <div id="textViewModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" id="closeTextView">&times;</span>
@@ -267,22 +460,13 @@
 </div>
 
 <script type="module">
-    // ==================== IMPOR & KONFIGURASI ====================
+    // ================================================================
+    // IMPOR FIREBASE
+    // ================================================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import {
-        getFirestore,
-        collection,
-        doc,
-        addDoc,
-        updateDoc,
-        deleteDoc,
-        onSnapshot,
-        Timestamp,
-        query,
-        orderBy,
-        where,
-        getDocs,
-        getDoc
+        getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+        onSnapshot, Timestamp, query, orderBy, where, getDocs, getDoc
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -297,7 +481,9 @@
     const db = getFirestore(app);
     const notesCol = collection(db, "notes");
 
-    // ==================== VARIABEL GLOBAL ====================
+    // ================================================================
+    // STATE
+    // ================================================================
     let allNotes = [];
     let currentEditId = null;
     let currentType = 'text';
@@ -316,86 +502,91 @@
 
     let currentTextViewId = null;
     let currentFontSize = 16;
-
-    // Elemen DOM
-    const cardsGrid = document.getElementById('cardsGrid');
-    const searchInput = document.getElementById('searchInput');
-    const fabAdd = document.getElementById('fabAdd');
-    const addCardBtn = document.getElementById('addCardBtn');
-    const backBtn = document.getElementById('backBtn');
-    const viewArchivedBtn = document.getElementById('viewArchivedBtn');
-    const filterLabelSelect = document.getElementById('filterLabelSelect');
-    const filterDateSelect = document.getElementById('filterDateSelect');
-
-    const editorModal = document.getElementById('editorModal');
-    const closeEditor = document.getElementById('closeEditor');
-    const closeEditorBtn = document.getElementById('closeEditorBtn');
-    const editorTitle = document.getElementById('editorTitle');
-    const editId = document.getElementById('editId');
-    const choiceSection = document.getElementById('choiceSection');
-    const editorFields = document.getElementById('editorFields');
-    const cardTitle = document.getElementById('cardTitle');
-    const textContent = document.getElementById('textContent');
-    const textEditor = document.getElementById('textEditor');
-    const listEditor = document.getElementById('listEditor');
-    const listItemsContainer = document.getElementById('listItemsContainer');
-    const newItemInput = document.getElementById('newItemInput');
-    const addItemBtn = document.getElementById('addItemBtn');
-    const labelInput = document.getElementById('labelInput');
-    const addLabelBtn = document.getElementById('addLabelBtn');
-    const manageLabelBtn = document.getElementById('manageLabelBtn');
-    const labelTagsDisplay = document.getElementById('labelTagsDisplay');
-    const labelAutocomplete = document.getElementById('labelAutocomplete');
-    const colorPicker = document.getElementById('colorPicker');
-    const deleteCardBtn = document.getElementById('deleteCardBtn');
-    const archiveCardBtn = document.getElementById('archiveCardBtn');
-    const unarchiveCardBtn = document.getElementById('unarchiveCardBtn');
-    const toast = document.getElementById('toast');
-
-    const textViewModal = document.getElementById('textViewModal');
-    const closeTextView = document.getElementById('closeTextView');
-    const closeTextViewBtn = document.getElementById('closeTextViewBtn');
-    const textViewCardTitle = document.getElementById('textViewCardTitle');
-    const textViewCardBody = document.getElementById('textViewCardBody');
-    const textViewLabels = document.getElementById('textViewLabels');
-    const textViewEditBtn = document.getElementById('textViewEditBtn');
-    const textViewShareBtn = document.getElementById('textViewShareBtn');
-    const textViewPinBtn = document.getElementById('textViewPinBtn');
-    const fontSizeDisplay = document.getElementById('fontSizeDisplay');
-    const fontDecrease = document.getElementById('fontDecrease');
-    const fontIncrease = document.getElementById('fontIncrease');
-
-    const shareModal = document.getElementById('shareModal');
-    const closeShareModal = document.getElementById('closeShareModal');
-    const closeShareModalBtn = document.getElementById('closeShareModalBtn');
-    const shareContentBtn = document.getElementById('shareContentBtn');
-    const shareLinkBtn = document.getElementById('shareLinkBtn');
     let shareTargetId = null;
 
-    const historyModal = document.getElementById('historyModal');
-    const closeHistory = document.getElementById('closeHistory');
-    const closeHistoryBtn = document.getElementById('closeHistoryBtn');
-    const historyList = document.getElementById('historyList');
+    // ================================================================
+    // DOM REFS
+    // ================================================================
+    const $ = id => document.getElementById(id);
+    const cardsGrid = $('cardsGrid');
+    const searchInput = $('searchInput');
+    const fabAdd = $('fabAdd');
+    const addCardBtn = $('addCardBtn');
+    const backBtn = $('backBtn');
+    const viewArchivedBtn = $('viewArchivedBtn');
+    const filterLabelSelect = $('filterLabelSelect');
+    const filterDateSelect = $('filterDateSelect');
 
-    const labelManageModal = document.getElementById('labelManageModal');
-    const closeLabelManage = document.getElementById('closeLabelManage');
-    const closeLabelManageBtn = document.getElementById('closeLabelManageBtn');
-    const labelManageList = document.getElementById('labelManageList');
+    const editorModal = $('editorModal');
+    const closeEditor = $('closeEditor');
+    const closeEditorBtn = $('closeEditorBtn');
+    const editorTitle = $('editorTitle');
+    const editId = $('editId');
+    const choiceSection = $('choiceSection');
+    const editorFields = $('editorFields');
+    const cardTitle = $('cardTitle');
+    const textContent = $('textContent');
+    const textEditor = $('textEditor');
+    const listEditor = $('listEditor');
+    const listItemsContainer = $('listItemsContainer');
+    const newItemInput = $('newItemInput');
+    const addItemBtn = $('addItemBtn');
+    const labelInput = $('labelInput');
+    const addLabelBtn = $('addLabelBtn');
+    const manageLabelBtn = $('manageLabelBtn');
+    const labelTagsDisplay = $('labelTagsDisplay');
+    const labelAutocomplete = $('labelAutocomplete');
+    const colorPicker = $('colorPicker');
+    const deleteCardBtn = $('deleteCardBtn');
+    const archiveCardBtn = $('archiveCardBtn');
+    const unarchiveCardBtn = $('unarchiveCardBtn');
+    const toast = $('toast');
 
-    const boldBtn = document.getElementById('boldBtn');
-    const italicBtn = document.getElementById('italicBtn');
-    const bulletBtn = document.getElementById('bulletBtn');
-    const numberBtn = document.getElementById('numberBtn');
-    const indentBtn = document.getElementById('indentBtn');
-    const outdentBtn = document.getElementById('outdentBtn');
+    const textViewModal = $('textViewModal');
+    const closeTextView = $('closeTextView');
+    const closeTextViewBtn = $('closeTextViewBtn');
+    const textViewCardTitle = $('textViewCardTitle');
+    const textViewCardBody = $('textViewCardBody');
+    const textViewLabels = $('textViewLabels');
+    const textViewEditBtn = $('textViewEditBtn');
+    const textViewShareBtn = $('textViewShareBtn');
+    const textViewPinBtn = $('textViewPinBtn');
+    const fontSizeDisplay = $('fontSizeDisplay');
+    const fontDecrease = $('fontDecrease');
+    const fontIncrease = $('fontIncrease');
 
-    const viewOnlyContent = document.getElementById('viewOnlyContent');
-    const voTitle = document.getElementById('voTitle');
-    const voBody = document.getElementById('voBody');
-    const voLabels = document.getElementById('voLabels');
-    const voMeta = document.getElementById('voMeta');
+    const shareModal = $('shareModal');
+    const closeShareModal = $('closeShareModal');
+    const closeShareModalBtn = $('closeShareModalBtn');
+    const shareContentBtn = $('shareContentBtn');
+    const shareLinkBtn = $('shareLinkBtn');
 
-    // ==================== UTILITY ====================
+    const historyModal = $('historyModal');
+    const closeHistory = $('closeHistory');
+    const closeHistoryBtn = $('closeHistoryBtn');
+    const historyList = $('historyList');
+
+    const labelManageModal = $('labelManageModal');
+    const closeLabelManage = $('closeLabelManage');
+    const closeLabelManageBtn = $('closeLabelManageBtn');
+    const labelManageList = $('labelManageList');
+
+    const boldBtn = $('boldBtn');
+    const italicBtn = $('italicBtn');
+    const bulletBtn = $('bulletBtn');
+    const numberBtn = $('numberBtn');
+    const indentBtn = $('indentBtn');
+    const outdentBtn = $('outdentBtn');
+
+    const viewOnlyContent = $('viewOnlyContent');
+    const voTitle = $('voTitle');
+    const voBody = $('voBody');
+    const voLabels = $('voLabels');
+    const voMeta = $('voMeta');
+
+    // ================================================================
+    // UTILITY
+    // ================================================================
     function escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
     function toastMsg(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000); }
     function formatDate(ts) { if (!ts) return '-'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
@@ -406,10 +597,7 @@
         allNotes.forEach(n => (n.labels || []).forEach(l => set.add(l)));
         return [...set].sort();
     }
-
-    function getLabelCount(label) {
-        return allNotes.filter(n => (n.labels || []).includes(label)).length;
-    }
+    function getLabelCount(label) { return allNotes.filter(n => (n.labels || []).includes(label)).length; }
 
     function getCardPreview(c) {
         if (c.type === 'text') {
@@ -456,7 +644,9 @@
         `).join('');
     }
 
-    // ==================== SHARE ====================
+    // ================================================================
+    // SHARE
+    // ================================================================
     function getShareText(card) {
         const title = card.title || 'Tanpa judul';
         let content = '';
@@ -466,9 +656,8 @@
             content = temp.textContent || temp.innerText || '';
         } else {
             const items = card.listItems || [];
-            if (items.length === 0) {
-                content = '(Daftar kosong)';
-            } else {
+            if (items.length === 0) content = '(Daftar kosong)';
+            else {
                 content = items.map(item => {
                     const check = item.checked ? '[x]' : '[ ]';
                     const indent = '  '.repeat(item.indent || 0);
@@ -492,13 +681,13 @@
         try {
             await navigator.clipboard.writeText(text);
             toastMsg('Konten catatan disalin!');
-        } catch (err) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
+        } catch {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
             document.execCommand('copy');
-            document.body.removeChild(textarea);
+            document.body.removeChild(ta);
             toastMsg('Konten catatan disalin!');
         }
         shareModal.style.display = 'none';
@@ -513,26 +702,26 @@
         try {
             await navigator.clipboard.writeText(link);
             toastMsg('Link catatan disalin!');
-        } catch (err) {
-            const textarea = document.createElement('textarea');
-            textarea.value = link;
-            document.body.appendChild(textarea);
-            textarea.select();
+        } catch {
+            const ta = document.createElement('textarea');
+            ta.value = link;
+            document.body.appendChild(ta);
+            ta.select();
             document.execCommand('copy');
-            document.body.removeChild(textarea);
+            document.body.removeChild(ta);
             toastMsg('Link catatan disalin!');
         }
         shareModal.style.display = 'none';
     }
 
-    // ==================== VIEW-ONLY LINK HANDLER ====================
+    // ================================================================
+    // VIEW-ONLY HANDLER
+    // ================================================================
     async function handleViewOnly() {
         const params = new URLSearchParams(window.location.search);
         if (params.get('view') === 'note' && params.get('id')) {
             const id = params.get('id');
-            // Sembunyikan semua elemen normal, tampilkan view-only
             document.body.classList.add('view-only');
-            // Ambil data catatan
             try {
                 const docSnap = await getDoc(doc(db, 'notes', id));
                 if (docSnap.exists()) {
@@ -541,11 +730,9 @@
                     if (data.type === 'text') {
                         voBody.innerHTML = data.content || '';
                     } else {
-                        // Tampilkan daftar
                         const items = data.listItems || [];
-                        if (items.length === 0) {
-                            voBody.innerHTML = '<p style="color:var(--text-muted);">Daftar kosong</p>';
-                        } else {
+                        if (items.length === 0) voBody.innerHTML = '<p style="color:var(--text-muted);">Daftar kosong</p>';
+                        else {
                             let html = '';
                             items.forEach(item => {
                                 const indentClass = item.indent ? `indent-${item.indent}` : '';
@@ -561,10 +748,8 @@
                             voBody.innerHTML = html;
                         }
                     }
-                    // Labels
                     const labels = data.labels || [];
                     voLabels.innerHTML = labels.map(l => `<span class="label-tag">${escapeHtml(l)}</span>`).join('');
-                    // Meta
                     const updated = data.updatedAt ? formatDate(data.updatedAt) : '-';
                     voMeta.textContent = `Diperbarui: ${updated}`;
                 } else {
@@ -577,7 +762,9 @@
         }
     }
 
-    // ==================== PIN ====================
+    // ================================================================
+    // PIN
+    // ================================================================
     async function handleTogglePin(id) {
         const card = allNotes.find(n => n.id === id);
         if (!card) return;
@@ -585,12 +772,12 @@
         try {
             await updateDoc(doc(db, 'notes', id), { pinned: newPinned, updatedAt: Timestamp.now() });
             toastMsg(newPinned ? 'Catatan dipin' : 'Pin dilepas');
-        } catch (err) {
-            toastMsg('Gagal mengubah pin');
-        }
+        } catch { toastMsg('Gagal mengubah pin'); }
     }
 
-    // ==================== FIREBASE ====================
+    // ================================================================
+    // FIREBASE CRUD
+    // ================================================================
     function startNotesListener() {
         if (unsubscribeNotes) unsubscribeNotes();
         const q = query(notesCol, orderBy('updatedAt', 'desc'));
@@ -610,10 +797,7 @@
             allLabelNames = getAllLabels();
             updateLabelFilter();
             renderCards();
-        }, (error) => {
-            console.error('Firestore error:', error);
-            toastMsg('Gagal memuat data.');
-        });
+        }, (error) => { console.error(error); toastMsg('Gagal memuat data.'); });
     }
 
     async function saveCardToFirebase(cardData) {
@@ -625,21 +809,10 @@
             const existing = allNotes.find(n => n.id === cardData.id);
             const history = existing?.history || [];
             history.push(historyEntry);
-            await updateDoc(ref, {
-                ...cardData,
-                updatedAt: now,
-                history: history
-            });
+            await updateDoc(ref, { ...cardData, updatedAt: now, history });
             return cardData.id;
         } else {
-            const newDoc = {
-                ...cardData,
-                pinned: false,
-                createdAt: now,
-                updatedAt: now,
-                archived: false,
-                history: [historyEntry]
-            };
+            const newDoc = { ...cardData, pinned: false, createdAt: now, updatedAt: now, archived: false, history: [historyEntry] };
             delete newDoc.id;
             const ref = await addDoc(notesCol, newDoc);
             return ref.id;
@@ -650,7 +823,9 @@
     async function archiveNote(id) { await updateDoc(doc(db, 'notes', id), { archived: true, updatedAt: Timestamp.now() }); }
     async function unarchiveNote(id) { await updateDoc(doc(db, 'notes', id), { archived: false, updatedAt: Timestamp.now() }); }
 
-    // ==================== AUTO SAVE ====================
+    // ================================================================
+    // AUTO SAVE
+    // ================================================================
     async function autoSave() {
         if (isSaving) return;
         isSaving = true;
@@ -658,14 +833,8 @@
             const id = editId.value;
             const title = cardTitle.value.trim();
             const isNew = !id;
-            if (isNew && !title && currentType === 'text' && !textContent.innerHTML.trim()) {
-                isSaving = false;
-                return;
-            }
-            if (isNew && currentType === 'list' && getCurrentListItems().length === 0) {
-                isSaving = false;
-                return;
-            }
+            if (isNew && !title && currentType === 'text' && !textContent.innerHTML.trim()) { isSaving = false; return; }
+            if (isNew && currentType === 'list' && getCurrentListItems().length === 0) { isSaving = false; return; }
             let cardData = {
                 type: currentType,
                 title: title || 'Tanpa judul',
@@ -680,20 +849,15 @@
                 cardData.listItems = getCurrentListItems();
             }
             if (!isNew) cardData.id = id;
-            await saveCardToFirebase(cardData);
-            if (isNew) {
-                const newId = cardData.id;
-                editId.value = newId;
-                currentEditId = newId;
-            }
-        } catch (err) {
-            console.error(err);
-            toastMsg('Gagal menyimpan otomatis');
-        }
+            const newId = await saveCardToFirebase(cardData);
+            if (isNew) { editId.value = newId; currentEditId = newId; }
+        } catch (err) { console.error(err); toastMsg('Gagal menyimpan otomatis'); }
         isSaving = false;
     }
 
-    // ==================== LABEL MANAGEMENT ====================
+    // ================================================================
+    // LABEL MANAGEMENT
+    // ================================================================
     function updateLabelFilter() {
         const labels = getAllLabels();
         const current = filterLabelSelect.value;
@@ -711,10 +875,7 @@
     function renderLabelAutocomplete(query) {
         const q = query.toLowerCase().trim();
         const matches = allLabelNames.filter(l => l.toLowerCase().includes(q) && !labels.includes(l));
-        if (!q || matches.length === 0) {
-            labelAutocomplete.style.display = 'none';
-            return;
-        }
+        if (!q || matches.length === 0) { labelAutocomplete.style.display = 'none'; return; }
         labelAutocomplete.innerHTML = matches.map(l => `
             <div class="item" data-label="${escapeHtml(l)}">
                 <span>${escapeHtml(l)}</span>
@@ -739,7 +900,7 @@
     function openLabelManage() {
         const labels = getAllLabels();
         if (labels.length === 0) {
-            labelManageList.innerHTML = '<div style="color:var(--text-muted);padding:12px 0;">Belum ada label. Buat label dengan menambahkannya ke catatan.</div>';
+            labelManageList.innerHTML = '<div style="color:var(--text-muted);padding:12px 0;">Belum ada label.</div>';
         } else {
             labelManageList.innerHTML = labels.map(l => `
                 <div class="label-manage-item" data-label="${escapeHtml(l)}">
@@ -757,17 +918,13 @@
                 btn.addEventListener('click', () => {
                     const oldLabel = btn.dataset.label;
                     const newLabel = prompt('Ubah nama label:', oldLabel);
-                    if (newLabel && newLabel.trim() !== oldLabel) {
-                        renameLabel(oldLabel, newLabel.trim());
-                    }
+                    if (newLabel && newLabel.trim() !== oldLabel) renameLabel(oldLabel, newLabel.trim());
                 });
             });
             labelManageList.querySelectorAll('.del-label-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const label = btn.dataset.label;
-                    if (confirm(`Hapus label "${label}" dari semua catatan?`)) {
-                        deleteLabel(label);
-                    }
+                    if (confirm(`Hapus label "${label}" dari semua catatan?`)) deleteLabel(label);
                 });
             });
         }
@@ -776,10 +933,7 @@
 
     async function renameLabel(oldLabel, newLabel) {
         if (!newLabel || newLabel === oldLabel) return;
-        if (allLabelNames.includes(newLabel) && newLabel !== oldLabel) {
-            toastMsg('Label sudah ada!');
-            return;
-        }
+        if (allLabelNames.includes(newLabel) && newLabel !== oldLabel) { toastMsg('Label sudah ada!'); return; }
         try {
             const batch = [];
             allNotes.forEach(n => {
@@ -793,9 +947,7 @@
             }
             toastMsg(`Label "${oldLabel}" diubah menjadi "${newLabel}"`);
             labelManageModal.style.display = 'none';
-        } catch (err) {
-            toastMsg('Gagal mengubah label');
-        }
+        } catch { toastMsg('Gagal mengubah label'); }
     }
 
     async function deleteLabel(label) {
@@ -812,12 +964,12 @@
             }
             toastMsg(`Label "${label}" dihapus`);
             labelManageModal.style.display = 'none';
-        } catch (err) {
-            toastMsg('Gagal menghapus label');
-        }
+        } catch { toastMsg('Gagal menghapus label'); }
     }
 
-    // ==================== FILTERS & SORT ====================
+    // ================================================================
+    // FILTER & SORT
+    // ================================================================
     function getActiveCards() {
         const pool = isArchivedView ? allNotes.filter(c => c.archived === true) : allNotes.filter(c => c.archived !== true);
         let filtered = pool.filter(c => {
@@ -855,7 +1007,9 @@
         });
     }
 
-    // ==================== RENDER ====================
+    // ================================================================
+    // RENDER CARDS
+    // ================================================================
     function renderCards() {
         const cards = getActiveCards();
         if (cards.length === 0) {
@@ -905,61 +1059,52 @@
                 if (e.target.closest('.card-actions-top')) return;
                 const card = allNotes.find(n => n.id === id);
                 if (card) {
-                    if (card.type === 'text') {
-                        openTextView(id);
-                    } else {
-                        openEditor(id);
-                    }
+                    if (card.type === 'text') openTextView(id);
+                    else openEditor(id);
                 }
             });
         });
 
-        // Tombol pin, share, hapus, dll.
+        // Tombol aksi
         cardsGrid.querySelectorAll('.pin-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const id = btn.dataset.id;
-                await handleTogglePin(id);
+                await handleTogglePin(btn.dataset.id);
             });
         });
-
         cardsGrid.querySelectorAll('.share-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const id = btn.dataset.id;
-                openShareModal(id);
+                openShareModal(btn.dataset.id);
             });
         });
-
         cardsGrid.querySelectorAll('.del-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const id = btn.dataset.id;
                 if (confirm('Hapus catatan ini?')) {
-                    try { await deleteNoteFromFirebase(id); toastMsg('Catatan dihapus'); } catch (err) { toastMsg('Gagal menghapus'); }
+                    try { await deleteNoteFromFirebase(id); toastMsg('Catatan dihapus'); } catch { toastMsg('Gagal menghapus'); }
                 }
             });
         });
-
         cardsGrid.querySelectorAll('.unarchive-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const id = btn.dataset.id;
-                try { await unarchiveNote(id); toastMsg('Catatan dipulihkan'); } catch (err) { toastMsg('Gagal memulihkan'); }
+                try { await unarchiveNote(btn.dataset.id); toastMsg('Catatan dipulihkan'); } catch { toastMsg('Gagal memulihkan'); }
             });
         });
-
         cardsGrid.querySelectorAll('.history-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const id = btn.dataset.id;
-                const card = allNotes.find(n => n.id === id);
+                const card = allNotes.find(n => n.id === btn.dataset.id);
                 if (card) showHistory(card);
             });
         });
     }
 
-    // ==================== TEXT VIEW ====================
+    // ================================================================
+    // TEXT VIEW (Read-Only)
+    // ================================================================
     function openTextView(id) {
         const card = allNotes.find(n => n.id === id);
         if (!card || card.type !== 'text') return;
@@ -990,25 +1135,29 @@
         currentFontSize = Math.min(28, Math.max(12, currentFontSize + delta));
         textViewCardBody.style.fontSize = currentFontSize + 'px';
         fontSizeDisplay.textContent = currentFontSize;
-        if (currentTextViewId) {
-            localStorage.setItem(`fontSize_${currentTextViewId}`, currentFontSize);
-        }
+        if (currentTextViewId) localStorage.setItem(`fontSize_${currentTextViewId}`, currentFontSize);
     }
 
-    // ==================== HISTORY ====================
+    // ================================================================
+    // HISTORY
+    // ================================================================
     function showHistory(card) {
         historyList.innerHTML = getHistoryDisplay(card.history || []);
         historyModal.style.display = 'flex';
     }
 
-    // ==================== RICH TEXT EDITOR ====================
+    // ================================================================
+    // RICH TEXT EDITOR COMMANDS
+    // ================================================================
     function execCommand(cmd, value = null) {
         document.execCommand(cmd, false, value);
         textContent.focus();
         autoSave();
     }
 
-    // ==================== EDITOR ====================
+    // ================================================================
+    // EDITOR
+    // ================================================================
     function openEditor(id = null) {
         currentEditId = id;
         labels = [];
@@ -1088,7 +1237,9 @@
         }
     }
 
-    // ==================== LIST ITEMS ====================
+    // ================================================================
+    // LIST ITEMS
+    // ================================================================
     function renderListItems(items) {
         if (!items || items.length === 0) {
             listItemsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.8rem;">Belum ada item.</div>`;
@@ -1116,7 +1267,7 @@
             `;
         }).join('');
 
-        // Event-item sama seperti sebelumnya (check, delete, indent, edit, enter)
+        // Event: check, delete, indent, edit, enter
         listItemsContainer.querySelectorAll('.item-check').forEach(el => {
             el.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1158,12 +1309,7 @@
                     const items = getCurrentListItems();
                     const currentItem = items[idx];
                     if (!currentItem) return;
-                    const newItem = {
-                        id: Date.now() + Math.random(),
-                        text: '',
-                        checked: false,
-                        indent: currentItem.indent || 0
-                    };
+                    const newItem = { id: Date.now() + Math.random(), text: '', checked: false, indent: currentItem.indent || 0 };
                     items.splice(idx + 1, 0, newItem);
                     renderListItems(items);
                     setTimeout(() => {
@@ -1243,7 +1389,9 @@
         autoSave();
     }
 
-    // ==================== DRAG & DROP ====================
+    // ================================================================
+    // DRAG & DROP
+    // ================================================================
     function handleDragStart(e) {
         const row = e.target.closest('.list-item-row');
         if (!row) return;
@@ -1286,51 +1434,52 @@
         dragOverItem = null;
     }
 
-    // ==================== DELETE / ARCHIVE ====================
+    // ================================================================
+    // DELETE / ARCHIVE
+    // ================================================================
     async function deleteCard() {
         const id = editId.value;
         if (!id) return;
         if (confirm('Hapus catatan ini?')) {
-            try { await deleteNoteFromFirebase(id);
-                toastMsg('Catatan dihapus');
-                closeEditorModal(); } catch (err) { toastMsg('Gagal menghapus'); }
+            try { await deleteNoteFromFirebase(id); toastMsg('Catatan dihapus'); closeEditorModal(); } catch { toastMsg('Gagal menghapus'); }
         }
     }
     async function archiveCard() {
         const id = editId.value;
         if (!id) return;
-        try { await archiveNote(id);
-            toastMsg('Catatan diarsipkan');
-            closeEditorModal(); } catch (err) { toastMsg('Gagal mengarsip'); }
+        try { await archiveNote(id); toastMsg('Catatan diarsipkan'); closeEditorModal(); } catch { toastMsg('Gagal mengarsip'); }
     }
     async function unarchiveCard() {
         const id = editId.value;
         if (!id) return;
-        try { await unarchiveNote(id);
-            toastMsg('Catatan dipulihkan');
-            closeEditorModal(); } catch (err) { toastMsg('Gagal memulihkan'); }
+        try { await unarchiveNote(id); toastMsg('Catatan dipulihkan'); closeEditorModal(); } catch { toastMsg('Gagal memulihkan'); }
     }
 
-    // ==================== EVENT BINDING ====================
+    // ================================================================
+    // INIT
+    // ================================================================
     function init() {
-        // Cek view-only link
         handleViewOnly();
 
         startNotesListener();
 
-        backBtn.addEventListener('click', () => { window.location.href = 'index.html'; });
+        // Navigasi
+        backBtn.addEventListener('click', () => window.location.href = 'index.html');
         fabAdd.addEventListener('click', () => openEditor(null));
         addCardBtn.addEventListener('click', () => openEditor(null));
 
+        // Editor modal
         closeEditor.addEventListener('click', closeEditorModal);
         closeEditorBtn.addEventListener('click', closeEditorModal);
         editorModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeEditorModal(); });
 
+        // Label manage
         manageLabelBtn.addEventListener('click', openLabelManage);
         closeLabelManage.addEventListener('click', () => labelManageModal.style.display = 'none');
         closeLabelManageBtn.addEventListener('click', () => labelManageModal.style.display = 'none');
         labelManageModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) labelManageModal.style.display = 'none'; });
 
+        // Choice cards
         document.querySelectorAll('.choice-card').forEach(el => {
             el.addEventListener('click', () => {
                 currentType = el.dataset.type;
@@ -1355,10 +1504,11 @@
         archiveCardBtn.addEventListener('click', archiveCard);
         unarchiveCardBtn.addEventListener('click', unarchiveCard);
 
+        // List items
         addItemBtn.addEventListener('click', addNewItem);
-        newItemInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault();
-                addNewItem(); } });
+        newItemInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addNewItem(); } });
 
+        // Labels
         addLabelBtn.addEventListener('click', () => {
             const val = labelInput.value.trim();
             if (val && !labels.includes(val)) {
@@ -1369,7 +1519,37 @@
                 autoSave();
             }
         });
+        labelInput.addEventListener('input', () => renderLabelAutocomplete(labelInput.value));
+        labelInput.addEventListener('focus', () => {
+            if (labelInput.value.trim()) renderLabelAutocomplete(labelInput.value);
+            else {
+                const available = allLabelNames.filter(l => !labels.includes(l));
+                labelAutocomplete.innerHTML = available.map(l => `
+                    <div class="item" data-label="${escapeHtml(l)}">
+                        <span>${escapeHtml(l)}</span>
+                        <span class="count">${getLabelCount(l)} catatan</span>
+                    </div>
+                `).join('');
+                labelAutocomplete.style.display = available.length > 0 ? 'block' : 'none';
+            }
+        });
+        labelInput.addEventListener('blur', () => setTimeout(() => labelAutocomplete.style.display = 'none', 200));
+        labelInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const val = labelInput.value.trim();
+                if (val && !labels.includes(val)) {
+                    labels.push(val);
+                    renderLabels();
+                    labelInput.value = '';
+                    labelAutocomplete.style.display = 'none';
+                    autoSave();
+                }
+            }
+            if (e.key === 'Escape') labelAutocomplete.style.display = 'none';
+        });
 
+        // Color picker
         document.querySelectorAll('.color-option').forEach(el => {
             el.addEventListener('click', () => {
                 document.querySelectorAll('.color-option').forEach(e => e.classList.remove('active'));
@@ -1379,26 +1559,21 @@
             });
         });
 
+        // Auto-save triggers
         cardTitle.addEventListener('input', autoSave);
         textContent.addEventListener('input', autoSave);
 
-        // Event untuk text view
+        // Text view
         closeTextView.addEventListener('click', closeTextViewModal);
         closeTextViewBtn.addEventListener('click', closeTextViewModal);
         textViewModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeTextViewModal(); });
-
         textViewEditBtn.addEventListener('click', () => {
             const id = currentTextViewId;
-            if (id) {
-                closeTextViewModal();
-                openEditor(id);
-            }
+            if (id) { closeTextViewModal(); openEditor(id); }
         });
-
         textViewShareBtn.addEventListener('click', () => {
             if (currentTextViewId) openShareModal(currentTextViewId);
         });
-
         textViewPinBtn.addEventListener('click', async () => {
             if (currentTextViewId) {
                 await handleTogglePin(currentTextViewId);
@@ -1410,11 +1585,10 @@
                 }
             }
         });
-
         fontDecrease.addEventListener('click', () => adjustFontSize(-2));
         fontIncrease.addEventListener('click', () => adjustFontSize(2));
 
-        // Share modal events
+        // Share modal
         closeShareModal.addEventListener('click', () => shareModal.style.display = 'none');
         closeShareModalBtn.addEventListener('click', () => shareModal.style.display = 'none');
         shareModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) shareModal.style.display = 'none'; });
@@ -1426,9 +1600,8 @@
         closeHistoryBtn.addEventListener('click', () => historyModal.style.display = 'none');
         historyModal.addEventListener('click', (e) => { if (e.target === e.currentTarget) historyModal.style.display = 'none'; });
 
-        // Filter
-        searchInput.addEventListener('input', () => { searchQuery = searchInput.value;
-            renderCards(); });
+        // Filters
+        searchInput.addEventListener('input', () => { searchQuery = searchInput.value; renderCards(); });
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1437,39 +1610,39 @@
                 renderCards();
             });
         });
-        filterLabelSelect.addEventListener('change', () => { filterLabel = filterLabelSelect.value;
-            renderCards(); });
-        filterDateSelect.addEventListener('change', () => { filterDate = filterDateSelect.value;
-            renderCards(); });
+        filterLabelSelect.addEventListener('change', () => { filterLabel = filterLabelSelect.value; renderCards(); });
+        filterDateSelect.addEventListener('change', () => { filterDate = filterDateSelect.value; renderCards(); });
 
         viewArchivedBtn.addEventListener('click', () => {
             isArchivedView = !isArchivedView;
-            viewArchivedBtn.innerHTML = isArchivedView ? '<i class="fas fa-arrow-left"></i> Kembali' :
-                '<i class="fas fa-archive"></i> Arsip';
+            viewArchivedBtn.innerHTML = isArchivedView ? '<i class="fas fa-arrow-left"></i> Kembali' : '<i class="fas fa-archive"></i> Arsip';
             viewArchivedBtn.classList.toggle('primary', isArchivedView);
             renderCards();
             if (isArchivedView) toastMsg('Menampilkan arsip');
         });
 
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') {
-                closeEditorModal();
-                closeTextViewModal();
-                shareModal.style.display = 'none';
-            } });
-
-        // Bold, italic, dll. (sama)
+        // Rich text editor commands
         boldBtn.addEventListener('click', () => execCommand('bold'));
         italicBtn.addEventListener('click', () => execCommand('italic'));
         bulletBtn.addEventListener('click', () => execCommand('insertUnorderedList'));
         numberBtn.addEventListener('click', () => execCommand('insertOrderedList'));
         indentBtn.addEventListener('click', () => execCommand('indent'));
         outdentBtn.addEventListener('click', () => execCommand('outdent'));
-
         textContent.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'b') { e.preventDefault(); execCommand('bold'); }
             else if (e.ctrlKey && e.key === 'i') { e.preventDefault(); execCommand('italic'); }
             else if (e.key === 'Tab' && !e.shiftKey) { e.preventDefault(); execCommand('indent'); }
             else if (e.key === 'Tab' && e.shiftKey) { e.preventDefault(); execCommand('outdent'); }
+        });
+
+        // Global escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeEditorModal();
+                closeTextViewModal();
+                shareModal.style.display = 'none';
+                historyModal.style.display = 'none';
+            }
         });
     }
 
