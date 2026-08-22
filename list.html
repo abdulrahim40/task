@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400,500,600,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
+        /* Semua gaya tetap sama seperti sebelumnya */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --primary: #f59e0b;
@@ -340,7 +341,7 @@
                 <div class="color-option" style="background:#f97316;" data-color="#f97316"></div>
             </div>
             <div class="modal-actions">
-                <button class="btn btn-primary" id="saveCardBtn"><i class="fas fa-save"></i> Simpan</button>
+                <!-- Tombol Simpan dihilangkan, diganti auto-save -->
                 <button class="btn btn-danger" id="deleteCardBtn" style="display:none;"><i class="fas fa-trash"></i> Hapus</button>
                 <button class="btn btn-warning" id="archiveCardBtn" style="display:none;"><i class="fas fa-archive"></i> Arsip</button>
                 <button class="btn btn-success" id="unarchiveCardBtn" style="display:none;"><i class="fas fa-undo"></i> Pulihkan</button>
@@ -443,6 +444,7 @@
     let dragItem = null;
     let dragOverItem = null;
     let allLabelNames = [];
+    let isSaving = false; // flag untuk menghindari simpan ganda
 
     // Untuk tampilan teks read-only
     let currentTextViewId = null;
@@ -477,7 +479,6 @@
     const labelTagsDisplay = document.getElementById('labelTagsDisplay');
     const labelAutocomplete = document.getElementById('labelAutocomplete');
     const colorPicker = document.getElementById('colorPicker');
-    const saveCardBtn = document.getElementById('saveCardBtn');
     const deleteCardBtn = document.getElementById('deleteCardBtn');
     const archiveCardBtn = document.getElementById('archiveCardBtn');
     const unarchiveCardBtn = document.getElementById('unarchiveCardBtn');
@@ -703,6 +704,53 @@
     async function archiveNote(id) { await updateDoc(doc(db, 'notes', id), { archived: true, updatedAt: Timestamp.now() }); }
     async function unarchiveNote(id) { await updateDoc(doc(db, 'notes', id), { archived: false, updatedAt: Timestamp.now() }); }
 
+    // ==================== AUTO SAVE ====================
+    // Fungsi ini akan dipanggil setiap kali ada perubahan pada list
+    async function autoSave() {
+        if (isSaving) return;
+        isSaving = true;
+        try {
+            const id = editId.value;
+            const title = cardTitle.value.trim();
+            const isNew = !id;
+            if (isNew && !title && currentType === 'text' && !textContent.innerHTML.trim()) {
+                // Jika kosong, jangan simpan
+                isSaving = false;
+                return;
+            }
+            if (isNew && currentType === 'list' && getCurrentListItems().length === 0) {
+                isSaving = false;
+                return;
+            }
+            let cardData = {
+                type: currentType,
+                title: title || 'Tanpa judul',
+                color: selectedColor,
+                labels: [...labels],
+            };
+            if (currentType === 'text') {
+                cardData.content = textContent.innerHTML || '';
+                cardData.listItems = [];
+            } else {
+                cardData.content = '';
+                cardData.listItems = getCurrentListItems();
+            }
+            if (!isNew) cardData.id = id;
+            await saveCardToFirebase(cardData);
+            if (isNew) {
+                // Jika baru, kita update editId setelah simpan
+                const newId = cardData.id;
+                editId.value = newId;
+                // update currentEditId
+                currentEditId = newId;
+            }
+        } catch (err) {
+            console.error(err);
+            toastMsg('Gagal menyimpan otomatis');
+        }
+        isSaving = false;
+    }
+
     // ==================== LABEL MANAGEMENT ====================
     function updateLabelFilter() {
         const labels = getAllLabels();
@@ -740,6 +788,7 @@
                     renderLabels();
                     labelInput.value = '';
                     labelAutocomplete.style.display = 'none';
+                    autoSave();
                 }
             });
         });
@@ -855,7 +904,6 @@
             }
             return true;
         });
-        // Urutkan: pinned di atas, lalu berdasarkan updatedAt descending
         return filtered.sort((a, b) => {
             if (a.pinned && !b.pinned) return -1;
             if (!a.pinned && b.pinned) return 1;
@@ -908,7 +956,6 @@
             `;
         }).join('');
 
-        // Event listener untuk membuka tampilan yang sesuai
         cardsGrid.querySelectorAll('.card-item').forEach(el => {
             const id = el.dataset.id;
             el.addEventListener('click', (e) => {
@@ -924,7 +971,6 @@
             });
         });
 
-        // Tombol pin
         cardsGrid.querySelectorAll('.pin-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -933,7 +979,6 @@
             });
         });
 
-        // Tombol bagikan
         cardsGrid.querySelectorAll('.share-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -984,7 +1029,6 @@
         const labels = card.labels || [];
         textViewLabels.innerHTML = labels.map(l => `<span class="label-tag">${escapeHtml(l)}</span>`).join('');
 
-        // Update tombol pin di modal
         const isPinned = card.pinned || false;
         textViewPinBtn.innerHTML = `<i class="${isPinned ? 'fas' : 'far'} fa-thumbtack"></i> ${isPinned ? 'Lepas Pin' : 'Pin'}`;
         textViewPinBtn.classList.toggle('pinned', isPinned);
@@ -1026,7 +1070,6 @@
     textViewPinBtn.addEventListener('click', async () => {
         if (currentTextViewId) {
             await handleTogglePin(currentTextViewId);
-            // Update tampilan pin di modal
             const card = allNotes.find(n => n.id === currentTextViewId);
             if (card) {
                 const isPinned = card.pinned || false;
@@ -1053,6 +1096,7 @@
     function execCommand(cmd, value = null) {
         document.execCommand(cmd, false, value);
         textContent.focus();
+        autoSave(); // simpan otomatis setelah perubahan teks
     }
 
     function toggleBold() { execCommand('bold'); }
@@ -1108,6 +1152,7 @@
                 renderLabels();
                 labelInput.value = '';
                 labelAutocomplete.style.display = 'none';
+                autoSave();
             }
         }
         if (e.key === 'Escape') labelAutocomplete.style.display = 'none';
@@ -1176,6 +1221,7 @@
             el.addEventListener('click', () => {
                 labels = labels.filter(l => l !== el.dataset.label);
                 renderLabels();
+                autoSave();
             });
         });
     }
@@ -1192,6 +1238,7 @@
         }
     }
 
+    // ==================== LIST ITEMS RENDER & EVENTS ====================
     function renderListItems(items) {
         if (!items || items.length === 0) {
             listItemsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.8rem;">Belum ada item.</div>`;
@@ -1219,6 +1266,7 @@
             `;
         }).join('');
 
+        // === Event untuk item check ===
         listItemsContainer.querySelectorAll('.item-check').forEach(el => {
             el.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1226,6 +1274,8 @@
                 toggleItemCheck(idx);
             });
         });
+
+        // === Event untuk hapus item ===
         listItemsContainer.querySelectorAll('.item-del').forEach(el => {
             el.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1233,6 +1283,8 @@
                 deleteItem(idx);
             });
         });
+
+        // === Event untuk indent ===
         listItemsContainer.querySelectorAll('.indent-left').forEach(el => {
             el.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1247,6 +1299,8 @@
                 changeIndent(idx, 1);
             });
         });
+
+        // === Event untuk edit teks (blur) ===
         listItemsContainer.querySelectorAll('.item-text').forEach(el => {
             el.addEventListener('blur', () => {
                 const idx = parseInt(el.dataset.idx);
@@ -1254,6 +1308,47 @@
                 updateItemText(idx, newText);
             });
         });
+
+        // === Event untuk Enter di item teks ===
+        listItemsContainer.querySelectorAll('.item-text').forEach(el => {
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Mencegah baris baru di dalam item
+                    const idx = parseInt(el.dataset.idx);
+                    // Buat item baru di bawah item saat ini
+                    const items = getCurrentListItems();
+                    const currentItem = items[idx];
+                    if (!currentItem) return;
+                    const newItem = {
+                        id: Date.now() + Math.random(),
+                        text: '',
+                        checked: false,
+                        indent: currentItem.indent || 0
+                    };
+                    items.splice(idx + 1, 0, newItem);
+                    renderListItems(items);
+                    // Fokus ke item baru setelah render
+                    setTimeout(() => {
+                        const newRows = listItemsContainer.querySelectorAll('.list-item-row');
+                        if (newRows[idx + 1]) {
+                            const textEl = newRows[idx + 1].querySelector('.item-text');
+                            if (textEl) {
+                                textEl.focus();
+                                // Pilih semua teks agar mudah diganti
+                                const range = document.createRange();
+                                range.selectNodeContents(textEl);
+                                const sel = window.getSelection();
+                                sel.removeAllRanges();
+                                sel.addRange(range);
+                            }
+                        }
+                    }, 50);
+                    autoSave(); // simpan otomatis
+                }
+            });
+        });
+
+        // === Drag & Drop ===
         listItemsContainer.querySelectorAll('.list-item-row').forEach(row => {
             row.addEventListener('dragstart', handleDragStart);
             row.addEventListener('dragend', handleDragEnd);
@@ -1264,6 +1359,7 @@
         });
     }
 
+    // Fungsi-fungsi manipulasi item
     function toggleItemCheck(idx) {
         const rows = listItemsContainer.querySelectorAll('.list-item-row');
         if (idx >= rows.length) return;
@@ -1271,14 +1367,21 @@
         const check = row.querySelector('.item-check');
         check.classList.toggle('checked');
         row.classList.toggle('checked-item');
+        // Update data dan simpan
         const items = getCurrentListItems();
-        renderListItems(items);
+        // Urutkan ulang: unchecked di atas, checked di bawah
+        const unchecked = items.filter(it => !it.checked);
+        const checkedItems = items.filter(it => it.checked);
+        const sorted = [...unchecked, ...checkedItems];
+        renderListItems(sorted);
+        autoSave();
     }
 
     function deleteItem(idx) {
         const items = getCurrentListItems();
         items.splice(idx, 1);
         renderListItems(items);
+        autoSave();
     }
 
     function changeIndent(idx, delta) {
@@ -1287,12 +1390,15 @@
         const newIndent = Math.min(2, Math.max(0, (items[idx].indent || 0) + delta));
         items[idx].indent = newIndent;
         renderListItems(items);
+        autoSave();
     }
 
     function updateItemText(idx, newText) {
         const items = getCurrentListItems();
         if (idx >= items.length) return;
         items[idx].text = newText;
+        // Tidak perlu re-render, hanya simpan
+        autoSave();
     }
 
     function addNewItem() {
@@ -1302,6 +1408,7 @@
         items.push({ id: Date.now() + Math.random(), text, checked: false, indent: 0 });
         renderListItems(items);
         newItemInput.value = '';
+        autoSave();
     }
 
     // ==================== DRAG & DROP ====================
@@ -1342,45 +1449,13 @@
         const [moved] = items.splice(fromIdx, 1);
         items.splice(toIdx, 0, moved);
         renderListItems(items);
+        autoSave();
         dragItem = null;
         dragOverItem = null;
     }
 
     // ==================== SAVE / DELETE / ARCHIVE ====================
-    async function saveCard() {
-        const id = editId.value;
-        const title = cardTitle.value.trim();
-        const isNew = !id;
-        if (isNew && !title && currentType === 'text' && !textContent.innerHTML.trim()) {
-            toastMsg('Isi catatan atau judul');
-            return;
-        }
-        if (isNew && currentType === 'list' && getCurrentListItems().length === 0) {
-            toastMsg('Tambahkan minimal satu item');
-            return;
-        }
-        try {
-            let cardData = {
-                type: currentType,
-                title: title || 'Tanpa judul',
-                color: selectedColor,
-                labels: [...labels],
-            };
-            if (currentType === 'text') {
-                cardData.content = textContent.innerHTML || '';
-                cardData.listItems = [];
-            } else {
-                cardData.content = '';
-                cardData.listItems = getCurrentListItems();
-            }
-            if (!isNew) cardData.id = id;
-            await saveCardToFirebase(cardData);
-            toastMsg(isNew ? 'Catatan dibuat!' : 'Catatan diperbarui!');
-            closeEditorModal();
-        } catch (err) { console.error(err);
-            toastMsg('Gagal menyimpan'); }
-    }
-
+    // Fungsi save sudah diganti dengan autoSave, tombol simpan dihilangkan
     async function deleteCard() {
         const id = editId.value;
         if (!id) return;
@@ -1442,7 +1517,8 @@
             });
         });
 
-        saveCardBtn.addEventListener('click', saveCard);
+        // Tombol simpan dihilangkan, jadi tidak ada event listener untuk saveCardBtn
+
         deleteCardBtn.addEventListener('click', deleteCard);
         archiveCardBtn.addEventListener('click', archiveCard);
         unarchiveCardBtn.addEventListener('click', unarchiveCard);
@@ -1458,6 +1534,7 @@
                 renderLabels();
                 labelInput.value = '';
                 labelAutocomplete.style.display = 'none';
+                autoSave();
             }
         });
 
@@ -1466,8 +1543,17 @@
                 document.querySelectorAll('.color-option').forEach(e => e.classList.remove('active'));
                 el.classList.add('active');
                 selectedColor = el.dataset.color;
+                autoSave();
             });
         });
+
+        // Auto-save saat judul berubah
+        cardTitle.addEventListener('input', autoSave);
+
+        // Auto-save saat konten teks berubah (contenteditable)
+        textContent.addEventListener('input', autoSave);
+
+        // Auto-save saat label dihapus (sudah di handle di renderLabels)
 
         searchInput.addEventListener('input', () => { searchQuery = searchInput.value;
             renderCards(); });
